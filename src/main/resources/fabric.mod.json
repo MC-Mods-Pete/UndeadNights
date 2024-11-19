@@ -1,0 +1,46 @@
+{
+	"schemaVersion": 1,
+	"id": "${mod_id}",
+	"version": "${version}",
+	"name": "${mod_name}",
+	"description": "This is an example description! Tell everyone what your mod is about!",
+	"authors": [
+		"Pete MC Mods, mcmods.pete@gmail.com"
+	],
+	"contact": {
+		"homepage": "https://modrinth.com/mod/",
+		"sources": "https://github.com/MC-Mods-Pete/",
+		"issues": "https://github.com/MC-Mods-Pete/"
+	},
+	"license": "CC0-1.0",
+	"icon": "assets/undeadnights/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"net.petemc.undeadnights.UndeadNights"
+		],
+		"client": [
+			"net.petemc.undeadnights.UndeadNightsClient"
+		],
+		"fabric-datagen": [
+			"net.petemc.undeadnights.UndeadNightsDataGenerator"
+		],
+		"modmenu": [
+			"net.petemc.undeadnights.util.ModMenuIntegration"
+		]
+	},
+	"mixins": [
+		"undeadnights.mixins.json"
+	],
+	"depends": {
+		"fabricloader": "${fabric_version_range}",
+		"minecraft": "${mc_version_range}",
+		"java": "${java_version_range}",
+		"fabric-api": "*",
+		"cloth-config": ">=11.1.118"
+	},
+	"suggests": {
+		"modmenu": ">=7.0.1",
+		"another-mod": "*"
+	}
+}
