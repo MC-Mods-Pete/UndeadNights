@@ -3,16 +3,16 @@
 	"id": "${mod_id}",
 	"version": "${version}",
 	"name": "${mod_name}",
-	"description": "This is an example description! Tell everyone what your mod is about!",
+	"description": "This Mod adds Horde Nights to minecraft.",
 	"authors": [
 		"Pete MC Mods, mcmods.pete@gmail.com"
 	],
 	"contact": {
-		"homepage": "https://modrinth.com/mod/",
-		"sources": "https://github.com/MC-Mods-Pete/",
-		"issues": "https://github.com/MC-Mods-Pete/"
+		"homepage": "https://modrinth.com/user/PeteMC",
+		"sources": "https://github.com/MC-Mods-Pete/UndeadNights",
+		"issues": "https://github.com/MC-Mods-Pete/UndeadNights/issues"
 	},
-	"license": "CC0-1.0",
+	"license": "All rights reserved",
 	"icon": "assets/undeadnights/icon.png",
 	"environment": "*",
 	"entrypoints": {

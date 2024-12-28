@@ -152,7 +152,6 @@ public class UndeadSpawner implements Spawner {
                 }
                 final Random random = world.random;
                 randomValue = random.nextBetween(1,100);
-                //randomValue = MathHelper.nextInt(Random.create(), 1, 100);
                 if (!(randomValue > (100 - 3))) {
                     return 0;
                 }
@@ -292,7 +291,6 @@ public class UndeadSpawner implements Spawner {
                                     z = 0;
                                     return 0;
                                 }
-                                //player.sendMessage(Text.of("HordeSpawnCounter: " + hordeSpawnCounter + " GlobalSpawnCounter: " + UndeadNights.globalSpawnCounter + " _globSpawn: " + globalSpawnCountLastWave));
                             } else {
                                 if (UndeadNights.globalSpawnCounter >= UndeadNightsConfig.INSTANCE.hordeZombiesSpawnCap) {
                                     UndeadNights.LOGGER.info("HordeZombie spawncap ({}) reached.", UndeadNightsConfig.INSTANCE.hordeZombiesSpawnCap);
@@ -305,7 +303,6 @@ public class UndeadSpawner implements Spawner {
                                 daysCounter = UndeadNightsConfig.INSTANCE.daysBetweenHordeNights;
                                 serverState.daysCounter = daysCounter;
                                 serverState.markDirty();
-                                //player.sendMessage(Text.of("NIGHT daysCounter after: " + serverState.daysCounter + " local: " + daysCounter));
                                 d = 0;
                                 x = 0;
                                 z = 0;

@@ -13,7 +13,7 @@ java_version_range = project.java_version_range
 jade_version = project.jade_version
 
 base {
-	archivesName = project.mod_id
+	archivesName = project.mod_name
 }
 
 repositories {
