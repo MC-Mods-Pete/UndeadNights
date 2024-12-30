@@ -10,6 +10,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
@@ -99,8 +100,10 @@ public class UndeadSpawner implements Spawner {
             respawnZombies = serverState.respawnZombies;
             hordeSpawnCounter = serverState.hordeSpawnCounter;
             globalSpawnCountLastWave = serverState.globalSpawnCountLastWave;
-            UndeadNights.LOGGER.info("INIT LocalDaysCounter: {} LocalHordeSpawnCounter: {} hordeNight: {}", daysCounter, hordeSpawnCounter, UndeadNights.hordeNight);
-            UndeadNights.LOGGER.info("INIT globalSpawnCountLastWave: {} spawnZombies: {} respawmZombies: {}", globalSpawnCountLastWave, spawnZombies, respawnZombies);
+            if (UndeadNights.printDebugMessages) {
+                UndeadNights.LOGGER.debug("INIT LocalDaysCounter: {} LocalHordeSpawnCounter: {} hordeNight: {}", daysCounter, hordeSpawnCounter, UndeadNights.hordeNight);
+                UndeadNights.LOGGER.debug("INIT globalSpawnCountLastWave: {} spawnZombies: {} respawmZombies: {}", globalSpawnCountLastWave, spawnZombies, respawnZombies);
+            }
         }
 
         if (respawnZombies && UndeadNights.hordeNight) {
@@ -186,7 +189,7 @@ public class UndeadSpawner implements Spawner {
                         serverState.hordeNight = true;
                         serverState.markDirty();
                         for (ServerPlayerEntity player : world.getPlayers()) {
-                            player.sendMessage(Text.of("The sun is starting to set and you feel uneasy about the coming night..."));
+                            player.sendMessage(Text.literal("The sun is starting to set and you feel uneasy about the coming night...").formatted(Formatting.RED));
                         }
                     }
                 }
@@ -246,7 +249,7 @@ public class UndeadSpawner implements Spawner {
                             if ((hordeSpawnCounter < UndeadNightsConfig.INSTANCE.zombieHordeWaveSize) && (UndeadNights.globalSpawnCounter < UndeadNightsConfig.INSTANCE.hordeZombiesSpawnCap)) {
                                 if (hordeSpawnCounter == 0) {
                                     player.getWorld().playSound(null, player.getX(), player.getY(), player.getZ(), UndeadNightsSounds.HORDE_SCREAM, SoundCategory.HOSTILE, 4.0F, 1);
-                                    player.sendMessage(Text.of("A horde has spawned!"));
+                                    player.sendMessage(Text.literal("A horde has spawned!").formatted(Formatting.RED));
                                 }
 
                                 randomValue = MathHelper.nextInt(Random.create(), 1, 100);
