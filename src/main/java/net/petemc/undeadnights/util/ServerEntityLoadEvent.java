@@ -24,7 +24,7 @@ public class ServerEntityLoadEvent {
        if (pEntity instanceof HordeZombieEntity || pEntity instanceof DemolitionZombieEntity) {
            UndeadNights.globalSpawnCounter++;
            if (UndeadNights.printDebugMessages) {
-               UndeadNights.LOGGER.debug("LOAD GlobalSpawnCount: : {}", UndeadNights.globalSpawnCounter);
+               UndeadNights.LOGGER.info("LOAD GlobalSpawnCount: : {}", UndeadNights.globalSpawnCounter);
            }
        }
     }

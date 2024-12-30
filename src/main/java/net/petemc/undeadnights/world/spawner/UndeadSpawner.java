@@ -101,8 +101,8 @@ public class UndeadSpawner implements Spawner {
             hordeSpawnCounter = serverState.hordeSpawnCounter;
             globalSpawnCountLastWave = serverState.globalSpawnCountLastWave;
             if (UndeadNights.printDebugMessages) {
-                UndeadNights.LOGGER.debug("INIT LocalDaysCounter: {} LocalHordeSpawnCounter: {} hordeNight: {}", daysCounter, hordeSpawnCounter, UndeadNights.hordeNight);
-                UndeadNights.LOGGER.debug("INIT globalSpawnCountLastWave: {} spawnZombies: {} respawmZombies: {}", globalSpawnCountLastWave, spawnZombies, respawnZombies);
+                UndeadNights.LOGGER.info("INIT LocalDaysCounter: {} LocalHordeSpawnCounter: {} hordeNight: {}", daysCounter, hordeSpawnCounter, UndeadNights.hordeNight);
+                UndeadNights.LOGGER.info("INIT globalSpawnCountLastWave: {} spawnZombies: {} respawmZombies: {}", globalSpawnCountLastWave, spawnZombies, respawnZombies);
             }
         }
 
@@ -120,7 +120,7 @@ public class UndeadSpawner implements Spawner {
             randomValue = MathHelper.nextInt(Random.create(), 1, 100);
             if (randomValue > (100 - UndeadNightsConfig.INSTANCE.chanceForAdditionalWaves)) {
                 if (UndeadNights.printDebugMessages) {
-                    UndeadNights.LOGGER.debug("New Wave, randomValue was: {}", randomValue);
+                    UndeadNights.LOGGER.info("New Wave, randomValue was: {}", randomValue);
                 }
                 spawnZombies = true;
                 respawnZombies = false;
@@ -131,7 +131,7 @@ public class UndeadSpawner implements Spawner {
                 serverState.markDirty();
             } else {
                 if (UndeadNights.printDebugMessages) {
-                    UndeadNights.LOGGER.debug("RandomValue: {}", randomValue);
+                    UndeadNights.LOGGER.info("RandomValue: {}", randomValue);
                 }
                 return 0;
             }
@@ -321,7 +321,7 @@ public class UndeadSpawner implements Spawner {
             } else {
                 if (UndeadNights.hordeNight && (!world.getPlayers().isEmpty())) {
                     for (ServerPlayerEntity player : world.getPlayers()) {
-                        player.sendMessage(Text.of("The sun is starting to rise putting an end to this night of the undead..."));
+                        player.sendMessage(Text.literal("You feel at ease, this night of the undead is over..."));
                     }
                     UndeadNights.hordeNight = false;
                     serverState.hordeNight = false;
