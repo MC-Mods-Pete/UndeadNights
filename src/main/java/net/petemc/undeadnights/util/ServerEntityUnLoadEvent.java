@@ -27,7 +27,9 @@ public class ServerEntityUnLoadEvent {
            //if (UndeadSpawner.hordeSpawnCounter > 0) {
            //    UndeadSpawner.hordeSpawnCounter--;
            //}
-           UndeadNights.LOGGER.info("UNLOAD GlobalSpawnCount: {}", UndeadNights.globalSpawnCounter);
+           if (UndeadNights.printDebugMessages) {
+               UndeadNights.LOGGER.info("UNLOAD GlobalSpawnCount: {}", UndeadNights.globalSpawnCounter);
+           }
        }
     }
 

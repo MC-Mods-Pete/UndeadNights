@@ -3,6 +3,7 @@ package net.petemc.undeadnights.entity.ai.goal;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.TntEntity;
 import net.minecraft.entity.ai.goal.Goal;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.math.BlockPos;
@@ -23,7 +24,10 @@ public class DemolitionZombieIgniteGoal extends Goal {
 	@Override
 	public boolean canStart() {
 		LivingEntity target = this.demolitionZombie.getTarget();
-		return target != null && this.demolitionZombie.squaredDistanceTo(target) < 12.0;
+		if (!(target instanceof PlayerEntity)) {
+			return false;
+		}
+		return this.demolitionZombie.squaredDistanceTo(target) < 12.0;
 	}
 
 	@Override

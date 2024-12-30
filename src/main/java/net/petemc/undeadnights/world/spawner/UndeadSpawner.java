@@ -2,6 +2,7 @@ package net.petemc.undeadnights.world.spawner;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.EntityData;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.SpawnReason;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -10,6 +11,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
@@ -25,8 +27,6 @@ import net.petemc.undeadnights.entity.HordeZombieEntity;
 import net.petemc.undeadnights.entity.ModEntities;
 import net.petemc.undeadnights.sound.UndeadNightsSounds;
 import net.petemc.undeadnights.util.StateSaverAndLoader;
-
-import java.util.List;
 
 public class UndeadSpawner implements SpecialSpawner {
     private StateSaverAndLoader serverState = null;
@@ -99,8 +99,10 @@ public class UndeadSpawner implements SpecialSpawner {
             respawnZombies = serverState.respawnZombies;
             hordeSpawnCounter = serverState.hordeSpawnCounter;
             globalSpawnCountLastWave = serverState.globalSpawnCountLastWave;
-            UndeadNights.LOGGER.info("INIT LocalDaysCounter: {} LocalHordeSpawnCounter: {} hordeNight: {}", daysCounter, hordeSpawnCounter, UndeadNights.hordeNight);
-            UndeadNights.LOGGER.info("INIT globalSpawnCountLastWave: {} spawnZombies: {} respawmZombies: {}", globalSpawnCountLastWave, spawnZombies, respawnZombies);
+            if (UndeadNights.printDebugMessages) {
+                UndeadNights.LOGGER.info("INIT LocalDaysCounter: {} LocalHordeSpawnCounter: {} hordeNight: {}", daysCounter, hordeSpawnCounter, UndeadNights.hordeNight);
+                UndeadNights.LOGGER.info("INIT globalSpawnCountLastWave: {} spawnZombies: {} respawmZombies: {}", globalSpawnCountLastWave, spawnZombies, respawnZombies);
+            }
         }
 
         if (respawnZombies && UndeadNights.hordeNight) {
@@ -116,7 +118,9 @@ public class UndeadSpawner implements SpecialSpawner {
             }
             randomValue = MathHelper.nextInt(Random.create(), 1, 100);
             if (randomValue > (100 - UndeadNightsConfig.INSTANCE.chanceForAdditionalWaves)) {
-                UndeadNights.LOGGER.info("New Wave, randomValue was: {}", randomValue);
+                if (UndeadNights.printDebugMessages) {
+                    UndeadNights.LOGGER.info("New Wave, randomValue was: {}", randomValue);
+                }
                 spawnZombies = true;
                 respawnZombies = false;
                 hordeSpawnCounter = 0;
@@ -125,7 +129,9 @@ public class UndeadSpawner implements SpecialSpawner {
                 serverState.respawnZombies = false;
                 serverState.markDirty();
             } else {
-                UndeadNights.LOGGER.info("RandomValue: {}", randomValue);
+                if (UndeadNights.printDebugMessages) {
+                    UndeadNights.LOGGER.info("RandomValue: {}", randomValue);
+                }
                 return 0;
             }
         }
@@ -182,7 +188,7 @@ public class UndeadSpawner implements SpecialSpawner {
                         serverState.hordeNight = true;
                         serverState.markDirty();
                         for (ServerPlayerEntity player : world.getPlayers()) {
-                            player.sendMessage(Text.of("The sun is starting to set and you feel uneasy about the coming night..."));
+                            player.sendMessage(Text.literal("The sun is starting to set and you feel uneasy about the coming night...").formatted(Formatting.RED));
                         }
                     }
                 }
@@ -242,7 +248,7 @@ public class UndeadSpawner implements SpecialSpawner {
                             if ((hordeSpawnCounter < UndeadNightsConfig.INSTANCE.zombieHordeWaveSize) && (UndeadNights.globalSpawnCounter < UndeadNightsConfig.INSTANCE.hordeZombiesSpawnCap)) {
                                 if (hordeSpawnCounter == 0) {
                                     player.getWorld().playSound(null, player.getX(), player.getY(), player.getZ(), UndeadNightsSounds.HORDE_SCREAM, SoundCategory.HOSTILE, 4.0F, 1);
-                                    player.sendMessage(Text.of("A horde has spawned!"));
+                                    player.sendMessage(Text.literal("A horde has spawned!").formatted(Formatting.RED));
                                 }
 
                                 randomValue = MathHelper.nextInt(Random.create(), 1, 100);
@@ -312,14 +318,14 @@ public class UndeadSpawner implements SpecialSpawner {
                     }
                 }
             } else {
-                if (UndeadNights.hordeNight && (!world.getPlayers().isEmpty())) {
-                    for (ServerPlayerEntity player : world.getPlayers()) {
-                        player.sendMessage(Text.of("The sun is starting to rise putting an end to this night of the undead..."));
-                    }
-                    UndeadNights.hordeNight = false;
-                    serverState.hordeNight = false;
-                    serverState.markDirty();
+            if (UndeadNights.hordeNight && (!world.getPlayers().isEmpty())) {
+                for (ServerPlayerEntity player : world.getPlayers()) {
+                    player.sendMessage(Text.literal("You feel at ease, this night of the undead is over..."));
                 }
+                UndeadNights.hordeNight = false;
+                serverState.hordeNight = false;
+                serverState.markDirty();
+            }
                 spawnZombies = true;
                 respawnZombies = false;
                 serverState.spawnZombies = true;
