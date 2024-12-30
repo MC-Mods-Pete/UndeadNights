@@ -116,7 +116,9 @@ public class UndeadSpawner implements Spawner {
             }
             randomValue = MathHelper.nextInt(Random.create(), 1, 100);
             if (randomValue > (100 - UndeadNightsConfig.INSTANCE.chanceForAdditionalWaves)) {
-                UndeadNights.LOGGER.info("New Wave, randomValue was: {}", randomValue);
+                if (UndeadNights.printDebugMessages) {
+                    UndeadNights.LOGGER.debug("New Wave, randomValue was: {}", randomValue);
+                }
                 spawnZombies = true;
                 respawnZombies = false;
                 hordeSpawnCounter = 0;
@@ -125,7 +127,9 @@ public class UndeadSpawner implements Spawner {
                 serverState.respawnZombies = false;
                 serverState.markDirty();
             } else {
-                UndeadNights.LOGGER.info("RandomValue: {}", randomValue);
+                if (UndeadNights.printDebugMessages) {
+                    UndeadNights.LOGGER.debug("RandomValue: {}", randomValue);
+                }
                 return 0;
             }
         }

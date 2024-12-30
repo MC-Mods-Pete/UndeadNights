@@ -21,6 +21,8 @@ public class UndeadNights implements ModInitializer {
 
 	public static int globalSpawnCounter = 0;
 
+	public static boolean printDebugMessages = false;
+
 	@Override
 	public void onInitialize() {
 		LOGGER.info("Initializing Undead Nights Mod");
