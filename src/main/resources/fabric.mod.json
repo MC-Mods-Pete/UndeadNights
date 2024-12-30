@@ -33,14 +33,14 @@
 		"undeadnights.mixins.json"
 	],
 	"depends": {
-		"fabricloader": "${fabric_version_range}",
-		"minecraft": "${mc_version_range}",
+		"fabricloader": ">=${loader_version}",
+		"minecraft": "${minecraft_version_range}",
 		"java": "${java_version_range}",
 		"fabric-api": "*",
-		"cloth-config": ">=11.1.118"
+		"cloth-config": ">=${cloth_config_version}"
 	},
 	"suggests": {
-		"modmenu": ">=7.0.1",
+		"modmenu": ">=${modmenu_version}",
 		"another-mod": "*"
 	}
 }

@@ -45,9 +45,7 @@ public class HordeZombieEntity extends ZombieEntity {
 
     @Nullable
     @Override
-    public EntityData initialize(
-            ServerWorldAccess world, LocalDifficulty difficulty, SpawnReason spawnReason,
-            @Nullable EntityData entityData, @Nullable NbtCompound entityNbt) {
+    public EntityData initialize(ServerWorldAccess world, LocalDifficulty difficulty, SpawnReason spawnReason, @Nullable EntityData entityData) {
         Random random = world.getRandom();
         this.setLeftHanded(random.nextFloat() < 0.05F);
         float f = difficulty.getClampedLocalDifficulty();
@@ -59,7 +57,7 @@ public class HordeZombieEntity extends ZombieEntity {
         if (entityData instanceof ZombieData) {
             this.setCanBreakDoors(this.shouldBreakDoors() && random.nextFloat() < f * 0.1F);
             this.initEquipment(random, difficulty);
-            this.updateEnchantments(random, difficulty);
+            this.updateEnchantments(world, random, difficulty);
         }
 
         if (this.getEquippedStack(EquipmentSlot.HEAD).isEmpty()) {

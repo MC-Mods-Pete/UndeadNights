@@ -17,7 +17,7 @@ import net.minecraft.util.math.random.Random;
 import net.minecraft.world.Heightmap;
 import net.minecraft.world.LocalDifficulty;
 import net.minecraft.world.World;
-import net.minecraft.world.spawner.Spawner;
+import net.minecraft.world.spawner.SpecialSpawner;
 import net.petemc.undeadnights.UndeadNights;
 import net.petemc.undeadnights.config.UndeadNightsConfig;
 import net.petemc.undeadnights.entity.DemolitionZombieEntity;
@@ -28,7 +28,7 @@ import net.petemc.undeadnights.util.StateSaverAndLoader;
 
 import java.util.List;
 
-public class UndeadSpawner implements Spawner {
+public class UndeadSpawner implements SpecialSpawner {
     private StateSaverAndLoader serverState = null;
 
     public static int hordeSpawnCounter = 0;
@@ -267,7 +267,7 @@ public class UndeadSpawner implements Spawner {
                                     }
                                     EntityData entityData = null;
                                     LocalDifficulty localDifficulty = world.getLocalDifficulty(player.getBlockPos());
-                                    entityData = e.initialize(world, localDifficulty, SpawnReason.NATURAL, entityData, null);
+                                    entityData = e.initialize(world, localDifficulty, SpawnReason.NATURAL, entityData);
                                     e.setTarget(player);
                                     world.spawnEntity(e);
                                 }

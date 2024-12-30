@@ -17,6 +17,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.random.Random;
@@ -64,9 +65,7 @@ public class DemolitionZombieEntity extends ZombieEntity {
 
     @Nullable
     @Override
-    public EntityData initialize(
-            ServerWorldAccess world, LocalDifficulty difficulty, SpawnReason spawnReason,
-            @Nullable EntityData entityData, @Nullable NbtCompound entityNbt) {
+    public EntityData initialize(ServerWorldAccess world, LocalDifficulty difficulty, SpawnReason spawnReason, @Nullable EntityData entityData) {
         Random random = world.getRandom();
         this.setLeftHanded(random.nextFloat() < 0.05F);
         float f = difficulty.getClampedLocalDifficulty();
@@ -78,7 +77,7 @@ public class DemolitionZombieEntity extends ZombieEntity {
         if (entityData instanceof ZombieData) {
             this.setCanBreakDoors(this.shouldBreakDoors() && random.nextFloat() < f * 0.1F);
             this.initEquipment(random, difficulty);
-            this.updateEnchantments(random, difficulty);
+            this.updateEnchantments(world, random, difficulty);
         }
 
         if (this.getEquippedStack(EquipmentSlot.HEAD).isEmpty()) {
@@ -106,8 +105,8 @@ public class DemolitionZombieEntity extends ZombieEntity {
     }
 
     @Override
-    protected void dropEquipment(DamageSource source, int lootingMultiplier, boolean allowDrops) {
-        super.dropEquipment(source, lootingMultiplier, allowDrops);
+    protected void dropEquipment(ServerWorld world, DamageSource source, boolean causedByPlayer) {
+        super.dropEquipment(world, source, causedByPlayer);
         dropInventory();
     }
 
@@ -149,7 +148,7 @@ public class DemolitionZombieEntity extends ZombieEntity {
             boolean bl = true;
 
             for (EquipmentSlot equipmentSlot : EquipmentSlot.values()) {
-                if (equipmentSlot.getType() == EquipmentSlot.Type.ARMOR) {
+                if (equipmentSlot.getType() == EquipmentSlot.Type.HUMANOID_ARMOR) {
                     ItemStack itemStack = this.getEquippedStack(equipmentSlot);
                     if (!bl && random.nextFloat() < f) {
                         break;
