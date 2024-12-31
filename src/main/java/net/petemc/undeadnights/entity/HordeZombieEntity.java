@@ -8,39 +8,27 @@ import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.mob.HostileEntity;
 import net.minecraft.entity.mob.ZombieEntity;
 import net.minecraft.entity.mob.ZombifiedPiglinEntity;
-import net.minecraft.entity.passive.ChickenEntity;
 import net.minecraft.entity.passive.IronGolemEntity;
 import net.minecraft.entity.passive.MerchantEntity;
 import net.minecraft.entity.passive.TurtleEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.packet.s2c.play.EntitySpawnS2CPacket;
-import net.minecraft.predicate.entity.EntityPredicates;
 import net.minecraft.util.math.random.Random;
-import net.minecraft.world.Difficulty;
 import net.minecraft.world.LocalDifficulty;
 import net.minecraft.world.ServerWorldAccess;
 import net.minecraft.world.World;
-import net.petemc.undeadnights.UndeadNights;
 import net.petemc.undeadnights.config.UndeadNightsConfig;
 import org.jetbrains.annotations.Nullable;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoField;
 import java.util.EnumSet;
-import java.util.List;
 
 
 public class HordeZombieEntity extends ZombieEntity {
-    //public final DefaultedList<ItemStack> main = DefaultedList.ofSize(36, ItemStack.EMPTY);
-
     public HordeZombieEntity(EntityType<? extends ZombieEntity> entityType, World world) {
         super(entityType, world);
-        if (!world.isClient()) {
-            //UndeadNights.zombieCounter++;
-        }
     }
 
     @Nullable
@@ -84,6 +72,7 @@ public class HordeZombieEntity extends ZombieEntity {
 
     @Override
     protected void initCustomGoals() {
+        this.goalSelector.add(1, new SwimGoal(this));
         this.goalSelector.add(2, new ZombieAttackGoal(this, 1.0, false));
         this.goalSelector.add(3, new HordeZombieEntity.ChasePlayerGoal(this));
         this.goalSelector.add(6, new MoveThroughVillageGoal(this, 1.0, true, 4, this::canBreakDoors));
