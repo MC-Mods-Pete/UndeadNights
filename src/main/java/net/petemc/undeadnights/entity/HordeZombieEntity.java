@@ -55,7 +55,7 @@ public class HordeZombieEntity extends ZombieEntity {
         }
 
         if (entityData instanceof ZombieData) {
-            this.setCanBreakDoors(this.shouldBreakDoors() && random.nextFloat() < f * 0.1F);
+            this.setCanBreakDoors(this.canBreakDoors() && random.nextFloat() < f * 0.1F);
             this.initEquipment(random, difficulty);
             this.updateEnchantments(world, random, difficulty);
         }
@@ -74,12 +74,12 @@ public class HordeZombieEntity extends ZombieEntity {
 
     public static DefaultAttributeContainer.Builder createHordeZombieAttributes() {
         return HostileEntity.createHostileAttributes()
-                .add(EntityAttributes.GENERIC_MAX_HEALTH, 40.0)       // default 20.0
-                .add(EntityAttributes.GENERIC_FOLLOW_RANGE, 128.0)    // default 35.0
-                .add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 0.30f)  // default 0.23000000417232513
-                .add(EntityAttributes.GENERIC_ATTACK_DAMAGE, 4.0)     // default 3.0
-                .add(EntityAttributes.GENERIC_ARMOR, 3.0)             // default 2.0
-                .add(EntityAttributes.ZOMBIE_SPAWN_REINFORCEMENTS);
+                .add(EntityAttributes.MAX_HEALTH, 40.0)       // default 20.0
+                .add(EntityAttributes.FOLLOW_RANGE, 128.0)    // default 35.0
+                .add(EntityAttributes.MOVEMENT_SPEED, 0.30f)  // default 0.23000000417232513
+                .add(EntityAttributes.ATTACK_DAMAGE, 4.0)     // default 3.0
+                .add(EntityAttributes.ARMOR, 3.0)             // default 2.0
+                .add(EntityAttributes.SPAWN_REINFORCEMENTS);
     }
 
     @Override

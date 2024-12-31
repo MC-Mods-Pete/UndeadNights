@@ -41,12 +41,12 @@ public class DemolitionZombieEntity extends ZombieEntity {
 
     public static DefaultAttributeContainer.Builder createHordeZombieAttributes() {
         return HostileEntity.createHostileAttributes()
-                .add(EntityAttributes.GENERIC_MAX_HEALTH, 40.0)       // default 20.0
-                .add(EntityAttributes.GENERIC_FOLLOW_RANGE, 128.0)    // default 35.0
-                .add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 0.30f)  // default 0.23000000417232513
-                .add(EntityAttributes.GENERIC_ATTACK_DAMAGE, 4.0)     // default 3.0
-                .add(EntityAttributes.GENERIC_ARMOR, 3.0)             // default 2.0
-                .add(EntityAttributes.ZOMBIE_SPAWN_REINFORCEMENTS);
+                .add(EntityAttributes.MAX_HEALTH, 40.0)       // default 20.0
+                .add(EntityAttributes.FOLLOW_RANGE, 128.0)    // default 35.0
+                .add(EntityAttributes.MOVEMENT_SPEED, 0.30f)  // default 0.23000000417232513
+                .add(EntityAttributes.ATTACK_DAMAGE, 4.0)     // default 3.0
+                .add(EntityAttributes.ARMOR, 3.0)             // default 2.0
+                .add(EntityAttributes.SPAWN_REINFORCEMENTS);
     }
 
     @Override
@@ -75,7 +75,7 @@ public class DemolitionZombieEntity extends ZombieEntity {
         }
 
         if (entityData instanceof ZombieData) {
-            this.setCanBreakDoors(this.shouldBreakDoors() && random.nextFloat() < f * 0.1F);
+            this.setCanBreakDoors(this.canBreakDoors() && random.nextFloat() < f * 0.1F);
             this.initEquipment(random, difficulty);
             this.updateEnchantments(world, random, difficulty);
         }
@@ -93,27 +93,27 @@ public class DemolitionZombieEntity extends ZombieEntity {
     }
 
     @Override
-    public boolean damage(DamageSource source, float amount) {
+    public boolean damage(ServerWorld world, DamageSource source, float amount) {
         if (this.isOnFire()) {
-            World world = this.getEntityWorld();
+            //World world = this.getEntityWorld();
             BlockPos pos = this.getBlockPos();
             this.remove(RemovalReason.KILLED);
             world.createExplosion(this, pos.getX(), pos.getY(), pos.getZ(), 5, true, World.ExplosionSourceType.TNT);
             return true;
         }
-        return super.damage(source, amount);
+        return super.damage(world, source, amount);
     }
 
     @Override
     protected void dropEquipment(ServerWorld world, DamageSource source, boolean causedByPlayer) {
         super.dropEquipment(world, source, causedByPlayer);
-        dropInventory();
+        dropInventory(world);
     }
 
-    public void dropInventory() {
-        super.dropInventory();
+    public void dropInventory(ServerWorld world) {
+        super.dropInventory(world);
             if (!this.getMainHandStack().isEmpty()) {
-                this.dropStack(this.getMainHandStack());
+                this.dropStack(world, this.getMainHandStack());
                 this.setStackInHand(Hand.MAIN_HAND, ItemStack.EMPTY);
             }
     }
