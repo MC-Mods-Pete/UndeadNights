@@ -51,9 +51,10 @@ public class DemolitionZombieEntity extends ZombieEntity {
 
     @Override
     protected void initCustomGoals() {
-        this.goalSelector.add(1, new DemolitionZombieIgniteGoal(this));
-        this.goalSelector.add(2, new ZombieAttackGoal(this, 1.0, false));
-        this.goalSelector.add(3, new DemolitionZombieEntity.ChasePlayerGoal(this));
+        this.goalSelector.add(1, new SwimGoal(this));
+        this.goalSelector.add(2, new DemolitionZombieIgniteGoal(this));
+        this.goalSelector.add(3, new ZombieAttackGoal(this, 1.0, false));
+        this.goalSelector.add(4, new DemolitionZombieEntity.ChasePlayerGoal(this));
         this.goalSelector.add(6, new MoveThroughVillageGoal(this, 1.0, true, 4, this::canBreakDoors));
         this.goalSelector.add(7, new WanderAroundFarGoal(this, 1.0));
         this.targetSelector.add(1, new RevengeGoal(this).setGroupRevenge(ZombifiedPiglinEntity.class));
