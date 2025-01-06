@@ -323,10 +323,10 @@ public class UndeadSpawner implements Spawner {
                     for (ServerPlayerEntity player : world.getPlayers()) {
                         player.sendMessage(Text.literal("You feel at ease, this night of the undead is over..."));
                     }
-                    UndeadNights.hordeNight = false;
-                    serverState.hordeNight = false;
-                    serverState.markDirty();
                 }
+                UndeadNights.hordeNight = false;
+                serverState.hordeNight = false;
+                serverState.markDirty();
                 spawnZombies = true;
                 respawnZombies = false;
                 serverState.spawnZombies = true;
