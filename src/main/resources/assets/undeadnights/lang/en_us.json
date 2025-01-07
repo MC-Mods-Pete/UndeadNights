@@ -34,5 +34,7 @@
   "text.autoconfig.undeadnights.option.chanceForDemolitionZombieToSpawn": "Chance for a demolition zombie to spawn (in %)",
   "text.autoconfig.undeadnights.option.chanceForDemolitionZombieToSpawn.@Tooltip": "Chance in % for a demolition zombie to spawn | default: 6",
   "text.autoconfig.undeadnights.option.demolitionZombieTntStackSize": "Number of TNTs a demolition zombie will spawn with",
-  "text.autoconfig.undeadnights.option.demolitionZombieTntStackSize.@Tooltip": "TNT Stack size a demolition zombie will spawn with (0 = unlimited) | default: 3"
+  "text.autoconfig.undeadnights.option.demolitionZombieTntStackSize.@Tooltip": "TNT Stack size a demolition zombie will spawn with (0 = unlimited) | default: 3",
+  "text.autoconfig.undeadnights.option.printDebugMessages": "Log out debug messages",
+  "text.autoconfig.undeadnights.option.printDebugMessages.@Tooltip": "If enabled, debug messages will be logged out | default: disabled"
 }
