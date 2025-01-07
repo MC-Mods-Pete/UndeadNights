@@ -27,8 +27,6 @@ import net.petemc.undeadnights.entity.ModEntities;
 import net.petemc.undeadnights.sound.UndeadNightsSounds;
 import net.petemc.undeadnights.util.StateSaverAndLoader;
 
-import java.util.List;
-
 public class UndeadSpawner implements Spawner {
     private StateSaverAndLoader serverState = null;
 
@@ -92,6 +90,7 @@ public class UndeadSpawner implements Spawner {
             return 0;
         }
 
+        // mod currently only works for the Overworld
         if (!world.getDimension().hasSkyLight()) {
             return 0;
         }
@@ -115,9 +114,11 @@ public class UndeadSpawner implements Spawner {
             }
         }
 
-        int normalizedTimeOfDay = (int) world.getTimeOfDay() - (((int) (world.getTimeOfDay() / 24000L)) * 24000);
+        // calculate normalized time of day and set "Is It Night" flag
+        long normalizedTimeOfDay = world.getTimeOfDay() - ((world.getTimeOfDay() / 24000L) * 24000);
         boolean itIsNight = normalizedTimeOfDay >= 12000 && normalizedTimeOfDay < 22500;
 
+        // logic for additional waves in a horde night
         if (respawnZombies && UndeadNights.hordeNight && itIsNight) {
             if (tickCounter > 0) {
                 tickCounter--;
@@ -149,7 +150,7 @@ public class UndeadSpawner implements Spawner {
             }
         }
 
-        // check if it is night...
+        // is it night...?
         if (itIsNight) {
             // if a new night just started count down the days
             boolean nightIsStarting = (((world.getTimeOfDay() % 12000L) == 0) && ((world.getTimeOfDay() % 24000L) != 0));
