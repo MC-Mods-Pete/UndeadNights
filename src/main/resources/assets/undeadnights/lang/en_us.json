@@ -23,6 +23,8 @@
   "text.autoconfig.undeadnights.option.chanceForAdditionalWaves.@Tooltip": "Chance in % for another zombie wave | default: 5",
   "text.autoconfig.undeadnights.option.timeBetweenChecksForNewWaves": "Time between checks for additional waves",
   "text.autoconfig.undeadnights.option.timeBetweenChecksForNewWaves.@Tooltip": "Time in seconds between checks for a new wave (see value above) | default: 30",
+  "text.autoconfig.undeadnights.option.hordeNightsDisableSleeping": "Prevent players from sleeping through horde nights",
+  "text.autoconfig.undeadnights.option.hordeNightsDisableSleeping.@Tooltip": "If enabled, Players can't sleep through horde nights | default: enabled",
   "text.autoconfig.undeadnights.option.persistentZombies": "Make the horde zombies persistent",
   "text.autoconfig.undeadnights.option.persistentZombies.@Tooltip": "If enabled, , the horde zombies will be persistent and not despawn | default: enabled",
   "text.autoconfig.undeadnights.option.zombiesBurnInDaylight": "Will horde zombies burn in daylight",
@@ -32,5 +34,7 @@
   "text.autoconfig.undeadnights.option.chanceForDemolitionZombieToSpawn": "Chance for a demolition zombie to spawn (in %)",
   "text.autoconfig.undeadnights.option.chanceForDemolitionZombieToSpawn.@Tooltip": "Chance in % for a demolition zombie to spawn | default: 6",
   "text.autoconfig.undeadnights.option.demolitionZombieTntStackSize": "Number of TNTs a demolition zombie will spawn with",
-  "text.autoconfig.undeadnights.option.demolitionZombieTntStackSize.@Tooltip": "TNT Stack size a demolition zombie will spawn with (0 = unlimited) | default: 3"
+  "text.autoconfig.undeadnights.option.demolitionZombieTntStackSize.@Tooltip": "TNT Stack size a demolition zombie will spawn with (0 = unlimited) | default: 3",
+  "text.autoconfig.undeadnights.option.printDebugMessages": "Log out debug messages",
+  "text.autoconfig.undeadnights.option.printDebugMessages.@Tooltip": "If enabled, debug messages will be logged out | default: disabled"
 }

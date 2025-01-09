@@ -85,6 +85,10 @@ public class UndeadNightsConfig implements ConfigData
     public int timeBetweenChecksForNewWaves = 30;
 
     @ConfigEntry.Gui.Tooltip()
+    @Comment("If true, Players can't sleep through horde nights | default: true")
+    public boolean hordeNightsDisableSleeping = true;
+
+    @ConfigEntry.Gui.Tooltip()
     @Comment("If true, the horde zombies will be persistent and not despawn | default: true")
     public boolean persistentZombies = true;
 
@@ -103,4 +107,8 @@ public class UndeadNightsConfig implements ConfigData
     @ConfigEntry.Gui.Tooltip()
     @Comment("TNT Stack size a demolition zombie will spawn with (0 = unlimited) | default: 3")
     public int demolitionZombieTntStackSize = 3;
+
+    @ConfigEntry.Gui.Tooltip()
+    @Comment("If true, debug messages will be logged out | default: false")
+    public boolean printDebugMessages = false;
 }
