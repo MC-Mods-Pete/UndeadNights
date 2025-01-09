@@ -107,4 +107,8 @@ public class UndeadNightsConfig implements ConfigData
     @ConfigEntry.Gui.Tooltip()
     @Comment("TNT Stack size a demolition zombie will spawn with (0 = unlimited) | default: 3")
     public int demolitionZombieTntStackSize = 3;
+
+    @ConfigEntry.Gui.Tooltip()
+    @Comment("If true, debug messages will be logged out | default: false")
+    public boolean printDebugMessages = false;
 }
