@@ -50,7 +50,7 @@ public class DemolitionZombieIgniteGoal extends Goal {
 		BlockPos pos = this.demolitionZombie.getBlockPos();
 		if (tntCoolDown <= 0) {
 			if (this.target != null) {
-				if (this.demolitionZombie.squaredDistanceTo(this.demolitionZombie.getTarget()) < 12.0 && this.demolitionZombie.getVisibilityCache().canSee(this.target)
+				if (this.demolitionZombie.squaredDistanceTo(this.target) < 12.0 && this.demolitionZombie.getVisibilityCache().canSee(this.target)
 						&& this.demolitionZombie.getMainHandStack().getCount() > 0) {
 					TntEntity tntEntity = new TntEntity(this.demolitionZombie.getEntityWorld(), (double) pos.getX() + 0.5, pos.getY(), (double) pos.getZ() + 0.5, this.demolitionZombie);
 					this.demolitionZombie.getEntityWorld().spawnEntity(tntEntity);
