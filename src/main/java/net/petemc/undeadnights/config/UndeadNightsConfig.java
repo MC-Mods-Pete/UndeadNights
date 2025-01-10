@@ -73,16 +73,16 @@ public class UndeadNightsConfig implements ConfigData
     public int hordeZombiesSpawnCap = 80;
 
     @ConfigEntry.Gui.Tooltip()
-    @Comment("Time in seconds between possible additional waves in a horde night | default: 70")
-    public int cooldownBetweenWaves = 70;
+    @Comment("If true, additional waves can spawn in a horde night | default: true")
+    public boolean spawnAdditionalWaves = true;
 
     @ConfigEntry.Gui.Tooltip()
-    @Comment("Chance in % for another zombie wave | default: 5")
-    public int chanceForAdditionalWaves = 5;
+    @Comment("Time in seconds between check for next possible wave in a horde night | default: 45")
+    public int cooldownBetweenWaves = 45;
 
     @ConfigEntry.Gui.Tooltip()
-    @Comment("Time in seconds between checks for a new wave (see value above) | default: 30")
-    public int timeBetweenChecksForNewWaves = 30;
+    @Comment("Chance in % for another zombie wave | default: 7")
+    public int chanceForAdditionalWaves = 7;
 
     @ConfigEntry.Gui.Tooltip()
     @Comment("If true, Players can't sleep through horde nights | default: true")
@@ -107,6 +107,18 @@ public class UndeadNightsConfig implements ConfigData
     @ConfigEntry.Gui.Tooltip()
     @Comment("TNT Stack size a demolition zombie will spawn with (0 = unlimited) | default: 3")
     public int demolitionZombieTntStackSize = 3;
+
+    @ConfigEntry.Gui.Tooltip()
+    @Comment("If true, elite zombies will spawn | default: true")
+    public boolean spawnEliteZombies = true;
+
+    @ConfigEntry.Gui.Tooltip()
+    @Comment("Chance in % for an elite zombie to spawn | default: 3")
+    public int chanceForEliteZombieToSpawn = 3;
+
+    @ConfigEntry.Gui.Tooltip()
+    @Comment("If true, single stray horde zombies can spawn on normal nights | default: true")
+    public boolean spawnStrayHordeZombies = true;
 
     @ConfigEntry.Gui.Tooltip()
     @Comment("If true, debug messages will be logged out | default: false")

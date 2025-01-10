@@ -42,8 +42,8 @@ public class DemolitionZombieEntity extends ZombieEntity {
                 .add(EntityAttributes.GENERIC_MAX_HEALTH, 40.0)       // default 20.0
                 .add(EntityAttributes.GENERIC_FOLLOW_RANGE, 128.0)    // default 35.0
                 .add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 0.30f)  // default 0.23000000417232513
-                .add(EntityAttributes.GENERIC_ATTACK_DAMAGE, 4.0)     // default 3.0
-                .add(EntityAttributes.GENERIC_ARMOR, 3.0)             // default 2.0
+                .add(EntityAttributes.GENERIC_ATTACK_DAMAGE, 5.0)     // default 3.0
+                .add(EntityAttributes.GENERIC_ARMOR, 4.0)             // default 2.0
                 .add(EntityAttributes.ZOMBIE_SPAWN_REINFORCEMENTS);
     }
 
