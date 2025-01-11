@@ -1,10 +1,10 @@
 package net.petemc.undeadnights;
 
 import net.fabricmc.api.ModInitializer;
-
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry;
 import net.petemc.undeadnights.config.UndeadNightsConfig;
 import net.petemc.undeadnights.entity.DemolitionZombieEntity;
+import net.petemc.undeadnights.entity.EliteZombieEntity;
 import net.petemc.undeadnights.entity.HordeZombieEntity;
 import net.petemc.undeadnights.entity.ModEntities;
 import net.petemc.undeadnights.sound.UndeadNightsSounds;
@@ -29,6 +29,7 @@ public class UndeadNights implements ModInitializer {
 		ServerEntityUnLoadEvent.registerEvent();
 		FabricDefaultAttributeRegistry.register(ModEntities.HORDE_ZOMBIE, HordeZombieEntity.createHordeZombieAttributes());
 		FabricDefaultAttributeRegistry.register(ModEntities.DEMOLITION_ZOMBIE, DemolitionZombieEntity.createHordeZombieAttributes());
+		FabricDefaultAttributeRegistry.register(ModEntities.ELITE_ZOMBIE, EliteZombieEntity.createHordeZombieAttributes());
 		UndeadNightsSounds.registerSounds();
 	}
 }

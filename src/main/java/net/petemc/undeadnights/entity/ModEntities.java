@@ -16,4 +16,8 @@ public class ModEntities {
             Identifier.of(UndeadNights.MOD_ID, "demolition_zombie"),
             EntityType.Builder.create(DemolitionZombieEntity::new, SpawnGroup.MONSTER)
                     .dimensions(0.6f, 1.95f).build(Identifier.of(UndeadNights.MOD_ID, "demolition_zombie").toString()));
+    public static final EntityType<EliteZombieEntity> ELITE_ZOMBIE = Registry.register(Registries.ENTITY_TYPE,
+            Identifier.of(UndeadNights.MOD_ID, "elite_zombie"),
+            EntityType.Builder.create(EliteZombieEntity::new, SpawnGroup.MONSTER)
+                    .dimensions(0.6f, 1.95f).build(Identifier.of(UndeadNights.MOD_ID, "elite_zombie").toString()));
 }

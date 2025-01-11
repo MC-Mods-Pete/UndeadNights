@@ -5,6 +5,7 @@ import net.minecraft.entity.*;
 import net.minecraft.entity.ai.goal.*;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.attribute.EntityAttributes;
+import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.mob.HostileEntity;
 import net.minecraft.entity.mob.ZombieEntity;
 import net.minecraft.entity.mob.ZombifiedPiglinEntity;
@@ -17,8 +18,9 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.packet.s2c.play.EntitySpawnS2CPacket;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.Hand;
 import net.minecraft.util.math.random.Random;
-import net.minecraft.world.Difficulty;
 import net.minecraft.world.LocalDifficulty;
 import net.minecraft.world.ServerWorldAccess;
 import net.minecraft.world.World;
@@ -29,8 +31,8 @@ import java.time.LocalDate;
 import java.util.EnumSet;
 
 
-public class HordeZombieEntity extends ZombieEntity {
-    public HordeZombieEntity(EntityType<? extends ZombieEntity> entityType, World world) {
+public class EliteZombieEntity extends ZombieEntity {
+    public EliteZombieEntity(EntityType<? extends ZombieEntity> entityType, World world) {
         super(entityType, world);
     }
 
@@ -67,9 +69,9 @@ public class HordeZombieEntity extends ZombieEntity {
         return HostileEntity.createHostileAttributes()
                 .add(EntityAttributes.GENERIC_MAX_HEALTH, 40.0)       // default 20.0
                 .add(EntityAttributes.GENERIC_FOLLOW_RANGE, 128.0)    // default 35.0
-                .add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 0.30f)  // default 0.23000000417232513
-                .add(EntityAttributes.GENERIC_ATTACK_DAMAGE, 5.0)     // default 3.0
-                .add(EntityAttributes.GENERIC_ARMOR, 4.0)             // default 2.0
+                .add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 0.32f)  // default 0.23000000417232513
+                .add(EntityAttributes.GENERIC_ATTACK_DAMAGE, 6.0)     // default 3.0
+                .add(EntityAttributes.GENERIC_ARMOR, 5.0)             // default 2.0
                 .add(EntityAttributes.ZOMBIE_SPAWN_REINFORCEMENTS);
     }
 
@@ -101,47 +103,22 @@ public class HordeZombieEntity extends ZombieEntity {
 
     @Override
     protected void initEquipment(Random random, LocalDifficulty localDifficulty) {
+        this.setStackInHand(Hand.MAIN_HAND, new ItemStack(Items.DIAMOND_SWORD));
         initCustomEquipment(random, localDifficulty);
-        if (random.nextFloat() < (this.getWorld().getDifficulty() == Difficulty.HARD ? 0.07F : 0.03F)) {
-            int i = random.nextInt(3);
-            if (i == 0) {
-                this.equipStack(EquipmentSlot.MAINHAND, new ItemStack(Items.IRON_SWORD));
-            }
-            if (i == 1) {
-                this.equipStack(EquipmentSlot.MAINHAND, new ItemStack(Items.IRON_AXE));
-            }
-        }
     }
+
     protected void initCustomEquipment(Random random, LocalDifficulty localDifficulty) {
-        if (random.nextFloat() < 0.2F * localDifficulty.getClampedLocalDifficulty()) {
-            int i = random.nextInt(2);
-            float f = this.getWorld().getDifficulty() == Difficulty.HARD ? 0.2F : 0.45F;
-            if (random.nextFloat() < 0.095F) {
-                i++;
-            }
-            if (random.nextFloat() < 0.095F) {
-                i++;
-            }
-            if (random.nextFloat() < 0.095F) {
-                i++;
-            }
-            boolean bl = true;
             for (EquipmentSlot equipmentSlot : EquipmentSlot.values()) {
                 if (equipmentSlot.getType() == EquipmentSlot.Type.HUMANOID_ARMOR) {
                     ItemStack itemStack = this.getEquippedStack(equipmentSlot);
-                    if (!bl && random.nextFloat() < f) {
-                        break;
-                    }
-                    bl = false;
                     if (itemStack.isEmpty()) {
-                        Item item = getEquipmentForSlot(equipmentSlot, i);
+                        Item item = getEquipmentForSlot(equipmentSlot, 4);
                         if (item != null) {
                             this.equipStack(equipmentSlot, new ItemStack(item));
                         }
                     }
                 }
             }
-        }
     }
 
     @Override
@@ -184,11 +161,11 @@ public class HordeZombieEntity extends ZombieEntity {
     }
 
     static class ChasePlayerGoal extends Goal {
-        private final HordeZombieEntity hordeZombie;
+        private final EliteZombieEntity hordeZombie;
         @Nullable
         private LivingEntity target;
 
-        public ChasePlayerGoal(HordeZombieEntity hordeZombie) {
+        public ChasePlayerGoal(EliteZombieEntity hordeZombie) {
             this.hordeZombie = hordeZombie;
             this.setControls(EnumSet.of(Control.JUMP, Control.MOVE));
         }
