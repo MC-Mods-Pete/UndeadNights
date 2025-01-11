@@ -29,7 +29,6 @@ import net.petemc.undeadnights.entity.ai.goal.DemolitionZombieIgniteGoal;
 import org.jetbrains.annotations.Nullable;
 
 import java.time.LocalDate;
-import java.time.temporal.ChronoField;
 import java.util.EnumSet;
 
 public class DemolitionZombieEntity extends ZombieEntity {
@@ -42,8 +41,8 @@ public class DemolitionZombieEntity extends ZombieEntity {
                 .add(EntityAttributes.GENERIC_MAX_HEALTH, 40.0)       // default 20.0
                 .add(EntityAttributes.GENERIC_FOLLOW_RANGE, 128.0)    // default 35.0
                 .add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 0.30f)  // default 0.23000000417232513
-                .add(EntityAttributes.GENERIC_ATTACK_DAMAGE, 4.0)     // default 3.0
-                .add(EntityAttributes.GENERIC_ARMOR, 3.0)             // default 2.0
+                .add(EntityAttributes.GENERIC_ATTACK_DAMAGE, 5.0)     // default 3.0
+                .add(EntityAttributes.GENERIC_ARMOR, 4.0)             // default 2.0
                 .add(EntityAttributes.ZOMBIE_SPAWN_REINFORCEMENTS);
     }
 
@@ -83,8 +82,8 @@ public class DemolitionZombieEntity extends ZombieEntity {
 
         if (this.getEquippedStack(EquipmentSlot.HEAD).isEmpty()) {
             LocalDate localDate = LocalDate.now();
-            int i = localDate.get(ChronoField.DAY_OF_MONTH);
-            int j = localDate.get(ChronoField.MONTH_OF_YEAR);
+            int i = localDate.getDayOfMonth();
+            int j = localDate.getMonth().getValue();
             if (j == 10 && i == 31 && random.nextFloat() < 0.25F) {
                 this.equipStack(EquipmentSlot.HEAD, new ItemStack(random.nextFloat() < 0.1F ? Blocks.JACK_O_LANTERN : Blocks.CARVED_PUMPKIN));
                 this.armorDropChances[EquipmentSlot.HEAD.getEntitySlotId()] = 0.0F;
