@@ -16,7 +16,6 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
@@ -30,11 +29,9 @@ import net.petemc.undeadnights.entity.ai.goal.DemolitionZombieIgniteGoal;
 import org.jetbrains.annotations.Nullable;
 
 import java.time.LocalDate;
-import java.time.temporal.ChronoField;
 import java.util.EnumSet;
 
 public class DemolitionZombieEntity extends ZombieEntity {
-
     public DemolitionZombieEntity(EntityType<? extends ZombieEntity> entityType, World world) {
         super(entityType, world);
     }
@@ -44,8 +41,8 @@ public class DemolitionZombieEntity extends ZombieEntity {
                 .add(EntityAttributes.MAX_HEALTH, 40.0)       // default 20.0
                 .add(EntityAttributes.FOLLOW_RANGE, 128.0)    // default 35.0
                 .add(EntityAttributes.MOVEMENT_SPEED, 0.30f)  // default 0.23000000417232513
-                .add(EntityAttributes.ATTACK_DAMAGE, 4.0)     // default 3.0
-                .add(EntityAttributes.ARMOR, 3.0)             // default 2.0
+                .add(EntityAttributes.ATTACK_DAMAGE, 5.0)     // default 3.0
+                .add(EntityAttributes.ARMOR, 4.0)             // default 2.0
                 .add(EntityAttributes.SPAWN_REINFORCEMENTS);
     }
 
@@ -54,8 +51,8 @@ public class DemolitionZombieEntity extends ZombieEntity {
         this.goalSelector.add(1, new SwimGoal(this));
         this.goalSelector.add(2, new DemolitionZombieIgniteGoal(this));
         this.goalSelector.add(3, new ZombieAttackGoal(this, 1.0, false));
-        this.goalSelector.add(4, new DemolitionZombieEntity.ChasePlayerGoal(this));
-        this.goalSelector.add(5, new MoveThroughVillageGoal(this, 1.0, true, 4, this::canBreakDoors));
+        this.goalSelector.add(4, new ChasePlayerGoal(this));
+        this.goalSelector.add(6, new MoveThroughVillageGoal(this, 1.0, true, 4, this::canBreakDoors));
         this.goalSelector.add(7, new WanderAroundFarGoal(this, 1.0));
         this.targetSelector.add(1, new RevengeGoal(this).setGroupRevenge(ZombifiedPiglinEntity.class));
         this.targetSelector.add(2, new ActiveTargetGoal<>(this, PlayerEntity.class, false, false));
@@ -72,7 +69,7 @@ public class DemolitionZombieEntity extends ZombieEntity {
         float f = difficulty.getClampedLocalDifficulty();
         this.setCanPickUpLoot(random.nextFloat() < 0.55F * f);
         if (entityData == null) {
-            entityData = new ZombieEntity.ZombieData(false, false);
+            entityData = new ZombieData(false, false);
         }
 
         if (entityData instanceof ZombieData) {
@@ -83,8 +80,8 @@ public class DemolitionZombieEntity extends ZombieEntity {
 
         if (this.getEquippedStack(EquipmentSlot.HEAD).isEmpty()) {
             LocalDate localDate = LocalDate.now();
-            int i = localDate.get(ChronoField.DAY_OF_MONTH);
-            int j = localDate.get(ChronoField.MONTH_OF_YEAR);
+            int i = localDate.getDayOfMonth();
+            int j = localDate.getMonth().getValue();
             if (j == 10 && i == 31 && random.nextFloat() < 0.25F) {
                 this.equipStack(EquipmentSlot.HEAD, new ItemStack(random.nextFloat() < 0.1F ? Blocks.JACK_O_LANTERN : Blocks.CARVED_PUMPKIN));
                 this.armorDropChances[EquipmentSlot.HEAD.getEntitySlotId()] = 0.0F;
@@ -96,7 +93,6 @@ public class DemolitionZombieEntity extends ZombieEntity {
     @Override
     public boolean damage(ServerWorld world, DamageSource source, float amount) {
         if (this.isOnFire()) {
-            //World world = this.getEntityWorld();
             BlockPos pos = this.getBlockPos();
             this.remove(RemovalReason.KILLED);
             world.createExplosion(this, pos.getX(), pos.getY(), pos.getZ(), 5, true, World.ExplosionSourceType.TNT);

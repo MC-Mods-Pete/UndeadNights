@@ -6,10 +6,7 @@ import net.minecraft.client.render.entity.EntityRendererFactory;
 import net.minecraft.client.render.entity.ZombieBaseEntityRenderer;
 import net.minecraft.client.render.entity.model.EntityModelLayers;
 import net.minecraft.client.render.entity.model.ZombieEntityModel;
-import net.minecraft.client.render.entity.state.EntityRenderState;
-import net.minecraft.client.render.entity.state.LivingEntityRenderState;
 import net.minecraft.client.render.entity.state.ZombieEntityRenderState;
-import net.minecraft.util.Identifier;
 import net.petemc.undeadnights.entity.DemolitionZombieEntity;
 
 @Environment(EnvType.CLIENT)
