@@ -146,6 +146,15 @@ public class UndeadSpawner implements SpecialSpawner {
                 daysCounter = daysCounter - 1;
                 serverState.daysCounter = daysCounter;
                 serverState.markDirty();
+                if ((daysCounter > 0) && (UndeadNightsConfig.INSTANCE.sendHordeNightsCountdownMessage)) {
+                    for (ServerPlayerEntity player : world.getPlayers()) {
+                        if (daysCounter > 1) {
+                            player.sendMessage(Text.literal(daysCounter + " nights remaining until the next Night of the Undead!"));
+                        } else {
+                            player.sendMessage(Text.literal("This is the last night before the next Night of the Undead!"));
+                        }
+                    }
+                }
                 if (UndeadNightsConfig.INSTANCE.printDebugMessages) {
                     UndeadNights.LOGGER.info("Night is coming, NormalizedTimeOfDay: {}, TimeOfDay: {} DaysCounter: {}", normalizedTimeOfDay, world.getTimeOfDay(), daysCounter);
                 }
@@ -204,7 +213,7 @@ public class UndeadSpawner implements SpecialSpawner {
                     serverState.spawnZombies = true;
                     serverState.markDirty();
                     for (ServerPlayerEntity player : world.getPlayers()) {
-                        player.sendMessage(Text.literal("The sun is starting to set and you feel uneasy about the coming night...").formatted(Formatting.RED));
+                        player.sendMessage(Text.literal("The sun is starting to set and you feel uneasy about the coming night...").withColor(-65536));
                     }
                     if (UndeadNightsConfig.INSTANCE.printDebugMessages) {
                         UndeadNights.LOGGER.info("The coming night is a Horde Night, HordeNight: {}", UndeadNights.hordeNight);
@@ -265,7 +274,7 @@ public class UndeadSpawner implements SpecialSpawner {
                         if (UndeadNights.globalSpawnCounter < UndeadNightsConfig.INSTANCE.hordeZombiesSpawnCap) {
                             if (i == 0) {
                                 player.getWorld().playSound(null, player.getX(), player.getY(), player.getZ(), UndeadNightsSounds.HORDE_SCREAM, SoundCategory.HOSTILE, 4.0F, 1);
-                                player.sendMessage(Text.literal("A horde has spawned!").formatted(Formatting.RED));
+                                player.sendMessage(Text.literal("A horde has spawned!").withColor(-65536));
                                 if (UndeadNightsConfig.INSTANCE.printDebugMessages) {
                                     UndeadNights.LOGGER.info("A Horde has spanned!");
                                 }
