@@ -18,10 +18,7 @@ import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.packet.s2c.play.EntitySpawnS2CPacket;
 import net.minecraft.util.math.random.Random;
-import net.minecraft.world.Difficulty;
-import net.minecraft.world.LocalDifficulty;
-import net.minecraft.world.ServerWorldAccess;
-import net.minecraft.world.World;
+import net.minecraft.world.*;
 import net.petemc.undeadnights.config.UndeadNightsConfig;
 import org.jetbrains.annotations.Nullable;
 
@@ -166,27 +163,29 @@ public class HordeZombieEntity extends ZombieEntity {
     @Override
     public void pushAwayFrom(Entity entity) {
         super.pushAwayFrom(entity);
-        double y = 0.18F;
-        if (y < 0.0) {
-            y = -y;
-        }
-        double f = y;
-        if (f >= 0.01F) {
-            f = Math.sqrt(f);
-            y /= f;
-            double g = 1.0 / f;
-            if (g > 1.0) {
-                g = 1.0;
+        if ((this.getVelocity().getX() != 0.0f) || (this.getVelocity().getZ() != 0.0f)) {
+            double y = 0.18F;
+            if (y < 0.0) {
+                y = -y;
             }
+            double f = y;
+            if (f >= 0.01F) {
+                f = Math.sqrt(f);
+                y /= f;
+                double g = 1.0 / f;
+                if (g > 1.0) {
+                    g = 1.0;
+                }
 
-            y *= g;
-            y *= 0.05F;
-            if (!this.hasPassengers() && this.isPushable()) {
-                this.addVelocity(0, y, 0);
-            }
+                y *= g;
+                y *= 0.05F;
+                if (!this.hasPassengers() && this.isPushable()) {
+                    this.addVelocity(0, y, 0);
+                }
 
-            if (!entity.hasPassengers() && entity.isPushable()) {
-                entity.addVelocity(0, y, 0);
+                if (!entity.hasPassengers() && entity.isPushable()) {
+                    entity.addVelocity(0, y, 0);
+                }
             }
         }
     }

@@ -11,7 +11,7 @@
   "text.autoconfig.undeadnights.option.chanceForHordeNight": "Chance for a horde night (in %)",
   "text.autoconfig.undeadnights.option.chanceForHordeNight.@Tooltip": "Chance in % for a horde night | default: 100",
   "text.autoconfig.undeadnights.option.sendHordeNightsCountdownMessage": "Send message to player with countdown till next horde night",
-  "text.autoconfig.undeadnights.option.sendHordeNightsCountdownMessage.@Tooltip": "If enabled, each night a message will be send to the player how many night before the next Horde Night | default: disabled",
+  "text.autoconfig.undeadnights.option.sendHordeNightsCountdownMessage.@Tooltip": "If enabled, each night a message will be sent to the player how many night before the next Horde Night | default: disabled",
   "text.autoconfig.undeadnights.option.distanceMin": "Minimum zombie wave spawn distance",
   "text.autoconfig.undeadnights.option.distanceMin.@Tooltip": "Minimum distance a horde will spawn away from the player | default: 70",
   "text.autoconfig.undeadnights.option.distanceMax": "Maximum zombie wave spawn distance",
