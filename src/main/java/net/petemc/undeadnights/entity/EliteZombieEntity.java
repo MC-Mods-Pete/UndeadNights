@@ -1,120 +1,114 @@
 package net.petemc.undeadnights.entity;
 
-import net.minecraft.block.Blocks;
-import net.minecraft.entity.*;
-import net.minecraft.entity.ai.goal.*;
-import net.minecraft.entity.attribute.DefaultAttributeContainer;
-import net.minecraft.entity.attribute.EntityAttributes;
-import net.minecraft.entity.mob.HostileEntity;
-import net.minecraft.entity.mob.ZombieEntity;
-import net.minecraft.entity.mob.ZombifiedPiglinEntity;
-import net.minecraft.entity.passive.IronGolemEntity;
-import net.minecraft.entity.passive.MerchantEntity;
-import net.minecraft.entity.passive.TurtleEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.network.packet.s2c.play.EntitySpawnS2CPacket;
-import net.minecraft.util.Hand;
-import net.minecraft.util.math.random.Random;
-import net.minecraft.world.LocalDifficulty;
-import net.minecraft.world.ServerWorldAccess;
-import net.minecraft.world.World;
-import net.petemc.undeadnights.config.UndeadNightsConfig;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.DifficultyInstance;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.*;
+import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.ai.goal.*;
+import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
+import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
+import net.minecraft.world.entity.animal.Chicken;
+import net.minecraft.world.entity.animal.IronGolem;
+import net.minecraft.world.entity.monster.Monster;
+import net.minecraft.world.entity.monster.Zombie;
+import net.minecraft.world.entity.monster.ZombifiedPiglin;
+import net.minecraft.world.entity.npc.WanderingTrader;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.ServerLevelAccessor;
+import net.minecraft.world.level.block.Blocks;
+import net.petemc.undeadnights.Config;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.time.LocalDate;
-import java.util.EnumSet;
+import java.time.temporal.ChronoField;
+import java.util.List;
 
 
-public class EliteZombieEntity extends ZombieEntity {
-    public EliteZombieEntity(EntityType<? extends ZombieEntity> entityType, World world) {
-        super(entityType, world);
+public class EliteZombieEntity extends Zombie {
+    public EliteZombieEntity(EntityType<? extends Zombie> entityType, Level level) {
+        super(entityType, level);
     }
 
     @Nullable
     @Override
-    public EntityData initialize(
-            ServerWorldAccess world, LocalDifficulty difficulty, SpawnReason spawnReason,
-            @Nullable EntityData entityData, @Nullable NbtCompound entityNbt) {
-        Random random = world.getRandom();
-        this.setLeftHanded(random.nextFloat() < 0.05F);
-        float f = difficulty.getClampedLocalDifficulty();
-        this.setCanPickUpLoot(random.nextFloat() < 0.55F * f);
-        if (entityData == null) {
-            entityData = new ZombieData(false, false);
+    public SpawnGroupData finalizeSpawn(ServerLevelAccessor pLevel, DifficultyInstance pDifficulty, MobSpawnType pReason, @javax.annotation.Nullable SpawnGroupData pSpawnData, @javax.annotation.Nullable CompoundTag pDataTag) {
+        RandomSource randomsource = pLevel.getRandom();
+        pSpawnData = super.finalizeSpawn(pLevel, pDifficulty, pReason, pSpawnData, pDataTag);
+        float f = pDifficulty.getSpecialMultiplier();
+        this.setCanPickUpLoot(randomsource.nextFloat() < 0.55F * f);
+        if (pSpawnData == null) {
+            pSpawnData = new Zombie.ZombieGroupData(false, false);
         }
 
-        if (entityData instanceof ZombieData) {
-            this.setCanBreakDoors(this.shouldBreakDoors() && random.nextFloat() < f * 0.1F);
-            this.initEquipment(random, difficulty);
-            this.updateEnchantments(random, difficulty);
+        if (pSpawnData instanceof Zombie.ZombieGroupData) {
+            this.setCanBreakDoors(true);
+            this.populateDefaultEquipmentSlots(randomsource, pDifficulty);
+            this.populateDefaultEquipmentEnchantments(randomsource, pDifficulty);
         }
 
-        if (this.getEquippedStack(EquipmentSlot.HEAD).isEmpty()) {
-            LocalDate localDate = LocalDate.now();
-            int i = localDate.getDayOfMonth();
-            int j = localDate.getMonth().getValue();
-            if (j == 10 && i == 31 && random.nextFloat() < 0.25F) {
-                this.equipStack(EquipmentSlot.HEAD, new ItemStack(random.nextFloat() < 0.1F ? Blocks.JACK_O_LANTERN : Blocks.CARVED_PUMPKIN));
-                this.armorDropChances[EquipmentSlot.HEAD.getEntitySlotId()] = 0.0F;
+        if (this.getItemBySlot(EquipmentSlot.HEAD).isEmpty()) {
+            LocalDate localdate = LocalDate.now();
+            int i = localdate.getDayOfMonth();
+            int j = localdate.getMonth().getValue();
+            if (j == 10 && i == 31 && randomsource.nextFloat() < 0.25F) {
+                this.setItemSlot(EquipmentSlot.HEAD, new ItemStack(randomsource.nextFloat() < 0.1F ? Blocks.JACK_O_LANTERN : Blocks.CARVED_PUMPKIN));
+                this.armorDropChances[EquipmentSlot.HEAD.getIndex()] = 0.0F;
             }
         }
-        return entityData;
+
+        this.handleAttributes(f);
+        this.setBaby(false);
+        return pSpawnData;
     }
 
-    public static DefaultAttributeContainer.Builder createHordeZombieAttributes() {
-        return HostileEntity.createHostileAttributes()
-                .add(EntityAttributes.GENERIC_MAX_HEALTH, 40.0)       // default 20.0
-                .add(EntityAttributes.GENERIC_FOLLOW_RANGE, 128.0)    // default 35.0
-                .add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 0.32f)  // default 0.23000000417232513
-                .add(EntityAttributes.GENERIC_ATTACK_DAMAGE, 6.0)     // default 3.0
-                .add(EntityAttributes.GENERIC_ARMOR, 5.0)             // default 2.0
-                .add(EntityAttributes.ZOMBIE_SPAWN_REINFORCEMENTS);
-    }
-
-    @Override
-    protected void initCustomGoals() {
-        this.goalSelector.add(1, new SwimGoal(this));
-        this.goalSelector.add(2, new ZombieAttackGoal(this, 1.0, false));
-        //this.goalSelector.add(3, new PounceAtTargetGoal(this, 0.4F));
-        this.goalSelector.add(4, new EliteZombieEntity.ChasePlayerGoal(this));
-        this.goalSelector.add(6, new MoveThroughVillageGoal(this, 1.0, true, 4, this::canBreakDoors));
-        this.goalSelector.add(7, new WanderAroundFarGoal(this, 1.0));
-        //this.goalSelector.add(14, new ZombiePounceAtTargetGo(instance, config.pounceVelocity));
-        this.targetSelector.add(1, new RevengeGoal(this).setGroupRevenge(ZombifiedPiglinEntity.class));
-        this.targetSelector.add(2, new ActiveTargetGoal<>(this, PlayerEntity.class, false, false));
-        this.targetSelector.add(3, new ActiveTargetGoal<>(this, MerchantEntity.class, false));
-        this.targetSelector.add(3, new ActiveTargetGoal<>(this, IronGolemEntity.class, true));
-        this.targetSelector.add(5, new ActiveTargetGoal<>(this, TurtleEntity.class, 10, true, false, TurtleEntity.BABY_TURTLE_ON_LAND_FILTER));
+    public static AttributeSupplier.@NotNull Builder createAttributes() {
+        return Monster.createMonsterAttributes()
+                .add(Attributes.MAX_HEALTH, 40.0F)          // default 20.F
+                .add(Attributes.FOLLOW_RANGE, 128.0D)       // default 35.0D
+                .add(Attributes.MOVEMENT_SPEED, (double) 0.32F)    // default 0.23F
+                .add(Attributes.ATTACK_DAMAGE, 6.0D)        // default 3.0
+                .add(Attributes.ARMOR, 5.0D)                // default 2.0
+                .add(Attributes.SPAWN_REINFORCEMENTS_CHANCE);
     }
 
     @Override
-    public void onSpawnPacket(EntitySpawnS2CPacket packet) {
-        super.onSpawnPacket(packet);
+    protected void addBehaviourGoals() {
+        this.goalSelector.addGoal(1, new FloatGoal(this));
+        this.goalSelector.addGoal(2, new ZombieAttackGoal(this, 1.0, false));
+        //this.goalSelector.addGoal(3, new PounceAtTargetGoal(this, 0.4F));
+        this.goalSelector.addGoal(4, new EliteZombieEntity.ChasePlayerGoal(this));
+        this.goalSelector.addGoal(6, new MoveThroughVillageGoal(this, 1.0, true, 4, this::canBreakDoors));
+        this.goalSelector.addGoal(7, new WaterAvoidingRandomStrollGoal(this, 1.0));
+        this.targetSelector.addGoal(1, new HurtByTargetGoal(this).setAlertOthers(ZombifiedPiglin.class));
+        this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, false, false));
+        this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, WanderingTrader.class, false));
+        this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, IronGolem.class, true));
+        //this.targetSelector.addGoal(5, new NearestAttackableTargetGoal<>(this, TurtleEntity.class, 10, true, false, TurtleEntity.BABY_TURTLE_ON_LAND_FILTER));
     }
+
 
     @Override
-    protected boolean canConvertInWater() {
-        return false;
+    protected void populateDefaultEquipmentSlots(@NotNull RandomSource pRandom, @NotNull DifficultyInstance pDifficulty) {
+        this.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.DIAMOND_SWORD));
+        initCustomEquipment(pRandom, pDifficulty);
     }
 
-    @Override
-    protected void initEquipment(Random random, LocalDifficulty localDifficulty) {
-        this.setStackInHand(Hand.MAIN_HAND, new ItemStack(Items.DIAMOND_SWORD));
-        initCustomEquipment(random, localDifficulty);
-    }
-
-    protected void initCustomEquipment(Random random, LocalDifficulty localDifficulty) {
+    protected void initCustomEquipment(RandomSource random, DifficultyInstance pDifficulty) {
             for (EquipmentSlot equipmentSlot : EquipmentSlot.values()) {
                 if (equipmentSlot.getType() == EquipmentSlot.Type.ARMOR) {
-                    ItemStack itemStack = this.getEquippedStack(equipmentSlot);
+                    ItemStack itemStack = this.getItemBySlot(equipmentSlot);
                     if (itemStack.isEmpty()) {
                         Item item = getEquipmentForSlot(equipmentSlot, 4);
                         if (item != null) {
-                            this.equipStack(equipmentSlot, new ItemStack(item));
+                            this.setItemSlot(equipmentSlot, new ItemStack(item));
                         }
                     }
                 }
@@ -122,8 +116,13 @@ public class EliteZombieEntity extends ZombieEntity {
     }
 
     @Override
-    protected boolean burnsInDaylight() {
-        return UndeadNightsConfig.INSTANCE.zombiesBurnInDaylight;
+    protected boolean convertsInWater() {
+        return false;
+    }
+
+    @Override
+    protected boolean isSunSensitive() {
+        return Config.zombiesBurnInDaylight;
     }
 
     @Override
@@ -133,29 +132,31 @@ public class EliteZombieEntity extends ZombieEntity {
     }
 
     @Override
-    public void pushAwayFrom(Entity entity) {
-        super.pushAwayFrom(entity);
-        double y = 0.18F;
-        if (y < 0.0) {
-            y = -y;
-        }
-        double f = y;
-        if (f >= 0.01F) {
-            f = Math.sqrt(f);
-            y /= f;
-            double g = 1.0 / f;
-            if (g > 1.0) {
-                g = 1.0;
+    public void push(@NotNull Entity entity) {
+        super.push(entity);
+        if ((this.getDeltaMovement().x != 0.0f) || (this.getDeltaMovement().z != 0.0f)) {
+            double y = 0.18F;
+            if (y < 0.0) {
+                y = -y;
             }
+            double f = y;
+            if (f >= 0.01F) {
+                f = Math.sqrt(f);
+                y /= f;
+                double g = 1.0 / f;
+                if (g > 1.0) {
+                    g = 1.0;
+                }
 
-            y *= g;
-            y *= 0.05F;
-            if (!this.hasPassengers() && this.isPushable()) {
-                this.addVelocity(0, y, 0);
-            }
+                y *= g;
+                y *= 0.05F;
+                if (!this.isVehicle() && this.isPushable()) {
+                    this.push(0, y, 0);
+                }
 
-            if (!entity.hasPassengers() && entity.isPushable()) {
-                entity.addVelocity(0, y, 0);
+                if (!entity.isVehicle() && entity.isPushable()) {
+                    entity.push(0, y, 0);
+                }
             }
         }
     }
@@ -167,13 +168,13 @@ public class EliteZombieEntity extends ZombieEntity {
 
         public ChasePlayerGoal(EliteZombieEntity hordeZombie) {
             this.hordeZombie = hordeZombie;
-            this.setControls(EnumSet.of(Control.JUMP, Control.MOVE));
+            //todo this.setControls(EnumSet.of(Control.JUMP, Control.MOVE));
         }
 
         @Override
-        public boolean canStart() {
+        public boolean canUse() {
             this.target = this.hordeZombie.getTarget();
-            return this.target instanceof PlayerEntity;
+            return this.target instanceof Player;
         }
 
         @Override
@@ -184,7 +185,7 @@ public class EliteZombieEntity extends ZombieEntity {
         @Override
         public void tick() {
             assert this.target != null;
-            this.hordeZombie.getLookControl().lookAt(this.target.getX(), this.target.getEyeY(), this.target.getZ());
+            this.hordeZombie.getLookControl().setLookAt(this.target.getX(), this.target.getEyeY(), this.target.getZ());
         }
     }
 }

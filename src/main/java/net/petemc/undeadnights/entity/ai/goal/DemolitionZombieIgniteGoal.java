@@ -1,13 +1,13 @@
 package net.petemc.undeadnights.entity.ai.goal;
 
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.TntEntity;
-import net.minecraft.entity.ai.goal.Goal;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.util.math.BlockPos;
-import net.petemc.undeadnights.config.UndeadNightsConfig;
+import net.minecraft.core.BlockPos;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.goal.Goal;
+import net.minecraft.world.entity.item.PrimedTnt;
+import net.minecraft.world.entity.player.Player;
+import net.petemc.undeadnights.Config;
 import net.petemc.undeadnights.entity.DemolitionZombieEntity;
 import org.jetbrains.annotations.Nullable;
 
@@ -22,12 +22,12 @@ public class DemolitionZombieIgniteGoal extends Goal {
 	}
 
 	@Override
-	public boolean canStart() {
+	public boolean canUse() {
 		LivingEntity target = this.demolitionZombie.getTarget();
-		if (!(target instanceof PlayerEntity)) {
+		if (!(target instanceof Player)) {
 			return false;
 		}
-		return this.demolitionZombie.squaredDistanceTo(target) < 12.0;
+		return this.demolitionZombie.getPerceivedTargetDistanceSquareForMeleeAttack(target) < 12.0;
 	}
 
 	@Override
@@ -41,22 +41,22 @@ public class DemolitionZombieIgniteGoal extends Goal {
 	}
 
 	@Override
-	public boolean shouldRunEveryTick() {
+	public boolean requiresUpdateEveryTick() {
 		return true;
 	}
 
 	@Override
 	public void tick() {
-		BlockPos pos = this.demolitionZombie.getBlockPos();
+		BlockPos pos = this.demolitionZombie.blockPosition();
 		if (tntCoolDown <= 0) {
 			if (this.target != null) {
-				if (this.demolitionZombie.squaredDistanceTo(this.target) < 12.0 && this.demolitionZombie.getVisibilityCache().canSee(this.target)
-						&& this.demolitionZombie.getMainHandStack().getCount() > 0) {
-					TntEntity tntEntity = new TntEntity(this.demolitionZombie.getEntityWorld(), (double) pos.getX() + 0.5, pos.getY(), (double) pos.getZ() + 0.5, this.demolitionZombie);
-					this.demolitionZombie.getEntityWorld().spawnEntity(tntEntity);
-					this.demolitionZombie.getEntityWorld().playSound(null, tntEntity.getX(), tntEntity.getY(), tntEntity.getZ(), SoundEvents.ENTITY_TNT_PRIMED, SoundCategory.BLOCKS, 1.0F, 1.0F);
-					if (UndeadNightsConfig.INSTANCE.demolitionZombieTntStackSize != 0) {
-						this.demolitionZombie.getMainHandStack().decrement(1);
+				if (this.demolitionZombie.getPerceivedTargetDistanceSquareForMeleeAttack(this.target) < 12.0 && this.demolitionZombie.getSensing().hasLineOfSight(this.target)
+						&& this.demolitionZombie.getMainHandItem().getCount() > 0) {
+					PrimedTnt tntEntity = new PrimedTnt(this.demolitionZombie.level(), (double) pos.getX() + 0.5, pos.getY(), (double) pos.getZ() + 0.5, this.demolitionZombie);
+					this.demolitionZombie.level().addFreshEntity(tntEntity);
+					this.demolitionZombie.level().playSound(null, tntEntity.getX(), tntEntity.getY(), tntEntity.getZ(), SoundEvents.TNT_PRIMED, SoundSource.BLOCKS, 1.0F, 1.0F);
+					if (Config.demolitionZombieTntStackSize != 0) {
+						this.demolitionZombie.getMainHandItem().shrink(1);
 					}
 					tntCoolDown = 5 * 20;
 				}

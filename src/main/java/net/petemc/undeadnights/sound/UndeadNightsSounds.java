@@ -1,21 +1,26 @@
 package net.petemc.undeadnights.sound;
 
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.Registry;
-import net.minecraft.sound.SoundEvent;
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.registries.DeferredRegister;
+import net.minecraftforge.registries.ForgeRegistries;
 import net.petemc.undeadnights.UndeadNights;
 
+import java.util.function.Supplier;
+
 public class UndeadNightsSounds {
+        public static final DeferredRegister<SoundEvent> SOUND_EVENTS =
+            DeferredRegister.create(ForgeRegistries.SOUND_EVENTS, UndeadNights.MOD_ID);
 
-    public static final SoundEvent HORDE_SCREAM = registerSoundEvent("horde_scream");
+    public static final Supplier<SoundEvent> HORDE_SCREAM = registerSoundEvent("horde_scream");
 
-    private static SoundEvent registerSoundEvent(String name) {
-        Identifier id = Identifier.of(UndeadNights.MOD_ID, name);
-        return Registry.register(Registries.SOUND_EVENT, id, SoundEvent.of(id));
+    private static Supplier<SoundEvent> registerSoundEvent(String name) {
+        ResourceLocation id = ResourceLocation.tryBuild(UndeadNights.MOD_ID, name);
+        return SOUND_EVENTS.register(name, () -> SoundEvent.createVariableRangeEvent(id));
     }
 
-    public static void registerSounds() {
-        UndeadNights.LOGGER.info("Registering Sounds for " + UndeadNights.MOD_ID);
+    public static void register(IEventBus eventBus) {
+        SOUND_EVENTS.register(eventBus);
     }
 }

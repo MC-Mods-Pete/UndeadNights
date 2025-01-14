@@ -1,63 +1,64 @@
 package net.petemc.undeadnights.world.spawner;
 
-import net.minecraft.block.BlockState;
-import net.minecraft.entity.EntityData;
-import net.minecraft.entity.SpawnReason;
-import net.minecraft.registry.tag.FluidTags;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.text.Style;
-import net.minecraft.text.Text;
-import net.minecraft.util.Colors;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.random.Random;
-import net.minecraft.world.Heightmap;
-import net.minecraft.world.LocalDifficulty;
-import net.minecraft.world.World;
-import net.minecraft.world.spawner.Spawner;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.tags.FluidTags;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.DifficultyInstance;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.level.CustomSpawner;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.levelgen.Heightmap;
+import net.petemc.undeadnights.Config;
 import net.petemc.undeadnights.UndeadNights;
-import net.petemc.undeadnights.config.UndeadNightsConfig;
 import net.petemc.undeadnights.entity.DemolitionZombieEntity;
 import net.petemc.undeadnights.entity.EliteZombieEntity;
 import net.petemc.undeadnights.entity.HordeZombieEntity;
 import net.petemc.undeadnights.entity.ModEntities;
 import net.petemc.undeadnights.sound.UndeadNightsSounds;
 import net.petemc.undeadnights.util.StateSaverAndLoader;
+import org.jetbrains.annotations.NotNull;
 
-public class UndeadSpawner implements Spawner {
-    private StateSaverAndLoader serverState = null;
+import java.awt.desktop.UserSessionEvent;
+
+public class UndeadSpawner implements CustomSpawner {
+    //private StateSaverAndLoader UndeadNights.serverState = null;
 
     public static int hordeSpawnCounter = 0;
-    private int daysCounter = 0;
+    //private int daysCounter = 0;
 
-    private static int randomValue;
+    //private static int randomValue;
 
-    private static boolean spawnZombies = false;
-    private static boolean respawnZombies = false;
+    //private static boolean spawnZombies = false;
+    //private static boolean respawnZombies = false;
 
-    private int tickCounter = 60;
+    //private int tickCounter = 60;
     private double x = 0;
     private double z = 0;
     private double d = 0;
 
-    private boolean checkSpawnLocation(ServerWorld world, double x, double y, double z) {
-        BlockPos.Mutable mutable = new BlockPos.Mutable(x, y, z);
+    private boolean checkSpawnLocation(ServerLevel level, double x, double y, double z) {
+        BlockPos.MutableBlockPos mutable = new BlockPos.MutableBlockPos(x, y, z);
 
-        BlockState blockState = world.getBlockState(mutable);
-        boolean bl = blockState.blocksMovement();
-        boolean bl2 = blockState.getFluidState().isIn(FluidTags.WATER);
-        return (bl && !bl2);
+        BlockState blockState = level.getBlockState(mutable);
+        boolean flag1 = blockState.blocksMotion();
+        boolean flag2 = blockState.getFluidState().is(FluidTags.WATER);
+        return (flag1 && !flag2);
     }
 
-    private BlockPos getBlockPosWithDistance(BlockPos pos, World world, int distanceMin, int distanceMax) {
-        final Random random = world.random;
+    private BlockPos getBlockPosWithDistance(BlockPos pos, Level level, int distanceMin, int distanceMax) {
+        final RandomSource random = level.random;
         double _d = 0;
         double _x = 0;
         double _z = 0;
-        _d = random.nextBetween(distanceMin, distanceMax);
-        _x = random.nextBetween(0, (int) _d);
+        _d = random.nextIntBetweenInclusive(distanceMin, distanceMax);
+        _x = random.nextIntBetweenInclusive(0, (int) _d);
         if (_x == 0) {
             _z = _d;
         } else {
@@ -70,71 +71,65 @@ public class UndeadSpawner implements Spawner {
             _z = _z * -1;
         }
 
-        return new BlockPos(pos.getX() + (int) _x, world.getTopY(Heightmap.Type.WORLD_SURFACE, pos.getX() + (int) _x, pos.getZ() + (int) _z), pos.getZ() + (int) _z);
+        return new BlockPos(pos.getX() + (int) _x, level.getHeight(Heightmap.Types.WORLD_SURFACE, pos.getX() + (int) _x, pos.getZ() + (int) _z), pos.getZ() + (int) _z);
     }
 
     @Override
-    public int spawn(ServerWorld world, boolean spawnMonsters, boolean spawnAnimals) {
+    public int tick(@NotNull ServerLevel level, boolean spawnMonsters, boolean spawnAnimals) {
         // check if Horde Nights and monster spawning is enabled
-        if (!spawnMonsters || !UndeadNightsConfig.INSTANCE.undeadNightsEnabled) {
+        if (!spawnMonsters || !Config.undeadNightsEnabled) {
             return 0;
         }
 
         // Are we in the Overworld?
-        if (!world.getDimension().hasSkyLight()) {
+        if (!level.dimensionType().hasSkyLight()) {
             return 0;
         }
-
+        
         // Initialize everything
-        if (serverState == null) {
-            serverState = StateSaverAndLoader.getServerState(world.getServer());
-            daysCounter = serverState.daysCounter;
-            if (daysCounter > UndeadNightsConfig.INSTANCE.daysBetweenHordeNights) {
-                daysCounter = UndeadNightsConfig.INSTANCE.daysBetweenHordeNights;
-                serverState.daysCounter = daysCounter;
+        if (UndeadNights.serverState == null) {
+            UndeadNights.serverState = StateSaverAndLoader.getServerState(level.getServer());
+            if (UndeadNights.serverState.getDaysCounter() > Config.daysBetweenHordeNights) {
+                UndeadNights.serverState.setDaysCounter(Config.daysBetweenHordeNights);
             }
-            UndeadNights.hordeNight = serverState.hordeNight;
-            spawnZombies = serverState.spawnZombies;
-            respawnZombies = serverState.respawnZombies;
-            hordeSpawnCounter = serverState.hordeSpawnCounter;
-            if (UndeadNightsConfig.INSTANCE.printDebugMessages) {
-                UndeadNights.LOGGER.info("INIT CurrentDaysCounter: {} CurrentHordeSpawnCounter: {} HordeNight: {}", daysCounter, hordeSpawnCounter, UndeadNights.hordeNight);
-                UndeadNights.LOGGER.info("INIT spawnZombies: {} respawnZombies: {}", spawnZombies, respawnZombies);
+
+            if (Config.printDebugMessages) {
+                UndeadNights.LOGGER.info("INIT DaysCounter: {} HordeNight: {}", UndeadNights.serverState.getDaysCounter(), UndeadNights.serverState.getHordeNight());
+                UndeadNights.LOGGER.info("INIT SpawnZombies: {} RespawnZombies: {}", UndeadNights.serverState.getSpawnZombies(), UndeadNights.serverState.getRespawnZombies());
             }
         }
 
         // calculate normalized time of day and set "Is It Night" flag
-        long normalizedTimeOfDay = world.getTimeOfDay() - ((world.getTimeOfDay() / 24000L) * 24000);
+        long normalizedTimeOfDay = level.getDayTime() - ((level.getDayTime() / 24000L) * 24000);
         boolean itIsNight = normalizedTimeOfDay >= 12000 && normalizedTimeOfDay < 22500;
+
+        final RandomSource random = level.random;
+        int randomValue = 0;
 
         // is it night...?
         if (itIsNight) {
             // if it's already a horde night, check if we should respawn new waves
-            if (respawnZombies && UndeadNights.hordeNight && UndeadNightsConfig.INSTANCE.spawnAdditionalWaves) {
-                if (tickCounter > 0) {
-                    tickCounter--;
-                    serverState.tickCounter = tickCounter;
-                    serverState.markDirty();
+            if (UndeadNights.serverState.getRespawnZombies() && UndeadNights.serverState.getHordeNight() && Config.spawnAdditionalWaves) {
+                if (UndeadNights.serverState.getTickCounter() > 0) {
+                    UndeadNights.serverState.setTickCounter(UndeadNights.serverState.getTickCounter() - 1);
+                    //UndeadNights.serverState.tickCounter = tickCounter;
+                    //UndeadNights.serverState.setDirty();
                     return 0;
                 } else {
-                    tickCounter = UndeadNightsConfig.INSTANCE.cooldownBetweenWaves * 20;
-                    serverState.tickCounter = tickCounter;
-                    serverState.markDirty();
+                    UndeadNights.serverState.setTickCounter(Config.cooldownBetweenWaves * 20);
+                    //UndeadNights.serverState.tickCounter = tickCounter;
+                    //UndeadNights.serverState.setDirty();
                 }
-                randomValue = MathHelper.nextInt(Random.create(), 1, 100);
-                if (randomValue > (100 - UndeadNightsConfig.INSTANCE.chanceForAdditionalWaves)) {
-                    if (UndeadNightsConfig.INSTANCE.printDebugMessages) {
+
+                randomValue = random.nextIntBetweenInclusive(1, 100);
+                if (randomValue > (100 - Config.chanceForAdditionalWaves)) {
+                    if (Config.printDebugMessages) {
                         UndeadNights.LOGGER.info("New Wave, randomValue was: {}", randomValue);
                     }
-                    spawnZombies = true;
-                    respawnZombies = false;
-                    hordeSpawnCounter = 0;
-                    serverState.hordeSpawnCounter = 0;
-                    serverState.spawnZombies = true;
-                    serverState.respawnZombies = false;
-                    serverState.markDirty();
+                    UndeadNights.serverState.setSpawnZombies(true);
+                    UndeadNights.serverState.setRespawnZombies(false);
                 } else {
-                    if (UndeadNightsConfig.INSTANCE.printDebugMessages) {
+                    if (Config.printDebugMessages) {
                         UndeadNights.LOGGER.info("RandomValue: {}", randomValue);
                     }
                     return 0;
@@ -142,58 +137,55 @@ public class UndeadSpawner implements Spawner {
             }
 
             // if a new night just started count down the days
-            boolean nightIsStarting = (((world.getTimeOfDay() % 12000L) == 0) && ((world.getTimeOfDay() % 24000L) != 0));
-            if ((nightIsStarting) && (daysCounter >= 1)) {
-                daysCounter = daysCounter - 1;
-                serverState.daysCounter = daysCounter;
-                serverState.markDirty();
-                if ((daysCounter > 0) && (UndeadNightsConfig.INSTANCE.sendHordeNightsCountdownMessage)) {
-                    for (ServerPlayerEntity player : world.getPlayers()) {
-                        if (daysCounter > 1) {
-                            player.sendMessage(Text.literal(daysCounter + " nights remaining until the next Night of the Undead!"));
+            boolean nightIsStarting = (((level.getDayTime() % 12000L) == 0) && ((level.getDayTime() % 24000L) != 0));
+            if ((nightIsStarting) && (UndeadNights.serverState.getDaysCounter() >= 1)) {
+                UndeadNights.serverState.setDaysCounter(UndeadNights.serverState.getDaysCounter() - 1);
+                if ((UndeadNights.serverState.getDaysCounter() > 0) && (Config.sendHordeNightsCountdownMessage)) {
+                    for (ServerPlayer player : level.getPlayers(LivingEntity::isAlive)) {
+                        if (UndeadNights.serverState.getDaysCounter() > 1) {
+                            player.sendSystemMessage(Component.literal(UndeadNights.serverState.getDaysCounter() + " nights remaining until the next Night of the Undead!"));
                         } else {
-                            player.sendMessage(Text.literal("This is the last night before the next Night of the Undead!"));
+                            player.sendSystemMessage(Component.literal("This is the last night before the next Night of the Undead!"));
                         }
                     }
                 }
-                if (UndeadNightsConfig.INSTANCE.printDebugMessages) {
-                    UndeadNights.LOGGER.info("Night is coming, NormalizedTimeOfDay: {}, TimeOfDay: {} DaysCounter: {}", normalizedTimeOfDay, world.getTimeOfDay(), daysCounter);
+                if (Config.printDebugMessages) {
+                    UndeadNights.LOGGER.info("Night is coming, NormalizedTimeOfDay: {}, TimeOfDay: {} DaysCounter: {}", normalizedTimeOfDay, level.getDayTime(), UndeadNights.serverState.getDaysCounter());
                 }
             }
 
             // spawn stray zombies for non horde nights
-            if (daysCounter > 0 && !UndeadNights.hordeNight) {
-                if (UndeadNightsConfig.INSTANCE.spawnStrayHordeZombies && (UndeadNights.globalSpawnCounter < UndeadNightsConfig.INSTANCE.hordeZombiesSpawnCap)) {
-                    if (tickCounter > 0) {
-                        tickCounter--;
-                        serverState.tickCounter = tickCounter;
-                        serverState.markDirty();
+            if (UndeadNights.serverState.getDaysCounter() > 0 && !UndeadNights.serverState.getHordeNight()) {
+                if (Config.spawnStrayHordeZombies && (UndeadNights.globalSpawnCounter < Config.hordeZombiesSpawnCap)) {
+                    if (UndeadNights.serverState.getTickCounter() > 0) {
+                        UndeadNights.serverState.setTickCounter(UndeadNights.serverState.getTickCounter() - 1);
+                        //UndeadNights.serverState.tickCounter = tickCounter;
+                        //UndeadNights.serverState.setDirty();
                         return 0;
                     } else {
-                        tickCounter = 5 * 20;
-                        serverState.tickCounter = tickCounter;
-                        serverState.markDirty();
+                        UndeadNights.serverState.setTickCounter(5 * 20);
+                        //UndeadNights.serverState.tickCounter = tickCounter;
+                        //UndeadNights.serverState.setDirty();
                     }
-                    final Random random = world.random;
+                    //final Random random = level.random;
                     if (!(random.nextFloat() < 0.03F)) {
                         return 0;
                     }
-                    for (ServerPlayerEntity player : world.getPlayers()) {
-                        BlockPos pos = getBlockPosWithDistance(player.getBlockPos(), world, UndeadNightsConfig.INSTANCE.distanceMin, UndeadNightsConfig.INSTANCE.distanceMax);
-                        if (!checkSpawnLocation(world, pos.getX(), pos.getY() - 1, pos.getZ())) {
+                    for (ServerPlayer player : level.getPlayers(LivingEntity::isAlive)) {
+                        BlockPos pos = getBlockPosWithDistance(player.blockPosition(), level, Config.distanceMin, Config.distanceMax);
+                        if (!checkSpawnLocation(level, pos.getX(), pos.getY() - 1, pos.getZ())) {
                             return 0;
                         } else {
-                            HordeZombieEntity e = new HordeZombieEntity(ModEntities.HORDE_ZOMBIE, world);
-                            e.setPosition(pos.getX(), pos.getY(), pos.getZ());
-                            if (UndeadNightsConfig.INSTANCE.persistentZombies) {
-                                e.setPersistent();
+                            HordeZombieEntity e = new HordeZombieEntity(ModEntities.HORDE_ZOMBIE.get(), level);
+                            e.setPos(pos.getX(), pos.getY(), pos.getZ());
+                            if (Config.persistentZombies) {
+                                e.setPersistenceRequired();
                             }
-                            EntityData entityData = null;
-                            LocalDifficulty localDifficulty = world.getLocalDifficulty(player.getBlockPos());
-                            entityData = e.initialize(world, localDifficulty, SpawnReason.NATURAL, entityData, null);
+                            DifficultyInstance localDifficulty = level.getCurrentDifficultyAt(player.blockPosition());
+                            e.finalizeSpawn(level, localDifficulty, MobSpawnType.NATURAL, null, null);
                             e.setTarget(player);
-                            world.spawnEntity(e);
-                            if (UndeadNightsConfig.INSTANCE.printDebugMessages) {
+                            level.addFreshEntity(e);
+                            if (Config.printDebugMessages) {
                                 UndeadNights.LOGGER.info("A stray horde zombie spawned!");
                             }
                         }
@@ -204,36 +196,36 @@ public class UndeadSpawner implements Spawner {
 
             // this is the first tick of a new night
             if (nightIsStarting) {
-                randomValue = MathHelper.nextInt(Random.create(), 1, 100);
-                if (!(randomValue > (100 - UndeadNightsConfig.INSTANCE.chanceForHordeNight))) {
+                randomValue = random.nextIntBetweenInclusive(1, 100);
+                if (!(randomValue > (100 - Config.chanceForHordeNight))) {
                     return 0;
                 } else {
-                    UndeadNights.hordeNight = true;
-                    serverState.hordeNight = true;
-                    spawnZombies = true;
-                    serverState.spawnZombies = true;
-                    serverState.markDirty();
-                    for (ServerPlayerEntity player : world.getPlayers()) {
-                        player.sendMessage(Text.literal("The sun is starting to set and you feel uneasy about the coming night...").setStyle(Style.EMPTY.withColor(Colors.RED)));
+                    UndeadNights.serverState.setHordeNight(true);
+                    //UndeadNights.serverState.hordeNight = true;
+                    UndeadNights.serverState.setSpawnZombies(true);
+                    //UndeadNights.serverState.spawnZombies = true;
+                    //UndeadNights.serverState.setDirty();
+                    for (ServerPlayer player : level.getPlayers(LivingEntity::isAlive)) {
+                        player.sendSystemMessage(Component.literal("The sun is starting to set and you feel uneasy about the coming night...").withStyle(ChatFormatting.RED));
                     }
-                    if (UndeadNightsConfig.INSTANCE.printDebugMessages) {
-                        UndeadNights.LOGGER.info("The coming night is a Horde Night, HordeNight: {}", UndeadNights.hordeNight);
+                    if (Config.printDebugMessages) {
+                        UndeadNights.LOGGER.info("The coming night is a Horde Night, HordeNight: {}", UndeadNights.serverState.getHordeNight());
                     }
                 }
             }
 
             // spawn the waves
-            final Random random = world.random;
-            if (spawnZombies && UndeadNights.hordeNight && normalizedTimeOfDay >= 12542) {
-                for (ServerPlayerEntity player : world.getPlayers()) {
-                    BlockPos pos = player.getBlockPos();
+            //final Random random = level.random;
+            if (UndeadNights.serverState.getSpawnZombies() && UndeadNights.serverState.getHordeNight() && normalizedTimeOfDay >= 12542) {
+                for (ServerPlayer player : level.getPlayers(LivingEntity::isAlive)) {
+                    BlockPos pos = player.blockPosition();
                     boolean foundHordeSpawnLocation = false;
 
                     for (int i= 0; i < 20; i++){
                         // for the given min/max distance, calculate the x and z coordinates deltas
                         if (d == 0) {
-                            d = random.nextBetween(UndeadNightsConfig.INSTANCE.distanceMin, UndeadNightsConfig.INSTANCE.distanceMax);
-                            x = random.nextBetween(0, (int) d);
+                            d = random.nextIntBetweenInclusive(Config.distanceMin, Config.distanceMax);
+                            x = random.nextIntBetweenInclusive(0, (int) d);
                             if (x == 0) {
                                 z = d;
                             } else {
@@ -247,15 +239,15 @@ public class UndeadSpawner implements Spawner {
                             }
                         }
 
-                        pos = player.getBlockPos().add((int) x, 0, (int) z);
-                        pos = new BlockPos(pos.getX(), world.getTopY(Heightmap.Type.WORLD_SURFACE, pos.getX(), pos.getZ()), pos.getZ());
-                        foundHordeSpawnLocation = checkSpawnLocation(world, pos.getX(), pos.getY() - 1, pos.getZ());
+                        pos = player.blockPosition().offset((int) x, 0, (int) z);
+                        pos = new BlockPos(pos.getX(), level.getHeight(Heightmap.Types.WORLD_SURFACE, pos.getX(), pos.getZ()), pos.getZ());
+                        foundHordeSpawnLocation = checkSpawnLocation(level, pos.getX(), pos.getY() - 1, pos.getZ());
                         if (!foundHordeSpawnLocation) {
                             d = 0;
                             x = 0;
                             z = 0;
                         } else {
-                            if (UndeadNightsConfig.INSTANCE.printDebugMessages) {
+                            if (Config.printDebugMessages) {
                                 UndeadNights.LOGGER.info("It took {} tries to find a valid Horde spawn location for player: {}", i + 1, player.getName().getString());
                             }
                             break;
@@ -267,115 +259,112 @@ public class UndeadSpawner implements Spawner {
                         break;
                     }
 
-                    if (UndeadNightsConfig.INSTANCE.printDebugMessages) {
+                    if (Config.printDebugMessages) {
                         UndeadNights.LOGGER.info("Spawning Horde for player: {}", player.getName().getString());
                     }
 
-                    for (int i = 0; i < UndeadNightsConfig.INSTANCE.zombieHordeWaveSize; i++) {
-                        if (UndeadNights.globalSpawnCounter < UndeadNightsConfig.INSTANCE.hordeZombiesSpawnCap) {
+                    for (int i = 0; i < Config.zombieHordeWaveSize; i++) {
+                        if (UndeadNights.globalSpawnCounter < Config.hordeZombiesSpawnCap) {
                             if (i == 0) {
-                                player.getWorld().playSound(null, player.getX(), player.getY(), player.getZ(), UndeadNightsSounds.HORDE_SCREAM, SoundCategory.HOSTILE, 4.0F, 1);
-                                player.sendMessage(Text.literal("A horde has spawned!").setStyle(Style.EMPTY.withColor(Colors.RED)));
-                                if (UndeadNightsConfig.INSTANCE.printDebugMessages) {
+                                player.level().playSound(null, player.getX(), player.getY(), player.getZ(), UndeadNightsSounds.HORDE_SCREAM.get(), SoundSource.HOSTILE, 4.0F, 1);
+                                player.sendSystemMessage(Component.literal("A horde has spawned!").withStyle(ChatFormatting.RED));
+                                if (Config.printDebugMessages) {
                                     UndeadNights.LOGGER.info("A Horde has spanned!");
                                 }
                             }
 
                             // spawn demolition zombies
-                            randomValue = MathHelper.nextInt(Random.create(), 1, 100);
-                            if (UndeadNightsConfig.INSTANCE.spawnDemolitionZombies && (randomValue > (100 - UndeadNightsConfig.INSTANCE.chanceForDemolitionZombieToSpawn))) {
-                                DemolitionZombieEntity e = new DemolitionZombieEntity(ModEntities.DEMOLITION_ZOMBIE, world);
+                            randomValue = random.nextIntBetweenInclusive(1, 100);
+                            if (Config.spawnDemolitionZombies && (randomValue > (100 - Config.chanceForDemolitionZombieToSpawn))) {
+                                DemolitionZombieEntity e = new DemolitionZombieEntity(ModEntities.DEMOLITION_ZOMBIE.get(), level);
                                 int deltaX = random.nextInt(8);
                                 int deltaZ = random.nextInt(8);
-                                e.setPosition(pos.getX() + deltaX, world.getTopY(Heightmap.Type.WORLD_SURFACE, pos.getX() + deltaX, pos.getZ() + deltaZ), pos.getZ() + deltaZ);
-                                if (UndeadNightsConfig.INSTANCE.persistentZombies) {
-                                    e.setPersistent();
+                                e.setPos(pos.getX() + deltaX, level.getHeight(Heightmap.Types.WORLD_SURFACE, pos.getX() + deltaX, pos.getZ() + deltaZ), pos.getZ() + deltaZ);
+                                if (Config.persistentZombies) {
+                                    e.setPersistenceRequired();
                                 }
+                                DifficultyInstance localDifficulty = level.getCurrentDifficultyAt(player.blockPosition());
+                                e.finalizeSpawn(level, localDifficulty, MobSpawnType.NATURAL, null, null);
                                 e.setTarget(player);
-                                EntityData entityData = null;
-                                LocalDifficulty localDifficulty = world.getLocalDifficulty(player.getBlockPos());
-                                entityData = e.initialize(world, localDifficulty, SpawnReason.NATURAL, entityData, null);
-                                world.spawnEntity(e);
+                                level.addFreshEntity(e);
                                 i++;
-                                if (i >= UndeadNightsConfig.INSTANCE.zombieHordeWaveSize) {
+                                if (i >= Config.zombieHordeWaveSize) {
                                     break;
                                 }
                             }
                             // spawn elite horde zombies
-                            randomValue = MathHelper.nextInt(Random.create(), 1, 100);
-                            if (UndeadNightsConfig.INSTANCE.spawnEliteZombies && (randomValue > (100 - UndeadNightsConfig.INSTANCE.chanceForEliteZombieToSpawn))) {
-                                EliteZombieEntity e = new EliteZombieEntity(ModEntities.ELITE_ZOMBIE, world);
+                            randomValue = random.nextIntBetweenInclusive(1, 100);
+                            if (Config.spawnEliteZombies && (randomValue > (100 - Config.chanceForEliteZombieToSpawn))) {
+                                EliteZombieEntity e = new EliteZombieEntity(ModEntities.ELITE_ZOMBIE.get(), level);
                                 int deltaX = random.nextInt(8);
                                 int deltaZ = random.nextInt(8);
-                                e.setPosition(pos.getX() + deltaX, world.getTopY(Heightmap.Type.WORLD_SURFACE, pos.getX() + deltaX, pos.getZ() + deltaZ), pos.getZ() + deltaZ);
-                                if (UndeadNightsConfig.INSTANCE.persistentZombies) {
-                                    e.setPersistent();
+                                e.setPos(pos.getX() + deltaX, level.getHeight(Heightmap.Types.WORLD_SURFACE, pos.getX() + deltaX, pos.getZ() + deltaZ), pos.getZ() + deltaZ);
+                                if (Config.persistentZombies) {
+                                    e.setPersistenceRequired();
                                 }
-                                EntityData entityData = null;
-                                LocalDifficulty localDifficulty = world.getLocalDifficulty(player.getBlockPos());
-                                entityData = e.initialize(world, localDifficulty, SpawnReason.NATURAL, entityData, null);
+                                DifficultyInstance localDifficulty = level.getCurrentDifficultyAt(player.blockPosition());
+                                e.finalizeSpawn(level, localDifficulty, MobSpawnType.NATURAL, null, null);
                                 e.setTarget(player);
-                                world.spawnEntity(e);
+                                level.addFreshEntity(e);
                                 i++;
-                                if (i >= UndeadNightsConfig.INSTANCE.zombieHordeWaveSize) {
+                                if (i >= Config.zombieHordeWaveSize) {
                                     break;
                                 }
                             }
 
                             // spawn normal horde zombies
-                            HordeZombieEntity e = new HordeZombieEntity(ModEntities.HORDE_ZOMBIE, world);
+                            HordeZombieEntity e = new HordeZombieEntity(ModEntities.HORDE_ZOMBIE.get(), level);
                             int deltaX = random.nextInt(8);
                             int deltaZ = random.nextInt(8);
-                            e.setPosition(pos.getX() + deltaX, world.getTopY(Heightmap.Type.WORLD_SURFACE, pos.getX() + deltaX, pos.getZ() + deltaZ), pos.getZ() + deltaZ);
-                            if (UndeadNightsConfig.INSTANCE.persistentZombies) {
-                                e.setPersistent();
+                            e.setPos(pos.getX() + deltaX, level.getHeight(Heightmap.Types.WORLD_SURFACE, pos.getX() + deltaX, pos.getZ() + deltaZ), pos.getZ() + deltaZ);
+                            if (Config.persistentZombies) {
+                                e.setPersistenceRequired();
                             }
-                            EntityData entityData = null;
-                            LocalDifficulty localDifficulty = world.getLocalDifficulty(player.getBlockPos());
-                            entityData = e.initialize(world, localDifficulty, SpawnReason.NATURAL, entityData, null);
+                            DifficultyInstance localDifficulty = level.getCurrentDifficultyAt(player.blockPosition());
+                            e.finalizeSpawn(level, localDifficulty, MobSpawnType.NATURAL, null, null);
                             e.setTarget(player);
-                            world.spawnEntity(e);
+                            level.addFreshEntity(e);
 
                         } else {
-                            UndeadNights.LOGGER.info("{} Horde Zombie spawned, spawncap reached.", UndeadNightsConfig.INSTANCE.hordeZombiesSpawnCap);
+                            UndeadNights.LOGGER.info("{} Horde Zombie spawned, spawncap reached.", Config.hordeZombiesSpawnCap);
                             break;
                         }
                     }
-                    if (!(UndeadNights.globalSpawnCounter < UndeadNightsConfig.INSTANCE.hordeZombiesSpawnCap)) {
+                    if (!(UndeadNights.globalSpawnCounter < Config.hordeZombiesSpawnCap)) {
                         break;
                     }
                 }
-                tickCounter = UndeadNightsConfig.INSTANCE.cooldownBetweenWaves * 20;
-                spawnZombies = false;
-                respawnZombies = true;
-                serverState.spawnZombies = false;
-                serverState.respawnZombies = true;
-                daysCounter = UndeadNightsConfig.INSTANCE.daysBetweenHordeNights;
-                serverState.daysCounter = daysCounter;
-                serverState.markDirty();
+                UndeadNights.serverState.setTickCounter(Config.cooldownBetweenWaves * 20);
+                UndeadNights.serverState.setSpawnZombies(false);
+                UndeadNights.serverState.setRespawnZombies(true);
+                //UndeadNights.serverState.spawnZombies = false;
+                //UndeadNights.serverState.respawnZombies = true;
+                UndeadNights.serverState.setDaysCounter(Config.daysBetweenHordeNights);
+                //UndeadNights.serverState.daysCounter = daysCounter;
+                //UndeadNights.serverState.setDirty();
                 d = 0;
                 x = 0;
                 z = 0;
             }
         } else {
-            if (UndeadNights.hordeNight) {
-                for (ServerPlayerEntity player : world.getPlayers()) {
-                    player.sendMessage(Text.literal("You feel at ease, this Night of the Undead is over..."));
+            if (UndeadNights.serverState.getHordeNight()) {
+                for (ServerPlayer player : level.getPlayers(LivingEntity::isAlive)) {
+                    player.sendSystemMessage(Component.literal("You feel at ease, this Night of the Undead is over..."));
                 }
-                if (UndeadNightsConfig.INSTANCE.printDebugMessages) {
-                    UndeadNights.LOGGER.info("The Night of the Undead is over, TimeOfDay: {} DaysCounter: {} GlobalSpawnCounter: {}", world.getTimeOfDay(), daysCounter, UndeadNights.globalSpawnCounter);
+                if (Config.printDebugMessages) {
+                    UndeadNights.LOGGER.info("The Night of the Undead is over, TimeOfDay: {} DaysCounter: {} GlobalSpawnCounter: {}", level.getDayTime(), UndeadNights.serverState.getDaysCounter(), UndeadNights.globalSpawnCounter);
                 }
             }
-            UndeadNights.hordeNight = false;
-            serverState.hordeNight = false;
-            serverState.markDirty();
-            spawnZombies = true;
-            respawnZombies = false;
-            serverState.spawnZombies = true;
-            serverState.respawnZombies = false;
-            hordeSpawnCounter = 0;
-            serverState.hordeSpawnCounter = hordeSpawnCounter;
-            serverState.markDirty();
+            UndeadNights.serverState.setHordeNight(false);
+            //UndeadNights.serverState.hordeNight = false;
+            //UndeadNights.serverState.setDirty();
+            UndeadNights.serverState.setSpawnZombies(true);
+            UndeadNights.serverState.setRespawnZombies(false);
+            //UndeadNights.serverState.spawnZombies = true;
+            //UndeadNights.serverState.respawnZombies = false;
+            //hordeSpawnCounter = 0;
+            //UndeadNights.serverState.hordeSpawnCounter = hordeSpawnCounter;
+            //UndeadNights.serverState.setDirty();
         }
 
         return 0;
