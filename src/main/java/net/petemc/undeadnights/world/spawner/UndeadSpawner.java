@@ -7,9 +7,8 @@ import net.minecraft.registry.tag.FluidTags;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
-import net.minecraft.text.Style;
 import net.minecraft.text.Text;
-import net.minecraft.util.Colors;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.random.Random;
@@ -214,7 +213,7 @@ public class UndeadSpawner implements SpecialSpawner {
                     serverState.spawnZombies = true;
                     serverState.markDirty();
                     for (ServerPlayerEntity player : world.getPlayers()) {
-                        player.sendMessage(Text.literal("The sun is starting to set and you feel uneasy about the coming night...").setStyle(Style.EMPTY.withColor(Colors.RED)));
+                        player.sendMessage(Text.literal("The sun is starting to set and you feel uneasy about the coming night...").formatted(Formatting.RED));
                     }
                     if (UndeadNightsConfig.INSTANCE.printDebugMessages) {
                         UndeadNights.LOGGER.info("The coming night is a Horde Night, HordeNight: {}", UndeadNights.hordeNight);
@@ -275,7 +274,7 @@ public class UndeadSpawner implements SpecialSpawner {
                         if (UndeadNights.globalSpawnCounter < UndeadNightsConfig.INSTANCE.hordeZombiesSpawnCap) {
                             if (i == 0) {
                                 player.getWorld().playSound(null, player.getX(), player.getY(), player.getZ(), UndeadNightsSounds.HORDE_SCREAM, SoundCategory.HOSTILE, 4.0F, 1);
-                                player.sendMessage(Text.literal("A horde has spawned!").setStyle(Style.EMPTY.withColor(Colors.RED)));
+                                player.sendMessage(Text.literal("A horde has spawned!").formatted(Formatting.RED));
                                 if (UndeadNightsConfig.INSTANCE.printDebugMessages) {
                                     UndeadNights.LOGGER.info("A Horde has spanned!");
                                 }

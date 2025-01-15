@@ -173,7 +173,7 @@ public class DemolitionZombieEntity extends ZombieEntity {
 
     @Override
     protected boolean burnsInDaylight() {
-        return false;
+        return UndeadNightsConfig.INSTANCE.zombiesBurnInDaylight;
     }
 
     @Override
