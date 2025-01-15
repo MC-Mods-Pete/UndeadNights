@@ -55,7 +55,7 @@ public class DemolitionZombieIgniteGoal extends Goal {
 					PrimedTnt tntEntity = new PrimedTnt(this.demolitionZombie.level(), (double) pos.getX() + 0.5, pos.getY(), (double) pos.getZ() + 0.5, this.demolitionZombie);
 					this.demolitionZombie.level().addFreshEntity(tntEntity);
 					this.demolitionZombie.level().playSound(null, tntEntity.getX(), tntEntity.getY(), tntEntity.getZ(), SoundEvents.TNT_PRIMED, SoundSource.BLOCKS, 1.0F, 1.0F);
-					if (Config.demolitionZombieTntStackSize != 0) {
+					if (Config.getDemolitionZombieTntStackSize() != 0) {
 						this.demolitionZombie.getMainHandItem().shrink(1);
 					}
 					tntCoolDown = 5 * 20;

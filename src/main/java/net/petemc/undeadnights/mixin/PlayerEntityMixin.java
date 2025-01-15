@@ -15,7 +15,7 @@ public class PlayerEntityMixin
     @Inject(method = "getMessage", at = @At(value = "RETURN"), cancellable = true)
     public void getMessage (CallbackInfoReturnable<Component> cir)
     {
-        if (UndeadNights.serverState.getHordeNight() && Config.hordeNightsDisableSleeping) {
+        if (UndeadNights.serverState.getHordeNight() && Config.getHordeNightsDisableSleeping()) {
             Component tx = Component.literal("You may not rest now; this is a Night of the Undead");
             cir.setReturnValue(tx);
         }

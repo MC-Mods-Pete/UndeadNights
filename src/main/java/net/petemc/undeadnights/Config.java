@@ -8,6 +8,90 @@ import net.minecraftforge.fml.event.config.ModConfigEvent;
 @Mod.EventBusSubscriber(modid = UndeadNights.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD)
 public class Config
 {
+    public static boolean getUndeadNightsEnabled() {
+        return undeadNightsEnabled;
+    }
+
+    public static int getDaysBetweenHordeNights() {
+        return daysBetweenHordeNights;
+    }
+
+    public static int getChanceForHordeNight() {
+        return chanceForHordeNight;
+    }
+
+    public static boolean getSendHordeNightsCountdownMessage() {
+        return sendHordeNightsCountdownMessage;
+    }
+
+    public static int getDistanceMin() {
+        return distanceMin;
+    }
+
+    public static int getDistanceMax() {
+        return distanceMax;
+    }
+
+    public static int getZombieHordeWaveSize() {
+        return zombieHordeWaveSize;
+    }
+
+    public static int getHordeZombiesSpawnCap() {
+        return hordeZombiesSpawnCap;
+    }
+
+    public static boolean getSpawnAdditionalWaves() {
+        return spawnAdditionalWaves;
+    }
+
+    public static int getCooldownBetweenWaves() {
+        return cooldownBetweenWaves;
+    }
+
+    public static int getChanceForAdditionalWaves() {
+        return chanceForAdditionalWaves;
+    }
+
+    public static boolean getHordeNightsDisableSleeping() {
+        return hordeNightsDisableSleeping;
+    }
+
+    public static boolean getPersistentZombies() {
+        return persistentZombies;
+    }
+
+    public static boolean getZombiesBurnInDaylight() {
+        return zombiesBurnInDaylight;
+    }
+
+    public static boolean getSpawnDemolitionZombies() {
+        return spawnDemolitionZombies;
+    }
+
+    public static int getChanceForDemolitionZombieToSpawn() {
+        return chanceForDemolitionZombieToSpawn;
+    }
+
+    public static int getDemolitionZombieTntStackSize() {
+        return demolitionZombieTntStackSize;
+    }
+
+    public static boolean getSpawnEliteZombies() {
+        return spawnEliteZombies;
+    }
+
+    public static int getChanceForEliteZombieToSpawn() {
+        return chanceForEliteZombieToSpawn;
+    }
+
+    public static boolean getSpawnStrayHordeZombies() {
+        return spawnStrayHordeZombies;
+    }
+
+    public static boolean getPrintDebugMessages() {
+        return printDebugMessages;
+    }
+
     // Server Config
     private static final ForgeConfigSpec.Builder BUILDER_SERVER = new ForgeConfigSpec.Builder();
 
@@ -104,27 +188,27 @@ public class Config
     static final ForgeConfigSpec SPEC_CLIENT = BUILDER_CLIENT.build();
 
 
-    public static boolean undeadNightsEnabled = true;
-    public static int daysBetweenHordeNights = 5;
-    public static int chanceForHordeNight = 100;
-    public static boolean sendHordeNightsCountdownMessage = false;
-    public static int distanceMin = 70;
-    public static int distanceMax = 75;
-    public static int zombieHordeWaveSize = 15;
-    public static int hordeZombiesSpawnCap = 80;
-    public static boolean spawnAdditionalWaves = true;
-    public static int cooldownBetweenWaves = 45;
-    public static int chanceForAdditionalWaves = 7;
-    public static boolean hordeNightsDisableSleeping = true;
-    public static boolean persistentZombies = true;
-    public static boolean zombiesBurnInDaylight = false;
-    public static boolean spawnDemolitionZombies = true;
-    public static int chanceForDemolitionZombieToSpawn = 6;
-    public static int demolitionZombieTntStackSize = 3;
-    public static boolean spawnEliteZombies = true;
-    public static int chanceForEliteZombieToSpawn = 3;
-    public static boolean spawnStrayHordeZombies = true;
-    public static boolean printDebugMessages = false;
+    private static boolean undeadNightsEnabled = true;
+    private static int daysBetweenHordeNights = 5;
+    private static int chanceForHordeNight = 100;
+    private static boolean sendHordeNightsCountdownMessage = false;
+    private static int distanceMin = 70;
+    private static int distanceMax = 75;
+    private static int zombieHordeWaveSize = 15;
+    private static int hordeZombiesSpawnCap = 80;
+    private static boolean spawnAdditionalWaves = true;
+    private static int cooldownBetweenWaves = 45;
+    private static int chanceForAdditionalWaves = 7;
+    private static boolean hordeNightsDisableSleeping = true;
+    private static boolean persistentZombies = true;
+    private static boolean zombiesBurnInDaylight = false;
+    private static boolean spawnDemolitionZombies = true;
+    private static int chanceForDemolitionZombieToSpawn = 6;
+    private static int demolitionZombieTntStackSize = 3;
+    private static boolean spawnEliteZombies = true;
+    private static int chanceForEliteZombieToSpawn = 3;
+    private static boolean spawnStrayHordeZombies = true;
+    private static boolean printDebugMessages = false;
 
     @SubscribeEvent
     static void onLoad(final ModConfigEvent event)

@@ -120,11 +120,11 @@ public class DemolitionZombieEntity extends Zombie {
 
     @Override
     protected void populateDefaultEquipmentSlots(@NotNull RandomSource pRandom, @NotNull DifficultyInstance pDifficulty) {
-        if (Config.demolitionZombieTntStackSize == 0) {
+        if (Config.getDemolitionZombieTntStackSize() == 0) {
             this.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.TNT));
         }
-        if ((Config.demolitionZombieTntStackSize > 0) && (Config.demolitionZombieTntStackSize <= 64)){
-            this.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.TNT, Config.demolitionZombieTntStackSize));
+        if ((Config.getDemolitionZombieTntStackSize() > 0) && (Config.getDemolitionZombieTntStackSize() <= 64)){
+            this.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.TNT, Config.getDemolitionZombieTntStackSize()));
         }
         initCustomEquipment(pRandom, pDifficulty);
     }
@@ -173,7 +173,7 @@ public class DemolitionZombieEntity extends Zombie {
 
     @Override
     protected boolean isSunSensitive() {
-        return Config.zombiesBurnInDaylight;
+        return Config.getZombiesBurnInDaylight();
     }
 
     @Override

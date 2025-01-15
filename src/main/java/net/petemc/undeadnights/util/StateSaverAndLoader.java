@@ -8,7 +8,8 @@ import net.petemc.undeadnights.UndeadNights;
 import org.jetbrains.annotations.NotNull;
 
 public class StateSaverAndLoader extends SavedData {
-    private int daysCounter = Config.daysBetweenHordeNights;
+    private int daysCounter = Config.getDaysBetweenHordeNights();
+    private int lastMaxDaysCounter = Config.getDaysBetweenHordeNights();
     private int tickCounter = 60;
     private boolean hordeNight = false;
     private boolean spawnZombies = true;
@@ -21,6 +22,15 @@ public class StateSaverAndLoader extends SavedData {
 
     public void setDaysCounter(int val) {
         this.daysCounter = val;
+        this.setDirty();
+    }
+
+    public int getLastMaxDaysCounter() {
+        return this.lastMaxDaysCounter;
+    }
+
+    public void setLastMaxDaysCounter(int val) {
+        this.lastMaxDaysCounter = val;
         this.setDirty();
     }
 
@@ -63,6 +73,7 @@ public class StateSaverAndLoader extends SavedData {
     public static StateSaverAndLoader load(CompoundTag tag) {
         StateSaverAndLoader state = new StateSaverAndLoader();
         state.daysCounter = tag.getInt("daysCounter");
+        state.lastMaxDaysCounter = tag.getInt("lastMaxDaysCounter");
         state.tickCounter = tag.getInt("tickCounter");
         state.hordeNight = tag.getBoolean("hordeNight");
         state.spawnZombies = tag.getBoolean("spawnZombies");
@@ -74,6 +85,7 @@ public class StateSaverAndLoader extends SavedData {
     @Override
     public @NotNull CompoundTag save(CompoundTag tag) {
         tag.putInt("daysCounter", daysCounter);
+        tag.putInt("lastMaxDaysCounter", lastMaxDaysCounter);
         tag.putInt("tickCounter", tickCounter);
         tag.putBoolean("hordeNight", hordeNight);
         tag.putBoolean("spawnZombies", spawnZombies);

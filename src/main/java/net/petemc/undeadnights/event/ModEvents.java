@@ -20,7 +20,7 @@ public class ModEvents {
                         || event.getEntity() instanceof EliteZombieEntity) {
 
                     UndeadNights.globalSpawnCounter++;
-                    if (Config.printDebugMessages) {
+                    if (Config.getPrintDebugMessages()) {
                         UndeadNights.LOGGER.info("LOAD GlobalSpawnCount: : {}", UndeadNights.globalSpawnCounter);
                     }
                     //event.getEntity().kill();
@@ -35,7 +35,7 @@ public class ModEvents {
                         || event.getEntity() instanceof EliteZombieEntity) {
 
                     UndeadNights.globalSpawnCounter--;
-                    if (Config.printDebugMessages) {
+                    if (Config.getPrintDebugMessages()) {
                         UndeadNights.LOGGER.info("UNLOAD GlobalSpawnCount: {}", UndeadNights.globalSpawnCounter);
                     }
                 }
