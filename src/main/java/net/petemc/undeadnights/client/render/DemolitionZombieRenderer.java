@@ -14,8 +14,6 @@ import net.petemc.undeadnights.entity.DemolitionZombieEntity;
 public class DemolitionZombieRenderer
         extends AbstractZombieRenderer<DemolitionZombieEntity, ZombieModel<DemolitionZombieEntity>> {
 
-    //private static final Identifier TEXTURE = Identifier.of(UndeadNights.MOD_ID,"textures/entity/customzombie.png");
-
     public DemolitionZombieRenderer(EntityRendererProvider.Context pContext) {
         this(pContext, ModelLayers.ZOMBIE, ModelLayers.ZOMBIE_INNER_ARMOR, ModelLayers.ZOMBIE_OUTER_ARMOR);
     }

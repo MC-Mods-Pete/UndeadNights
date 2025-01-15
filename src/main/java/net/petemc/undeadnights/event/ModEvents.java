@@ -1,7 +1,5 @@
 package net.petemc.undeadnights.event;
 
-import net.minecraft.world.entity.Entity;
-import net.minecraftforge.event.entity.EntityAttributeCreationEvent;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.event.entity.EntityLeaveLevelEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;

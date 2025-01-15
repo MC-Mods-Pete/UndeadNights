@@ -29,20 +29,11 @@ public class UndeadNights {
 	public static final Logger LOGGER = LogUtils.getLogger();
 
 	public static StateSaverAndLoader serverState = null;
-	//public static boolean hordeNight = false;
 
 	public static int globalSpawnCounter = 0;
 
 	public UndeadNights() {
 		IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
-
-		//ModCreativeModTabs.register(modEventBus);
-
-		//ModItems.register(modEventBus);
-		//ModBlocks.register(modEventBus);
-
-		//ModLootModifiers.register(modEventBus);
-		//ModVillagers.register(modEventBus);
 
 		UndeadNightsSounds.register(modEventBus);
 		ModEntities.register(modEventBus);
@@ -83,26 +74,3 @@ public class UndeadNights {
 		}
 	}
 }
-/*
-public class UndeadNights implements ModInitializer {
-	public static final String MOD_ID = "undeadnights";
-	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
-
-	public static boolean hordeNight = false;
-
-	public static int globalSpawnCounter = 0;
-
-	@Override
-	public void onInitialize() {
-		LOGGER.info("Initializing Undead Nights Mod");
-		UndeadNightsConfig.init();
-		ServerEntityLoadEvent.registerEvent();
-		ServerEntityUnLoadEvent.registerEvent();
-		FabricDefaultAttributeRegistry.register(ModEntities.HORDE_ZOMBIE, HordeZombieEntity.createHordeZombieAttributes());
-		FabricDefaultAttributeRegistry.register(ModEntities.DEMOLITION_ZOMBIE, DemolitionZombieEntity.createHordeZombieAttributes());
-		FabricDefaultAttributeRegistry.register(ModEntities.ELITE_ZOMBIE, EliteZombieEntity.createHordeZombieAttributes());
-		UndeadNightsSounds.registerSounds();
-	}
-}
-
- */

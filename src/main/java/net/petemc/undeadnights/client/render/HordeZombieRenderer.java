@@ -13,8 +13,6 @@ import net.petemc.undeadnights.entity.HordeZombieEntity;
 public class HordeZombieRenderer
         extends AbstractZombieRenderer<HordeZombieEntity, ZombieModel<HordeZombieEntity>> {
 
-    //private static final Identifier TEXTURE = Identifier.of(UndeadNights.MOD_ID,"textures/entity/customzombie.png");
-
     public HordeZombieRenderer(EntityRendererProvider.Context pContext) {
         this(pContext, ModelLayers.ZOMBIE, ModelLayers.ZOMBIE_INNER_ARMOR, ModelLayers.ZOMBIE_OUTER_ARMOR);
     }
