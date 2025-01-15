@@ -6,7 +6,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Unit;
 import net.minecraft.util.math.BlockPos;
 import net.petemc.undeadnights.UndeadNights;
-import net.petemc.undeadnights.config.UndeadNightsConfig;
+import net.petemc.undeadnights.config.Config;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -18,7 +18,7 @@ public class ServerPlayerEntityMixin
     @Inject(method = "trySleep", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/math/Vec3d;ofBottomCenter(Lnet/minecraft/util/math/Vec3i;)Lnet/minecraft/util/math/Vec3d;", shift = At.Shift.AFTER), cancellable = true)
     public void trySleep(BlockPos pos, CallbackInfoReturnable<Either<PlayerEntity.SleepFailureReason, Unit>> cir)
     {
-        if (UndeadNights.hordeNight && UndeadNightsConfig.INSTANCE.hordeNightsDisableSleeping) {
+        if (UndeadNights.serverState.getHordeNight() && Config.getHordeNightsDisableSleeping()) {
             cir.setReturnValue(Either.left(PlayerEntity.SleepFailureReason.NOT_SAFE));
         }
     }
