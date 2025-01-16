@@ -57,7 +57,7 @@ public class UndeadNightsConfig implements ConfigData
     public int chanceForHordeNight = 100;
 
     @ConfigEntry.Gui.Tooltip()
-    @Comment("If true, each night a message will be send to the player how many night before the next Horde Night | default: false")
+    @Comment("If true, each night a message will be sent to the player with how many nights are left before the next Horde Night | default: false")
     public boolean sendHordeNightsCountdownMessage = false;
 
     @ConfigEntry.Gui.Tooltip()
