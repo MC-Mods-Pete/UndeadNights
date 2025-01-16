@@ -24,7 +24,7 @@ import net.minecraft.world.Difficulty;
 import net.minecraft.world.LocalDifficulty;
 import net.minecraft.world.ServerWorldAccess;
 import net.minecraft.world.World;
-import net.petemc.undeadnights.config.UndeadNightsConfig;
+import net.petemc.undeadnights.config.Config;
 import net.petemc.undeadnights.entity.ai.goal.DemolitionZombieIgniteGoal;
 import org.jetbrains.annotations.Nullable;
 
@@ -51,7 +51,7 @@ public class DemolitionZombieEntity extends ZombieEntity {
         this.goalSelector.add(1, new SwimGoal(this));
         this.goalSelector.add(2, new DemolitionZombieIgniteGoal(this));
         this.goalSelector.add(3, new ZombieAttackGoal(this, 1.0, false));
-        this.goalSelector.add(4, new DemolitionZombieEntity.ChasePlayerGoal(this));
+        this.goalSelector.add(4, new ChasePlayerGoal(this));
         this.goalSelector.add(6, new MoveThroughVillageGoal(this, 1.0, true, 4, this::canBreakDoors));
         this.goalSelector.add(7, new WanderAroundFarGoal(this, 1.0));
         this.targetSelector.add(1, new RevengeGoal(this).setGroupRevenge(ZombifiedPiglinEntity.class));
@@ -71,7 +71,7 @@ public class DemolitionZombieEntity extends ZombieEntity {
         float f = difficulty.getClampedLocalDifficulty();
         this.setCanPickUpLoot(random.nextFloat() < 0.55F * f);
         if (entityData == null) {
-            entityData = new ZombieEntity.ZombieData(false, false);
+            entityData = new ZombieData(false, false);
         }
 
         if (entityData instanceof ZombieData) {
@@ -120,11 +120,11 @@ public class DemolitionZombieEntity extends ZombieEntity {
 
     @Override
     protected void initEquipment(Random random, LocalDifficulty localDifficulty) {
-        if (UndeadNightsConfig.INSTANCE.demolitionZombieTntStackSize == 0) {
+        if (Config.getDemolitionZombieTntStackSize() == 0) {
             this.setStackInHand(Hand.MAIN_HAND, new ItemStack(Items.TNT));
         }
-        if ((UndeadNightsConfig.INSTANCE.demolitionZombieTntStackSize > 0) && (UndeadNightsConfig.INSTANCE.demolitionZombieTntStackSize <= 64)){
-            this.setStackInHand(Hand.MAIN_HAND, new ItemStack(Items.TNT, UndeadNightsConfig.INSTANCE.demolitionZombieTntStackSize));
+        if ((Config.getDemolitionZombieTntStackSize() > 0) && (Config.getDemolitionZombieTntStackSize() <= 64)){
+            this.setStackInHand(Hand.MAIN_HAND, new ItemStack(Items.TNT, Config.getDemolitionZombieTntStackSize()));
         }
         initCustomEquipment(random, localDifficulty);
     }
@@ -173,7 +173,7 @@ public class DemolitionZombieEntity extends ZombieEntity {
 
     @Override
     protected boolean burnsInDaylight() {
-        return UndeadNightsConfig.INSTANCE.zombiesBurnInDaylight;
+        return Config.getZombiesBurnInDaylight();
     }
 
     @Override

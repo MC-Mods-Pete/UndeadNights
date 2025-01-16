@@ -22,7 +22,7 @@ import net.minecraft.world.Difficulty;
 import net.minecraft.world.LocalDifficulty;
 import net.minecraft.world.ServerWorldAccess;
 import net.minecraft.world.World;
-import net.petemc.undeadnights.config.UndeadNightsConfig;
+import net.petemc.undeadnights.config.Config;
 import org.jetbrains.annotations.Nullable;
 
 import java.time.LocalDate;
@@ -44,7 +44,7 @@ public class HordeZombieEntity extends ZombieEntity {
         float f = difficulty.getClampedLocalDifficulty();
         this.setCanPickUpLoot(random.nextFloat() < 0.55F * f);
         if (entityData == null) {
-            entityData = new ZombieEntity.ZombieData(false, false);
+            entityData = new ZombieData(false, false);
         }
 
         if (entityData instanceof ZombieData) {
@@ -80,7 +80,7 @@ public class HordeZombieEntity extends ZombieEntity {
         this.goalSelector.add(1, new SwimGoal(this));
         this.goalSelector.add(2, new ZombieAttackGoal(this, 1.0, false));
         //this.goalSelector.add(3, new PounceAtTargetGoal(this, 0.4F));
-        this.goalSelector.add(4, new HordeZombieEntity.ChasePlayerGoal(this));
+        this.goalSelector.add(4, new ChasePlayerGoal(this));
         this.goalSelector.add(6, new MoveThroughVillageGoal(this, 1.0, true, 4, this::canBreakDoors));
         this.goalSelector.add(7, new WanderAroundFarGoal(this, 1.0));
         //this.goalSelector.add(14, new ZombiePounceAtTargetGo(instance, config.pounceVelocity));
@@ -114,6 +114,7 @@ public class HordeZombieEntity extends ZombieEntity {
             }
         }
     }
+
     protected void initCustomEquipment(Random random, LocalDifficulty localDifficulty) {
         if (random.nextFloat() < 0.2F * localDifficulty.getClampedLocalDifficulty()) {
             int i = random.nextInt(2);
@@ -121,19 +122,24 @@ public class HordeZombieEntity extends ZombieEntity {
             if (random.nextFloat() < 0.095F) {
                 i++;
             }
+
             if (random.nextFloat() < 0.095F) {
                 i++;
             }
+
             if (random.nextFloat() < 0.095F) {
                 i++;
             }
+
             boolean bl = true;
+
             for (EquipmentSlot equipmentSlot : EquipmentSlot.values()) {
                 if (equipmentSlot.getType() == EquipmentSlot.Type.ARMOR) {
                     ItemStack itemStack = this.getEquippedStack(equipmentSlot);
                     if (!bl && random.nextFloat() < f) {
                         break;
                     }
+
                     bl = false;
                     if (itemStack.isEmpty()) {
                         Item item = getEquipmentForSlot(equipmentSlot, i);
@@ -148,7 +154,7 @@ public class HordeZombieEntity extends ZombieEntity {
 
     @Override
     protected boolean burnsInDaylight() {
-        return UndeadNightsConfig.INSTANCE.zombiesBurnInDaylight;
+        return Config.getZombiesBurnInDaylight();
     }
 
     @Override
@@ -194,7 +200,7 @@ public class HordeZombieEntity extends ZombieEntity {
 
         public ChasePlayerGoal(HordeZombieEntity hordeZombie) {
             this.hordeZombie = hordeZombie;
-            this.setControls(EnumSet.of(Goal.Control.JUMP, Goal.Control.MOVE));
+            this.setControls(EnumSet.of(Control.JUMP, Control.MOVE));
         }
 
         @Override
