@@ -151,8 +151,8 @@ public class Config implements ConfigData
     private boolean hordeNightsDisableSleeping = true;
 
     @ConfigEntry.Gui.Tooltip()
-    @Comment("If true, the horde zombies will be persistent and not despawn | default: true")
-    private boolean persistentZombies = true;
+    @Comment("If true, the horde zombies will be persistent and not despawn | default: false")
+    private boolean persistentZombies = false;
 
     @ConfigEntry.Gui.Tooltip()
     @Comment("If true, the horde zombies will burn in daylight | default: false")
