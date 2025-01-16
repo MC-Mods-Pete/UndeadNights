@@ -128,9 +128,9 @@ public class UndeadSpawner implements CustomSpawner {
                 if ((UndeadNights.serverState.getDaysCounter() > 0) && (Config.getSendHordeNightsCountdownMessage())) {
                     for (ServerPlayer player : level.getPlayers(LivingEntity::isAlive)) {
                         if (UndeadNights.serverState.getDaysCounter() > 1) {
-                            player.sendSystemMessage(Component.literal(UndeadNights.serverState.getDaysCounter() + " nights remaining until the next Night of the Undead!"));
+                            player.sendSystemMessage(Component.translatable("message.undeadnights.nights_remaining", String.valueOf(UndeadNights.serverState.getDaysCounter())));
                         } else {
-                            player.sendSystemMessage(Component.literal("This is the last night before the next Night of the Undead!"));
+                            player.sendSystemMessage(Component.translatable("message.undeadnights.last_nights"));
                         }
                     }
                 }
@@ -183,7 +183,7 @@ public class UndeadSpawner implements CustomSpawner {
                     UndeadNights.serverState.setHordeNight(true);
                     UndeadNights.serverState.setSpawnZombies(true);
                     for (ServerPlayer player : level.getPlayers(LivingEntity::isAlive)) {
-                        player.sendSystemMessage(Component.literal("The sun is starting to set and you feel uneasy about the coming night...").withStyle(ChatFormatting.RED));
+                        player.sendSystemMessage(Component.translatable("message.undeadnights.horde_night").withStyle(ChatFormatting.RED));
                     }
                     if (Config.getPrintDebugMessages()) {
                         UndeadNights.LOGGER.info("The coming night is a Horde Night, HordeNight: {}", UndeadNights.serverState.getHordeNight());
@@ -243,7 +243,7 @@ public class UndeadSpawner implements CustomSpawner {
                         if (UndeadNights.globalSpawnCounter < Config.getHordeZombiesSpawnCap()) {
                             if (i == 0) {
                                 player.level().playSound(null, player.getX(), player.getY(), player.getZ(), UndeadNightsSounds.HORDE_SCREAM.get(), SoundSource.HOSTILE, 4.0F, 1);
-                                player.sendSystemMessage(Component.literal("A horde has spawned!").withStyle(ChatFormatting.RED));
+                                player.sendSystemMessage(Component.translatable("message.undeadnights.horde_spawned").withStyle(ChatFormatting.RED));
                                 if (Config.getPrintDebugMessages()) {
                                     UndeadNights.LOGGER.info("A Horde has spanned!");
                                 }
@@ -321,7 +321,7 @@ public class UndeadSpawner implements CustomSpawner {
         } else {
             if (UndeadNights.serverState.getHordeNight()) {
                 for (ServerPlayer player : level.getPlayers(LivingEntity::isAlive)) {
-                    player.sendSystemMessage(Component.literal("You feel at ease, this Night of the Undead is over..."));
+                    player.sendSystemMessage(Component.translatable("message.undeadnights.horde_night_over"));
                 }
                 UndeadNights.serverState.setDaysCounter(Config.getDaysBetweenHordeNights());
                 if (Config.getPrintDebugMessages()) {
