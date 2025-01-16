@@ -7,42 +7,92 @@ import net.minecraft.world.PersistentState;
 import net.minecraft.world.PersistentStateManager;
 import net.minecraft.world.World;
 import net.petemc.undeadnights.UndeadNights;
-import net.petemc.undeadnights.config.UndeadNightsConfig;
+import net.petemc.undeadnights.config.Config;
 
 public class StateSaverAndLoader extends PersistentState {
 
-    public int daysCounter = UndeadNightsConfig.INSTANCE.daysBetweenHordeNights;
-    public int hordeSpawnCounter = 0;
-    public int globalSpawnCountLastWave = 0;
-    public int tickCounter = 60;
-    public boolean hordeNight = false;
-    public boolean spawnZombies = true;
-    public boolean respawnZombies = false;
-    public boolean lastWasDay;
+    private int daysCounter = Config.getDaysBetweenHordeNights();
+    private int lastMaxDaysCounter = Config.getDaysBetweenHordeNights();
+    private int tickCounter = 60;
+    private boolean hordeNight = false;
+    private boolean spawnZombies = true;
+    private boolean respawnZombies = false;
+
+    // Setter and Getter functions
+    public int getDaysCounter() {
+        return this.daysCounter;
+    }
+
+    public void setDaysCounter(int val) {
+        this.daysCounter = val;
+        this.markDirty();
+    }
+
+    public int getLastMaxDaysCounter() {
+        return this.lastMaxDaysCounter;
+    }
+
+    public void setLastMaxDaysCounter(int val) {
+        this.lastMaxDaysCounter = val;
+        this.markDirty();
+    }
+
+    public int getTickCounter() {
+        return this.tickCounter;
+    }
+
+    public void setTickCounter(int val) {
+        this.tickCounter = val;
+        this.markDirty();
+    }
+
+    public boolean getHordeNight() {
+        return this.hordeNight;
+    }
+
+    public void setHordeNight(boolean val) {
+        this.hordeNight = val;
+        this.markDirty();
+    }
+
+    public boolean getSpawnZombies() {
+        return this.spawnZombies;
+    }
+
+    public void setSpawnZombies(boolean val) {
+        this.spawnZombies = val;
+        this.markDirty();
+    }
+
+    public boolean getRespawnZombies() {
+        return this.respawnZombies;
+    }
+
+    public void setRespawnZombies(boolean val) {
+        this.respawnZombies = val;
+        this.markDirty();
+    }
 
     @Override
     public NbtCompound writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
         nbt.putInt("daysCounter", daysCounter);
-        nbt.putInt("hordeSpawnCounter", hordeSpawnCounter);
-        nbt.putInt("globalSpawnCountLastWave", globalSpawnCountLastWave);
+        nbt.putInt("lastMaxDaysCounter", lastMaxDaysCounter);
         nbt.putInt("tickCounter", tickCounter);
         nbt.putBoolean("hordeNight", hordeNight);
         nbt.putBoolean("spawnZombies", spawnZombies);
         nbt.putBoolean("respawnZombies", respawnZombies);
-        nbt.putBoolean("lastWasDay", lastWasDay);
+
         return nbt;
     }
 
     public static StateSaverAndLoader createFromNbt(NbtCompound tag, RegistryWrapper.WrapperLookup registryLookup) {
         StateSaverAndLoader state = new StateSaverAndLoader();
         state.daysCounter = tag.getInt("daysCounter");
-        state.hordeSpawnCounter = tag.getInt("hordeSpawnCounter");
-        state.globalSpawnCountLastWave = tag.getInt("globalSpawnCountLastWave");
+        state.lastMaxDaysCounter = tag.getInt("lastMaxDaysCounter");
         state.tickCounter = tag.getInt("tickCounter");
         state.hordeNight = tag.getBoolean("hordeNight");
         state.spawnZombies = tag.getBoolean("spawnZombies");
         state.respawnZombies = tag.getBoolean("respawnZombies");
-        state.lastWasDay = tag.getBoolean("lastWasDay");
         return state;
     }
 
@@ -57,7 +107,6 @@ public class StateSaverAndLoader extends PersistentState {
      * It does this by calling 'StateSaveAndLoader::createFromNbt' passing it the previously saved 'NbtCompound' we wrote in 'writeNbt'.
      */
     public static StateSaverAndLoader getServerState(MinecraftServer server) {
-        // (Note: arbitrary choice to use 'World.OVERWORLD' instead of 'World.END' or 'World.NETHER'.  Any work)
         PersistentStateManager persistentStateManager = server.getWorld(World.OVERWORLD).getPersistentStateManager();
 
         // The first time the following 'getOrCreate' function is called, it creates a brand new 'StateSaverAndLoader' and

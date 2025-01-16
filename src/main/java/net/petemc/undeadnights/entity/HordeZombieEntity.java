@@ -15,14 +15,13 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.packet.s2c.play.EntitySpawnS2CPacket;
 import net.minecraft.util.math.random.Random;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.LocalDifficulty;
 import net.minecraft.world.ServerWorldAccess;
 import net.minecraft.world.World;
-import net.petemc.undeadnights.config.UndeadNightsConfig;
+import net.petemc.undeadnights.config.Config;
 import org.jetbrains.annotations.Nullable;
 
 import java.time.LocalDate;
@@ -112,6 +111,7 @@ public class HordeZombieEntity extends ZombieEntity {
             }
         }
     }
+
     protected void initCustomEquipment(Random random, LocalDifficulty localDifficulty) {
         if (random.nextFloat() < 0.2F * localDifficulty.getClampedLocalDifficulty()) {
             int i = random.nextInt(2);
@@ -119,19 +119,24 @@ public class HordeZombieEntity extends ZombieEntity {
             if (random.nextFloat() < 0.095F) {
                 i++;
             }
+
             if (random.nextFloat() < 0.095F) {
                 i++;
             }
+
             if (random.nextFloat() < 0.095F) {
                 i++;
             }
+
             boolean bl = true;
+
             for (EquipmentSlot equipmentSlot : EquipmentSlot.values()) {
                 if (equipmentSlot.getType() == EquipmentSlot.Type.HUMANOID_ARMOR) {
                     ItemStack itemStack = this.getEquippedStack(equipmentSlot);
                     if (!bl && random.nextFloat() < f) {
                         break;
                     }
+
                     bl = false;
                     if (itemStack.isEmpty()) {
                         Item item = getEquipmentForSlot(equipmentSlot, i);
@@ -146,7 +151,7 @@ public class HordeZombieEntity extends ZombieEntity {
 
     @Override
     protected boolean burnsInDaylight() {
-        return UndeadNightsConfig.INSTANCE.zombiesBurnInDaylight;
+        return Config.getZombiesBurnInDaylight();
     }
 
     @Override
