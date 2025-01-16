@@ -3,6 +3,12 @@
   "entity.undeadnights.demolition_zombie": "Demolition Zombie",
   "entity.undeadnights.elite_zombie": "Elite Zombie",
 
+  "message.undeadnights.nights_remaining": "%s nights remaining until the next Night of the Undead!",
+  "message.undeadnights.last_nights": "This is the last night before the next Night of the Undead!",
+  "message.undeadnights.horde_night": "The sun is starting to set and you feel uneasy about the coming night...",
+  "message.undeadnights.horde_spawned": "A horde has spawned!",
+  "message.undeadnights.horde_night_over": "You feel at ease, this Night of the Undead is over...",
+
   "text.autoconfig.undeadnights.title": "Undead Nights",
   "text.autoconfig.undeadnights.option.undeadNightsEnabled": "Enable Nights of the Undead mod?",
   "text.autoconfig.undeadnights.option.undeadNightsEnabled.@Tooltip": "If enabled, Nights of the Undead (horde nights) are enabled | default: enabled",
