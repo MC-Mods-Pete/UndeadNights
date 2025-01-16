@@ -24,7 +24,7 @@ import net.minecraft.world.Difficulty;
 import net.minecraft.world.LocalDifficulty;
 import net.minecraft.world.ServerWorldAccess;
 import net.minecraft.world.World;
-import net.petemc.undeadnights.config.UndeadNightsConfig;
+import net.petemc.undeadnights.config.Config;
 import net.petemc.undeadnights.entity.ai.goal.DemolitionZombieIgniteGoal;
 import org.jetbrains.annotations.Nullable;
 
@@ -117,11 +117,11 @@ public class DemolitionZombieEntity extends ZombieEntity {
 
     @Override
     protected void initEquipment(Random random, LocalDifficulty localDifficulty) {
-        if (UndeadNightsConfig.INSTANCE.demolitionZombieTntStackSize == 0) {
+        if (Config.getDemolitionZombieTntStackSize() == 0) {
             this.setStackInHand(Hand.MAIN_HAND, new ItemStack(Items.TNT));
         }
-        if ((UndeadNightsConfig.INSTANCE.demolitionZombieTntStackSize > 0) && (UndeadNightsConfig.INSTANCE.demolitionZombieTntStackSize <= 64)){
-            this.setStackInHand(Hand.MAIN_HAND, new ItemStack(Items.TNT, UndeadNightsConfig.INSTANCE.demolitionZombieTntStackSize));
+        if ((Config.getDemolitionZombieTntStackSize() > 0) && (Config.getDemolitionZombieTntStackSize() <= 64)){
+            this.setStackInHand(Hand.MAIN_HAND, new ItemStack(Items.TNT, Config.getDemolitionZombieTntStackSize()));
         }
         initCustomEquipment(random, localDifficulty);
     }
@@ -170,7 +170,7 @@ public class DemolitionZombieEntity extends ZombieEntity {
 
     @Override
     protected boolean burnsInDaylight() {
-        return false;
+        return Config.getZombiesBurnInDaylight();
     }
 
     @Override

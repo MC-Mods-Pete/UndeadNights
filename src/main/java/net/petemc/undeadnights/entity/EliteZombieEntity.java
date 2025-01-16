@@ -21,7 +21,7 @@ import net.minecraft.util.math.random.Random;
 import net.minecraft.world.LocalDifficulty;
 import net.minecraft.world.ServerWorldAccess;
 import net.minecraft.world.World;
-import net.petemc.undeadnights.config.UndeadNightsConfig;
+import net.petemc.undeadnights.config.Config;
 import org.jetbrains.annotations.Nullable;
 
 import java.time.LocalDate;
@@ -120,7 +120,7 @@ public class EliteZombieEntity extends ZombieEntity {
 
     @Override
     protected boolean burnsInDaylight() {
-        return UndeadNightsConfig.INSTANCE.zombiesBurnInDaylight;
+        return Config.getZombiesBurnInDaylight();
     }
 
     @Override

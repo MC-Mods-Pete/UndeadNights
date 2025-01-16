@@ -1,11 +1,7 @@
 package net.petemc.undeadnights.mixin;
 
-import com.mojang.datafixers.util.Either;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
-import net.minecraft.util.Unit;
-import net.minecraft.util.math.BlockPos;
 import net.petemc.undeadnights.UndeadNights;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -18,7 +14,7 @@ public class PlayerEntityMixin
     @Inject(method = "getMessage", at = @At(value = "RETURN"), cancellable = true)
     public void getMessage (CallbackInfoReturnable<Text> cir)
     {
-        if (UndeadNights.hordeNight) {
+        if (UndeadNights.serverState.getHordeNight()) {
             Text tx = Text.of("You may not rest now; this is a night of the Undead");
             cir.setReturnValue(tx);
         }
