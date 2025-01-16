@@ -144,8 +144,8 @@ public class Config
             .define("hordeNightsDisableSleeping", true);
 
     private static final ForgeConfigSpec.BooleanValue PERSISTENT_ZOMBIES = BUILDER_SERVER
-            .comment("If true, the horde zombies will be persistent and not despawn | default: true")
-            .define("persistentZombies", true);
+            .comment("If true, the horde zombies will be persistent and not despawn | default: false")
+            .define("persistentZombies", false);
 
    private static final ForgeConfigSpec.BooleanValue ZOMBIES_BURN_IN_DAYLIGHT = BUILDER_SERVER
             .comment("If true, the horde zombies will burn in daylight | default: false")
@@ -200,7 +200,7 @@ public class Config
     private static int cooldownBetweenWaves = 45;
     private static int chanceForAdditionalWaves = 7;
     private static boolean hordeNightsDisableSleeping = true;
-    private static boolean persistentZombies = true;
+    private static boolean persistentZombies = false;
     private static boolean zombiesBurnInDaylight = false;
     private static boolean spawnDemolitionZombies = true;
     private static int chanceForDemolitionZombieToSpawn = 6;
