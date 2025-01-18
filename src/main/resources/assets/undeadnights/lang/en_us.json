@@ -35,7 +35,7 @@
   "text.autoconfig.undeadnights.option.hordeNightsDisableSleeping": "Prevent players from sleeping through horde nights",
   "text.autoconfig.undeadnights.option.hordeNightsDisableSleeping.@Tooltip": "If enabled, Players can't sleep through horde nights | default: enabled",
   "text.autoconfig.undeadnights.option.persistentZombies": "Make the horde zombies persistent",
-  "text.autoconfig.undeadnights.option.persistentZombies.@Tooltip": "If enabled, , the horde zombies will be persistent and not despawn | default: enabled",
+  "text.autoconfig.undeadnights.option.persistentZombies.@Tooltip": "If enabled, , the horde zombies will be persistent and not despawn | default: disabled",
   "text.autoconfig.undeadnights.option.zombiesBurnInDaylight": "Will horde zombies burn in daylight",
   "text.autoconfig.undeadnights.option.zombiesBurnInDaylight.@Tooltip": "If enabled, the horde zombies will burn in daylight | default: disabled",
   "text.autoconfig.undeadnights.option.spawnDemolitionZombies": "Spawn demolition zombies with TNT",
