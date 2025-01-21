@@ -1,6 +1,5 @@
 package net.petemc.undeadnights.entity;
 
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.InteractionHand;
@@ -28,7 +27,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.time.LocalDate;
 
-
 public class EliteZombieEntity extends Zombie {
     public EliteZombieEntity(EntityType<? extends Zombie> entityType, Level level) {
         super(entityType, level);
@@ -36,19 +34,19 @@ public class EliteZombieEntity extends Zombie {
 
     @Nullable
     @Override
-    public SpawnGroupData finalizeSpawn(ServerLevelAccessor pLevel, DifficultyInstance pDifficulty, MobSpawnType pReason, @javax.annotation.Nullable SpawnGroupData pSpawnData, @javax.annotation.Nullable CompoundTag pDataTag) {
-        RandomSource randomsource = pLevel.getRandom();
-        pSpawnData = super.finalizeSpawn(pLevel, pDifficulty, pReason, pSpawnData, pDataTag);
-        float f = pDifficulty.getSpecialMultiplier();
+    public SpawnGroupData finalizeSpawn(ServerLevelAccessor level, @NotNull DifficultyInstance difficulty, @NotNull MobSpawnType reason, @Nullable SpawnGroupData spawnGroupData) {
+        RandomSource randomsource = level.getRandom();
+        spawnGroupData = super.finalizeSpawn(level, difficulty, reason, spawnGroupData);
+        float f = difficulty.getSpecialMultiplier();
         this.setCanPickUpLoot(randomsource.nextFloat() < 0.55F * f);
-        if (pSpawnData == null) {
-            pSpawnData = new Zombie.ZombieGroupData(false, false);
+        if (spawnGroupData == null) {
+            spawnGroupData = new Zombie.ZombieGroupData(false, false);
         }
 
-        if (pSpawnData instanceof Zombie.ZombieGroupData) {
+        if (spawnGroupData instanceof Zombie.ZombieGroupData) {
             this.setCanBreakDoors(true);
-            this.populateDefaultEquipmentSlots(randomsource, pDifficulty);
-            this.populateDefaultEquipmentEnchantments(randomsource, pDifficulty);
+            this.populateDefaultEquipmentSlots(randomsource, difficulty);
+            this.populateDefaultEquipmentEnchantments(level, randomsource, difficulty);
         }
 
         if (this.getItemBySlot(EquipmentSlot.HEAD).isEmpty()) {
@@ -63,7 +61,7 @@ public class EliteZombieEntity extends Zombie {
 
         this.handleAttributes(f);
         this.setBaby(false);
-        return pSpawnData;
+        return spawnGroupData;
     }
 
     public static AttributeSupplier.@NotNull Builder createAttributes() {
@@ -99,7 +97,7 @@ public class EliteZombieEntity extends Zombie {
 
     protected void initCustomEquipment(RandomSource random, DifficultyInstance pDifficulty) {
             for (EquipmentSlot equipmentSlot : EquipmentSlot.values()) {
-                if (equipmentSlot.getType() == EquipmentSlot.Type.ARMOR) {
+                if (equipmentSlot.getType() == EquipmentSlot.Type.HUMANOID_ARMOR) {
                     ItemStack itemStack = this.getItemBySlot(equipmentSlot);
                     if (itemStack.isEmpty()) {
                         Item item = getEquipmentForSlot(equipmentSlot, 4);

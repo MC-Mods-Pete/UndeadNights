@@ -1,11 +1,11 @@
 package net.petemc.undeadnights;
 
-import net.minecraftforge.common.ForgeConfigSpec;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.event.config.ModConfigEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.fml.event.config.ModConfigEvent;
+import net.neoforged.neoforge.common.ModConfigSpec;
 
-@Mod.EventBusSubscriber(modid = UndeadNights.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber(modid = UndeadNights.MOD_ID, bus = EventBusSubscriber.Bus.MOD)
 public class Config
 {
     public static boolean getUndeadNightsEnabled() {
@@ -93,99 +93,99 @@ public class Config
     }
 
     // Server Config
-    private static final ForgeConfigSpec.Builder BUILDER_SERVER = new ForgeConfigSpec.Builder();
+    private static final ModConfigSpec.Builder BUILDER_SERVER = new ModConfigSpec.Builder();
 
-    private static final ForgeConfigSpec.BooleanValue UNDEAD_NIGHTS_ENABLED = BUILDER_SERVER
+    private static final ModConfigSpec.BooleanValue UNDEAD_NIGHTS_ENABLED = BUILDER_SERVER
             .comment("If true, Nights of the Undead (horde nights) are enabled | default: true")
             .define("undeadNightsEnabled", true);
 
-    private static final ForgeConfigSpec.IntValue DAYS_BETWEEN_HORDE_NIGHTS = BUILDER_SERVER
+    private static final ModConfigSpec.IntValue DAYS_BETWEEN_HORDE_NIGHTS = BUILDER_SERVER
             .comment("Days between horde nights (1 = every night is a horde night) | default: 5")
             .defineInRange("daysBetweenHordeNights", 5, 1, Integer.MAX_VALUE);
 
-    private static final ForgeConfigSpec.IntValue CHANCE_FOR_HORDE_NIGHTS = BUILDER_SERVER
+    private static final ModConfigSpec.IntValue CHANCE_FOR_HORDE_NIGHTS = BUILDER_SERVER
             .comment("Chance in % for a horde night | default: 100")
             .defineInRange("chanceForHordeNight", 100, 1, 100);
 
-    private static final ForgeConfigSpec.BooleanValue SEND_HORDE_NIGHTS_COUNTDOWN_MESSAGE = BUILDER_SERVER
+    private static final ModConfigSpec.BooleanValue SEND_HORDE_NIGHTS_COUNTDOWN_MESSAGE = BUILDER_SERVER
             .comment("If true, each night a message will be sent to the player with how many nights are left before the next Horde Night | default: false")
             .define("sendHordeNightsCountdownMessage", false);
 
-    private static final ForgeConfigSpec.IntValue DISTANCE_MIN = BUILDER_SERVER
+    private static final ModConfigSpec.IntValue DISTANCE_MIN = BUILDER_SERVER
             .comment("Minimum distance a horde will spawn away from the player | default: 70")
             .defineInRange("distanceMin", 70, 10, 256);
 
-    private static final ForgeConfigSpec.IntValue DISTANCE_MAX = BUILDER_SERVER
+    private static final ModConfigSpec.IntValue DISTANCE_MAX = BUILDER_SERVER
             .comment("Maximum distance a horde will spawn away from the player | default: 75")
             .defineInRange("distanceMax", 75, 10, 256);
 
-    private static final ForgeConfigSpec.IntValue ZOMBIE_HORDE_WAVE_SIZE = BUILDER_SERVER
+    private static final ModConfigSpec.IntValue ZOMBIE_HORDE_WAVE_SIZE = BUILDER_SERVER
             .comment("Size of a wave of zombies | default: 15")
             .defineInRange("zombieHordeWaveSize", 15, 1, 256);
 
-    private static final ForgeConfigSpec.IntValue HORDE_ZOMBIE_SPAWN_CAP = BUILDER_SERVER
+    private static final ModConfigSpec.IntValue HORDE_ZOMBIE_SPAWN_CAP = BUILDER_SERVER
             .comment("Maximum amount of zombies that can be loaded in the world at the same time | default: 80")
             .defineInRange("hordeZombiesSpawnCap", 80, 1, 256);
 
-    private static final ForgeConfigSpec.BooleanValue SPAWN_ADDITIONAL_WAVES = BUILDER_SERVER
+    private static final ModConfigSpec.BooleanValue SPAWN_ADDITIONAL_WAVES = BUILDER_SERVER
             .comment("If true, additional waves can spawn in a horde night | default: true")
             .define("spawnAdditionalWaves", true);
 
-    private static final ForgeConfigSpec.IntValue COOLDOWN_BETWEEN_WAVES = BUILDER_SERVER
+    private static final ModConfigSpec.IntValue COOLDOWN_BETWEEN_WAVES = BUILDER_SERVER
             .comment("Time in seconds between check for next possible wave in a horde night | default: 45")
             .defineInRange("cooldownBetweenWaves", 45, 1, Integer.MAX_VALUE);
 
-    private static final ForgeConfigSpec.IntValue CHANCE_FOR_ADDITIONAL_WAVES = BUILDER_SERVER
+    private static final ModConfigSpec.IntValue CHANCE_FOR_ADDITIONAL_WAVES = BUILDER_SERVER
             .comment("Chance in % for another zombie wave (checked after every wave cooldown) | default: 7")
             .defineInRange("chanceForAdditionalWaves", 7, 1, 100);
 
-    private static final ForgeConfigSpec.BooleanValue HORDE_NIGHTS_DISABLE_SLEEPING = BUILDER_SERVER
+    private static final ModConfigSpec.BooleanValue HORDE_NIGHTS_DISABLE_SLEEPING = BUILDER_SERVER
             .comment("If true, Players can't sleep through horde nights | default: true")
             .define("hordeNightsDisableSleeping", true);
 
-    private static final ForgeConfigSpec.BooleanValue PERSISTENT_ZOMBIES = BUILDER_SERVER
+    private static final ModConfigSpec.BooleanValue PERSISTENT_ZOMBIES = BUILDER_SERVER
             .comment("If true, the horde zombies will be persistent and not despawn | default: false")
             .define("persistentZombies", false);
 
-   private static final ForgeConfigSpec.BooleanValue ZOMBIES_BURN_IN_DAYLIGHT = BUILDER_SERVER
+   private static final ModConfigSpec.BooleanValue ZOMBIES_BURN_IN_DAYLIGHT = BUILDER_SERVER
             .comment("If true, the horde zombies will burn in daylight | default: false")
             .define("zombiesBurnInDaylight", false);
 
-   private static final ForgeConfigSpec.BooleanValue SPAWN_DEMOLITION_ZOMBIES = BUILDER_SERVER
+   private static final ModConfigSpec.BooleanValue SPAWN_DEMOLITION_ZOMBIES = BUILDER_SERVER
             .comment("If true, demolition zombies with TNT will spawn | default: true")
             .define("spawnDemolitionZombies", true);
 
-   private static final ForgeConfigSpec.IntValue CHANCE_FOR_DEMOLITION_ZOMBIE_TO_SPAWN = BUILDER_SERVER
+   private static final ModConfigSpec.IntValue CHANCE_FOR_DEMOLITION_ZOMBIE_TO_SPAWN = BUILDER_SERVER
             .comment("Chance in % for a demolition zombie to spawn | default: 6")
             .defineInRange("chanceForDemolitionZombieToSpawn", 6, 1, 100);
 
-   private static final ForgeConfigSpec.IntValue DEMOLITION_ZOMBIE_TNT_STACK_SIZE = BUILDER_SERVER
+   private static final ModConfigSpec.IntValue DEMOLITION_ZOMBIE_TNT_STACK_SIZE = BUILDER_SERVER
             .comment("TNT Stack size a demolition zombie will spawn with (0 = unlimited) | default: 3")
             .defineInRange("demolitionZombieTntStackSize", 3, 1, 64);
 
-   private static final ForgeConfigSpec.BooleanValue SPAWN_ELITE_ZOMBIES = BUILDER_SERVER
+   private static final ModConfigSpec.BooleanValue SPAWN_ELITE_ZOMBIES = BUILDER_SERVER
             .comment("If true, elite zombies will spawn | default: true")
             .define("spawnEliteZombies", true);
 
-   private static final ForgeConfigSpec.IntValue CHANCE_FOR_ELITE_ZOMBIE_TO_SPAWN = BUILDER_SERVER
+   private static final ModConfigSpec.IntValue CHANCE_FOR_ELITE_ZOMBIE_TO_SPAWN = BUILDER_SERVER
             .comment("Chance in % for an elite zombie to spawn | default: 3")
             .defineInRange("chanceForEliteZombieToSpawn", 3, 1, 64);
 
-   private static final ForgeConfigSpec.BooleanValue SPAWN_STRAY_HORDE_ZOMBIES = BUILDER_SERVER
+   private static final ModConfigSpec.BooleanValue SPAWN_STRAY_HORDE_ZOMBIES = BUILDER_SERVER
             .comment("If true, single stray horde zombies can spawn on normal nights | default: true")
             .define("spawnStrayHordeZombies", true);
 
-   private static final ForgeConfigSpec.BooleanValue PRINT_DEBUG_MESSAGES = BUILDER_SERVER
+   private static final ModConfigSpec.BooleanValue PRINT_DEBUG_MESSAGES = BUILDER_SERVER
             .comment("If true, debug messages will be logged out | default: false")
             .define("printDebugMessages", false);
 
-    static final ForgeConfigSpec SPEC_SERVER = BUILDER_SERVER.build();
+    static final ModConfigSpec SPEC_SERVER = BUILDER_SERVER.build();
 
 
     // Client Config
-    private static final ForgeConfigSpec.Builder BUILDER_CLIENT = new ForgeConfigSpec.Builder();
+    private static final ModConfigSpec.Builder BUILDER_CLIENT = new ModConfigSpec.Builder();
     // no client config
-    static final ForgeConfigSpec SPEC_CLIENT = BUILDER_CLIENT.build();
+    static final ModConfigSpec SPEC_CLIENT = BUILDER_CLIENT.build();
 
 
     private static boolean undeadNightsEnabled = true;

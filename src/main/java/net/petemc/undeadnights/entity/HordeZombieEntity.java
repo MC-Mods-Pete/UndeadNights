@@ -1,6 +1,5 @@
 package net.petemc.undeadnights.entity;
 
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.DifficultyInstance;
@@ -36,9 +35,9 @@ public class HordeZombieEntity extends Zombie {
 
     @Nullable
     @Override
-    public SpawnGroupData finalizeSpawn(ServerLevelAccessor pLevel, DifficultyInstance pDifficulty, MobSpawnType pReason, @javax.annotation.Nullable SpawnGroupData pSpawnData, @javax.annotation.Nullable CompoundTag pDataTag) {
+    public SpawnGroupData finalizeSpawn(ServerLevelAccessor pLevel, @NotNull DifficultyInstance pDifficulty, @NotNull MobSpawnType pReason, @Nullable SpawnGroupData pSpawnData) {
         RandomSource randomsource = pLevel.getRandom();
-        pSpawnData = super.finalizeSpawn(pLevel, pDifficulty, pReason, pSpawnData, pDataTag);
+        pSpawnData = super.finalizeSpawn(pLevel, pDifficulty, pReason, pSpawnData);
         float f = pDifficulty.getSpecialMultiplier();
         this.setCanPickUpLoot(randomsource.nextFloat() < 0.55F * f);
         if (pSpawnData == null) {
@@ -48,7 +47,7 @@ public class HordeZombieEntity extends Zombie {
         if (pSpawnData instanceof Zombie.ZombieGroupData) {
             this.setCanBreakDoors(true);
             this.populateDefaultEquipmentSlots(randomsource, pDifficulty);
-            this.populateDefaultEquipmentEnchantments(randomsource, pDifficulty);
+            this.populateDefaultEquipmentEnchantments(pLevel, randomsource, pDifficulty);
         }
 
         if (this.getItemBySlot(EquipmentSlot.HEAD).isEmpty()) {
@@ -139,7 +138,7 @@ public class HordeZombieEntity extends Zombie {
             boolean flag = true;
 
             for(EquipmentSlot equipmentslot : EquipmentSlot.values()) {
-                if (equipmentslot.getType() == EquipmentSlot.Type.ARMOR) {
+                if (equipmentslot.getType() == EquipmentSlot.Type.HUMANOID_ARMOR) {
                     ItemStack itemstack = this.getItemBySlot(equipmentslot);
                     if (!flag && random.nextFloat() < f) {
                         break;

@@ -1,17 +1,17 @@
 package net.petemc.undeadnights.sound;
 
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.registries.DeferredRegister;
 import net.petemc.undeadnights.UndeadNights;
 
 import java.util.function.Supplier;
 
 public class UndeadNightsSounds {
         public static final DeferredRegister<SoundEvent> SOUND_EVENTS =
-            DeferredRegister.create(ForgeRegistries.SOUND_EVENTS, UndeadNights.MOD_ID);
+            DeferredRegister.create(Registries.SOUND_EVENT, UndeadNights.MOD_ID);
 
     public static final Supplier<SoundEvent> HORDE_SCREAM = registerSoundEvent("horde_scream");
 
