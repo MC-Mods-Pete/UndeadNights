@@ -12,7 +12,6 @@ import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.animal.IronGolem;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.monster.Zombie;
-import net.minecraft.world.entity.monster.ZombifiedPiglin;
 import net.minecraft.world.entity.npc.WanderingTrader;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
@@ -26,6 +25,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.time.LocalDate;
+import java.util.Objects;
 
 
 public class HordeZombieEntity extends Zombie {
@@ -35,19 +35,19 @@ public class HordeZombieEntity extends Zombie {
 
     @Nullable
     @Override
-    public SpawnGroupData finalizeSpawn(ServerLevelAccessor pLevel, @NotNull DifficultyInstance pDifficulty, @NotNull MobSpawnType pReason, @Nullable SpawnGroupData pSpawnData) {
-        RandomSource randomsource = pLevel.getRandom();
-        pSpawnData = super.finalizeSpawn(pLevel, pDifficulty, pReason, pSpawnData);
-        float f = pDifficulty.getSpecialMultiplier();
+    public SpawnGroupData finalizeSpawn(ServerLevelAccessor level, @NotNull DifficultyInstance difficulty, @NotNull EntitySpawnReason spawnReason, @Nullable SpawnGroupData spawnGroupData) {
+        RandomSource randomsource = level.getRandom();
+        spawnGroupData = super.finalizeSpawn(level, difficulty, spawnReason, spawnGroupData);
+        float f = difficulty.getSpecialMultiplier();
         this.setCanPickUpLoot(randomsource.nextFloat() < 0.55F * f);
-        if (pSpawnData == null) {
-            pSpawnData = new Zombie.ZombieGroupData(false, false);
+        if (spawnGroupData == null) {
+            spawnGroupData = new Zombie.ZombieGroupData(false, false);
         }
 
-        if (pSpawnData instanceof Zombie.ZombieGroupData) {
+        if (spawnGroupData instanceof Zombie.ZombieGroupData) {
             this.setCanBreakDoors(true);
-            this.populateDefaultEquipmentSlots(randomsource, pDifficulty);
-            this.populateDefaultEquipmentEnchantments(pLevel, randomsource, pDifficulty);
+            this.populateDefaultEquipmentSlots(randomsource, difficulty);
+            this.populateDefaultEquipmentEnchantments(level, randomsource, difficulty);
         }
 
         if (this.getItemBySlot(EquipmentSlot.HEAD).isEmpty()) {
@@ -62,7 +62,7 @@ public class HordeZombieEntity extends Zombie {
 
         this.handleAttributes(f);
         this.setBaby(false);
-        return pSpawnData;
+        return spawnGroupData;
     }
 
         public static AttributeSupplier.@NotNull Builder createAttributes() {
@@ -72,7 +72,7 @@ public class HordeZombieEntity extends Zombie {
                     .add(Attributes.MOVEMENT_SPEED, (double) 0.30F)    // default 0.23F
                     .add(Attributes.ATTACK_DAMAGE, 5.0D)        // default 3.0
                     .add(Attributes.ARMOR, 4.0D)                // default 2.0
-                    .add(Attributes.SPAWN_REINFORCEMENTS_CHANCE);
+                    .add(Attributes.SPAWN_REINFORCEMENTS_CHANCE, 0.0f);
         }
 
     @Override
@@ -83,7 +83,7 @@ public class HordeZombieEntity extends Zombie {
         this.goalSelector.addGoal(4, new HordeZombieEntity.ChasePlayerGoal(this));
         this.goalSelector.addGoal(6, new MoveThroughVillageGoal(this, 1.0, true, 4, this::canBreakDoors));
         this.goalSelector.addGoal(7, new WaterAvoidingRandomStrollGoal(this, 1.0));
-        this.targetSelector.addGoal(1, new HurtByTargetGoal(this).setAlertOthers(ZombifiedPiglin.class));
+        this.targetSelector.addGoal(1, new HurtByTargetGoal(this).setAlertOthers(HordeZombieEntity.class));
         this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, false, false));
         this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, WanderingTrader.class, false));
         this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, IronGolem.class, true));
@@ -103,6 +103,11 @@ public class HordeZombieEntity extends Zombie {
     public boolean canBreakDoors()
     {
         return true;
+    }
+
+    @Override
+    public void randomizeReinforcementsChance() {
+        Objects.requireNonNull(this.getAttribute(Attributes.SPAWN_REINFORCEMENTS_CHANCE)).setBaseValue((double)0.0F);
     }
 
     @Override

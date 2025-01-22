@@ -9,8 +9,8 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.DifficultyInstance;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.level.CustomSpawner;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
@@ -162,7 +162,7 @@ public class UndeadSpawner implements CustomSpawner {
                                 e.setPersistenceRequired();
                             }
                             DifficultyInstance localDifficulty = level.getCurrentDifficultyAt(player.blockPosition());
-                            e.finalizeSpawn(level, localDifficulty, MobSpawnType.NATURAL, null);
+                            e.finalizeSpawn(level, localDifficulty, EntitySpawnReason.NATURAL, null);
                             e.setTarget(player);
                             level.addFreshEntity(e);
                             if (Config.getPrintDebugMessages()) {
@@ -260,11 +260,12 @@ public class UndeadSpawner implements CustomSpawner {
                                     e.setPersistenceRequired();
                                 }
                                 DifficultyInstance localDifficulty = level.getCurrentDifficultyAt(player.blockPosition());
-                                e.finalizeSpawn(level, localDifficulty, MobSpawnType.NATURAL, null);
+                                e.finalizeSpawn(level, localDifficulty, EntitySpawnReason.NATURAL, null);
                                 e.setTarget(player);
                                 level.addFreshEntity(e);
                                 i++;
                                 if (i >= Config.getZombieHordeWaveSize()) {
+                                    d = 0;
                                     break;
                                 }
                             }
@@ -279,11 +280,12 @@ public class UndeadSpawner implements CustomSpawner {
                                     e.setPersistenceRequired();
                                 }
                                 DifficultyInstance localDifficulty = level.getCurrentDifficultyAt(player.blockPosition());
-                                e.finalizeSpawn(level, localDifficulty, MobSpawnType.NATURAL, null);
+                                e.finalizeSpawn(level, localDifficulty, EntitySpawnReason.NATURAL, null);
                                 e.setTarget(player);
                                 level.addFreshEntity(e);
                                 i++;
                                 if (i >= Config.getZombieHordeWaveSize()) {
+                                    d = 0;
                                     break;
                                 }
                             }
@@ -297,15 +299,16 @@ public class UndeadSpawner implements CustomSpawner {
                                 e.setPersistenceRequired();
                             }
                             DifficultyInstance localDifficulty = level.getCurrentDifficultyAt(player.blockPosition());
-                            e.finalizeSpawn(level, localDifficulty, MobSpawnType.NATURAL, null);
+                            e.finalizeSpawn(level, localDifficulty, EntitySpawnReason.NATURAL, null);
                             e.setTarget(player);
                             level.addFreshEntity(e);
-
                         } else {
                             UndeadNights.LOGGER.info("Spawncap reached, {} Horde Zombies are already loaded into this world.", Config.getHordeZombiesSpawnCap());
+                            d = 0;
                             break;
                         }
                     }
+                    d = 0;
                     if (!(UndeadNights.globalSpawnCounter < Config.getHordeZombiesSpawnCap())) {
                         break;
                     }
@@ -314,6 +317,9 @@ public class UndeadSpawner implements CustomSpawner {
                 UndeadNights.serverState.setSpawnZombies(false);
                 UndeadNights.serverState.setRespawnZombies(true);
                 UndeadNights.serverState.setDaysCounter(Config.getDaysBetweenHordeNights());
+                if (Config.getPrintDebugMessages()) {
+                    UndeadNights.LOGGER.info("Spawned Waves for every player: DaysCounter: {} GlobalSpawnCounter: {} Spawn: {}, respawn: {}", UndeadNights.serverState.getDaysCounter(), UndeadNights.globalSpawnCounter, UndeadNights.serverState.getSpawnZombies(), UndeadNights.serverState.getRespawnZombies());
+                }
                 d = 0;
                 x = 0;
                 z = 0;

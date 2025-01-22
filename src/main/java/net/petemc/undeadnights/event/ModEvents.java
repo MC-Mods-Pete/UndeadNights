@@ -23,9 +23,9 @@ public class ModEvents {
 
                     UndeadNights.globalSpawnCounter++;
                     if (Config.getPrintDebugMessages()) {
-                        UndeadNights.LOGGER.info("LOAD GlobalSpawnCount: : {}", UndeadNights.globalSpawnCounter);
+                        UndeadNights.LOGGER.info("LOAD GlobalSpawnCount  : {}", UndeadNights.globalSpawnCounter);
                     }
-                    //event.getEntity().kill();
+                    //event.getEntity().kill((ServerLevel) event.getLevel());
                 }
             }
         }
@@ -38,7 +38,11 @@ public class ModEvents {
 
                     UndeadNights.globalSpawnCounter--;
                     if (Config.getPrintDebugMessages()) {
-                        UndeadNights.LOGGER.info("UNLOAD GlobalSpawnCount: {}", UndeadNights.globalSpawnCounter);
+                        if (event.getEntity().getRemovalReason() != null) {
+                            UndeadNights.LOGGER.info("UNLOAD GlobalSpawnCount: {} {}", UndeadNights.globalSpawnCounter, event.getEntity().getRemovalReason().name());
+                        } else {
+                            UndeadNights.LOGGER.info("UNLOAD GlobalSpawnCount: {}", UndeadNights.globalSpawnCounter);
+                        }
                     }
                 }
             }

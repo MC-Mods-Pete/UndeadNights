@@ -16,7 +16,6 @@ import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.animal.IronGolem;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.monster.Zombie;
-import net.minecraft.world.entity.monster.ZombifiedPiglin;
 import net.minecraft.world.entity.npc.WanderingTrader;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
@@ -31,6 +30,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.time.LocalDate;
+import java.util.Objects;
 
 public class DemolitionZombieEntity extends Zombie {
     public DemolitionZombieEntity(EntityType<? extends Zombie> entityType, Level world) {
@@ -39,9 +39,9 @@ public class DemolitionZombieEntity extends Zombie {
 
     @Nullable
     @Override
-    public SpawnGroupData finalizeSpawn(ServerLevelAccessor level, @NotNull DifficultyInstance difficulty, @NotNull MobSpawnType spawnType, SpawnGroupData spawnGroupData) {
+    public SpawnGroupData finalizeSpawn(ServerLevelAccessor level, @NotNull DifficultyInstance difficulty, @NotNull EntitySpawnReason spawnReason, @Nullable SpawnGroupData spawnGroupData) {
         RandomSource randomsource = level.getRandom();
-        spawnGroupData = super.finalizeSpawn(level, difficulty, spawnType, spawnGroupData);
+        spawnGroupData = super.finalizeSpawn(level, difficulty, spawnReason, spawnGroupData);
         float f = difficulty.getSpecialMultiplier();
         this.setCanPickUpLoot(randomsource.nextFloat() < 0.55F * f);
         if (spawnGroupData == null) {
@@ -76,7 +76,7 @@ public class DemolitionZombieEntity extends Zombie {
                 .add(Attributes.MOVEMENT_SPEED, (double) 0.30F)    // default 0.23F
                 .add(Attributes.ATTACK_DAMAGE, 5.0D)        // default 3.0
                 .add(Attributes.ARMOR, 4.0D)                // default 2.0
-                .add(Attributes.SPAWN_REINFORCEMENTS_CHANCE);
+                .add(Attributes.SPAWN_REINFORCEMENTS_CHANCE, 0.0f);
     }
 
     @Override
@@ -87,33 +87,32 @@ public class DemolitionZombieEntity extends Zombie {
         this.goalSelector.addGoal(4, new DemolitionZombieEntity.ChasePlayerGoal(this));
         this.goalSelector.addGoal(6, new MoveThroughVillageGoal(this, 1.0, true, 4, this::canBreakDoors));
         this.goalSelector.addGoal(7, new WaterAvoidingRandomStrollGoal(this, 1.0));
-        this.targetSelector.addGoal(1, new HurtByTargetGoal(this).setAlertOthers(ZombifiedPiglin.class));
+        this.targetSelector.addGoal(1, new HurtByTargetGoal(this).setAlertOthers(HordeZombieEntity.class));
         this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, false, false));
         this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, WanderingTrader.class, false));
         this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, IronGolem.class, true));
     }
 
     @Override
-    public boolean hurt(@NotNull DamageSource pSource, float pAmount) {
+    public boolean hurtServer(@NotNull ServerLevel level, @NotNull DamageSource pSource, float pAmount) {
         if (this.isOnFire()) {
-            Level level = this.level();
             BlockPos pos = this.blockPosition();
             this.remove(RemovalReason.KILLED);
             level.explode(this, pos.getX(), pos.getY(), pos.getZ(), 5, true, Level.ExplosionInteraction.TNT);
             return true;
         }
-        return super.hurt(pSource, pAmount);
+        return super.hurtServer(level, pSource, pAmount);
     }
 
     @Override
     protected void dropCustomDeathLoot(@NotNull ServerLevel level, @NotNull DamageSource damageSource, boolean recentlyHit) {
         super.dropCustomDeathLoot(level, damageSource, recentlyHit);
-        dropInventory();
+        dropInventory(level);
     }
 
-    public void dropInventory() {
+    public void dropInventory(ServerLevel level) {
         if (!this.getMainHandItem().isEmpty()) {
-            this.spawnAtLocation(this.getMainHandItem());
+            this.spawnAtLocation(level, this.getMainHandItem());
             this.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
         }
     }
@@ -180,6 +179,11 @@ public class DemolitionZombieEntity extends Zombie {
     public boolean canBreakDoors()
     {
         return true;
+    }
+
+    @Override
+    public void randomizeReinforcementsChance() {
+        Objects.requireNonNull(this.getAttribute(Attributes.SPAWN_REINFORCEMENTS_CHANCE)).setBaseValue((double)0.0F);
     }
 
     static class ChasePlayerGoal extends Goal {
