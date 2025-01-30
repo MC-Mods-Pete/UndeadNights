@@ -3,22 +3,24 @@ package net.petemc.undeadnights.world.spawner;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.DifficultyInstance;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.*;
+import net.minecraft.world.entity.monster.Zombie;
 import net.minecraft.world.level.CustomSpawner;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraftforge.registries.ForgeRegistries;
 import net.petemc.undeadnights.Config;
 import net.petemc.undeadnights.UndeadNights;
+import net.petemc.undeadnights.config.ConfigManager;
 import net.petemc.undeadnights.entity.DemolitionZombieEntity;
-import net.petemc.undeadnights.entity.EliteZombieEntity;
 import net.petemc.undeadnights.entity.HordeZombieEntity;
 import net.petemc.undeadnights.entity.ModEntities;
 import net.petemc.undeadnights.sound.UndeadNightsSounds;
@@ -249,6 +251,71 @@ public class UndeadSpawner implements CustomSpawner {
                                 }
                             }
 
+                            // Spawn special horde mobs
+                            for (var mobSpawnData : ConfigManager.getSpecialHordeMobs()) {
+                                randomValue = randomSource.nextIntBetweenInclusive(1, 100);
+                                if (randomValue > (100 - mobSpawnData.chance())) {
+                                    EntityType<?> mobType = ForgeRegistries.ENTITY_TYPES.getValue(new ResourceLocation(mobSpawnData.mobId()));
+                                    assert mobType != null;
+                                    Mob mob = (Mob) mobType.create(level);
+                                    int deltaX = randomSource.nextInt(8);
+                                    int deltaZ = randomSource.nextInt(8);
+                                    assert mob != null;
+                                    mob.setPos(pos.getX() + deltaX, level.getHeight(Heightmap.Types.WORLD_SURFACE, pos.getX() + deltaX, pos.getZ() + deltaZ), pos.getZ() + deltaZ);
+                                    if (Config.getPersistentZombies()) {
+                                        mob.setPersistenceRequired();
+                                    }
+                                    if (mobSpawnData.mobId().equals("undeadnights:demolition_zombie")) {
+                                        String str = mobSpawnData.extra();
+                                        String[] strA = str.split(":");
+                                        if (strA[0].equals("tnt")) {
+                                            try {
+                                                int numberTnt = Integer.parseInt(strA[1]);
+                                                if (numberTnt > 64) {
+                                                    numberTnt = 64;
+                                                }
+                                                DemolitionZombieEntity demolitionZombie = (DemolitionZombieEntity) mob;
+                                                demolitionZombie.setNumberTnt(numberTnt);
+                                            } catch (Exception e) {
+                                                UndeadNights.LOGGER.warn("extraSpawnInfo for {} has non valid value, using default TNT stack size!", mobSpawnData.mobId());
+                                            }
+                                        } else {
+                                            UndeadNights.LOGGER.warn("extraSpawnInfo for {} could be read, using default TNT stack size!", mobSpawnData.mobId());
+                                        }
+                                    }
+                                    DifficultyInstance localDifficulty = level.getCurrentDifficultyAt(player.blockPosition());
+                                    mob.finalizeSpawn(level, localDifficulty, MobSpawnType.NATURAL, new Zombie.ZombieGroupData(false, false), null);
+                                    mob.setTarget(player);
+                                    UndeadNights.serverState.spawnedHordeMobs.add(mob.getUUID());
+                                    level.addFreshEntity(mob);
+                                    i++;
+                                    if (i >= Config.getZombieHordeWaveSize()) {
+                                        break;
+                                    }
+                                }
+                                if (i >= Config.getZombieHordeWaveSize()) {
+                                    break;
+                                }
+                            }
+
+                            // Spawn default horde mobs
+                            EntityType<?> mobType = ForgeRegistries.ENTITY_TYPES.getValue(new ResourceLocation(ConfigManager.getDefaultHordeMob().mobId()));
+                            assert mobType != null;
+                            Mob mob = (Mob) mobType.create(level);
+                            int deltaX = randomSource.nextInt(8);
+                            int deltaZ = randomSource.nextInt(8);
+                            assert mob != null;
+                            mob.setPos(pos.getX() + deltaX, level.getHeight(Heightmap.Types.WORLD_SURFACE, pos.getX() + deltaX, pos.getZ() + deltaZ), pos.getZ() + deltaZ);
+                            if (Config.getPersistentZombies()) {
+                                mob.setPersistenceRequired();
+                            }
+                            DifficultyInstance localDifficulty = level.getCurrentDifficultyAt(player.blockPosition());
+                            mob.finalizeSpawn(level, localDifficulty, MobSpawnType.NATURAL, new Zombie.ZombieGroupData(false, false), null);
+                            mob.setTarget(player);
+                            UndeadNights.serverState.spawnedHordeMobs.add(mob.getUUID());
+                            level.addFreshEntity(mob);
+                            /*
+
                             // spawn demolition zombies
                             randomValue = randomSource.nextIntBetweenInclusive(1, 100);
                             if (Config.getSpawnDemolitionZombies() && (randomValue > (100 - Config.getChanceForDemolitionZombieToSpawn()))) {
@@ -259,6 +326,7 @@ public class UndeadSpawner implements CustomSpawner {
                                 if (Config.getPersistentZombies()) {
                                     e.setPersistenceRequired();
                                 }
+                                e.setNumberTnt(Config.getDemolitionZombieTntStackSize());
                                 DifficultyInstance localDifficulty = level.getCurrentDifficultyAt(player.blockPosition());
                                 e.finalizeSpawn(level, localDifficulty, MobSpawnType.NATURAL, null, null);
                                 e.setTarget(player);
@@ -300,9 +368,11 @@ public class UndeadSpawner implements CustomSpawner {
                             e.finalizeSpawn(level, localDifficulty, MobSpawnType.NATURAL, null, null);
                             e.setTarget(player);
                             level.addFreshEntity(e);
+                             */
 
                         } else {
                             UndeadNights.LOGGER.info("Spawncap reached, {} Horde Zombies are already loaded into this world.", Config.getHordeZombiesSpawnCap());
+                            d = 0;
                             break;
                         }
                     }

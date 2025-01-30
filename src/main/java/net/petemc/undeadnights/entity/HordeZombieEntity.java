@@ -28,7 +28,6 @@ import org.jetbrains.annotations.Nullable;
 import java.time.LocalDate;
 import java.util.Objects;
 
-
 public class HordeZombieEntity extends Zombie {
     public HordeZombieEntity(EntityType<? extends Zombie> entityType, Level level) {
         super(entityType, level);

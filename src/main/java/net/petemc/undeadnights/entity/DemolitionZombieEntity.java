@@ -37,6 +37,8 @@ public class DemolitionZombieEntity extends Zombie {
         super(entityType, world);
     }
 
+    private int numberTnt = 1;
+
     @Nullable
     @Override
     public SpawnGroupData finalizeSpawn(ServerLevelAccessor pLevel, DifficultyInstance pDifficulty, MobSpawnType pReason, @javax.annotation.Nullable SpawnGroupData pSpawnData, @javax.annotation.Nullable CompoundTag pDataTag) {
@@ -120,11 +122,11 @@ public class DemolitionZombieEntity extends Zombie {
 
     @Override
     protected void populateDefaultEquipmentSlots(@NotNull RandomSource pRandom, @NotNull DifficultyInstance pDifficulty) {
-        if (Config.getDemolitionZombieTntStackSize() == 0) {
+        if (numberTnt == 0) {
             this.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.TNT));
         }
-        if ((Config.getDemolitionZombieTntStackSize() > 0) && (Config.getDemolitionZombieTntStackSize() <= 64)){
-            this.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.TNT, Config.getDemolitionZombieTntStackSize()));
+        if ((numberTnt > 0) && (numberTnt <= 64)) {
+            this.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.TNT, numberTnt));
         }
         initCustomEquipment(pRandom, pDifficulty);
     }
@@ -185,6 +187,14 @@ public class DemolitionZombieEntity extends Zombie {
     @Override
     public void randomizeReinforcementsChance() {
         Objects.requireNonNull(this.getAttribute(Attributes.SPAWN_REINFORCEMENTS_CHANCE)).setBaseValue((double)0.0F);
+    }
+
+    public void setNumberTnt(int value) {
+        this.numberTnt = value;
+    }
+
+    public int getNumberTnt() {
+        return this.numberTnt;
     }
 
     static class ChasePlayerGoal extends Goal {

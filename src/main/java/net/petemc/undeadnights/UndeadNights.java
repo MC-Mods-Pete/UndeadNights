@@ -18,6 +18,7 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.petemc.undeadnights.client.render.DemolitionZombieRenderer;
 import net.petemc.undeadnights.client.render.EliteZombieRenderer;
 import net.petemc.undeadnights.client.render.HordeZombieRenderer;
+import net.petemc.undeadnights.config.ConfigManager;
 import net.petemc.undeadnights.entity.ModEntities;
 import net.petemc.undeadnights.sound.UndeadNightsSounds;
 import net.petemc.undeadnights.util.StateSaverAndLoader;
@@ -43,6 +44,7 @@ public class UndeadNights {
 		MinecraftForge.EVENT_BUS.register(this);
 		//modEventBus.addListener(this::addCreative);
 		ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, Config.SPEC_SERVER);
+		ConfigManager.loadConfig();
 	}
 
 	private void commonSetup(final FMLCommonSetupEvent event) {
