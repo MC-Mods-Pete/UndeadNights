@@ -28,7 +28,11 @@ public class ServerEntityUnLoadEvent {
 
            UndeadNights.globalSpawnCounter--;
            if (Config.getPrintDebugMessages()) {
-               UndeadNights.LOGGER.info("UNLOAD GlobalSpawnCount: {}", UndeadNights.globalSpawnCounter);
+               if (pEntity.getRemovalReason() != null) {
+                   UndeadNights.LOGGER.info("UNLOAD GlobalSpawnCount: {} {}", UndeadNights.globalSpawnCounter, pEntity.getRemovalReason().name());
+               } else {
+                   UndeadNights.LOGGER.info("UNLOAD GlobalSpawnCount: {}", UndeadNights.globalSpawnCounter);
+               }
            }
        }
     }
