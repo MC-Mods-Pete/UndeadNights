@@ -28,7 +28,7 @@ public class ServerEntityLoadEvent {
 
            UndeadNights.globalSpawnCounter++;
            if (Config.getPrintDebugMessages()) {
-               UndeadNights.LOGGER.info("LOAD GlobalSpawnCount: : {}", UndeadNights.globalSpawnCounter);
+               UndeadNights.LOGGER.info("LOAD GlobalSpawnCount  : {}", UndeadNights.globalSpawnCounter);
            }
            //pEntity.remove(Entity.RemovalReason.KILLED);
        }

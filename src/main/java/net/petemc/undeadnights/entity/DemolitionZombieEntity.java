@@ -30,6 +30,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.time.LocalDate;
 import java.util.EnumSet;
+import java.util.Objects;
 
 public class DemolitionZombieEntity extends ZombieEntity {
     public DemolitionZombieEntity(EntityType<? extends ZombieEntity> entityType, World world) {
@@ -54,7 +55,7 @@ public class DemolitionZombieEntity extends ZombieEntity {
         this.goalSelector.add(4, new ChasePlayerGoal(this));
         this.goalSelector.add(6, new MoveThroughVillageGoal(this, 1.0, true, 4, this::canBreakDoors));
         this.goalSelector.add(7, new WanderAroundFarGoal(this, 1.0));
-        this.targetSelector.add(1, new RevengeGoal(this).setGroupRevenge(ZombifiedPiglinEntity.class));
+        this.targetSelector.add(1, new RevengeGoal(this).setGroupRevenge(HordeZombieEntity.class));
         this.targetSelector.add(2, new ActiveTargetGoal<>(this, PlayerEntity.class, false, false));
         this.targetSelector.add(3, new ActiveTargetGoal<>(this, MerchantEntity.class, false));
         this.targetSelector.add(3, new ActiveTargetGoal<>(this, IronGolemEntity.class, true));
@@ -178,6 +179,11 @@ public class DemolitionZombieEntity extends ZombieEntity {
     public boolean canBreakDoors()
     {
         return true;
+    }
+
+    @Override
+    protected void initAttributes() {
+        Objects.requireNonNull(this.getAttributeInstance(EntityAttributes.ZOMBIE_SPAWN_REINFORCEMENTS)).setBaseValue(0.0F);
     }
 
     static class ChasePlayerGoal extends Goal {
