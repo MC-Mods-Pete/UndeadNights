@@ -21,8 +21,6 @@ public class UndeadNights implements ModInitializer {
 
 	public static StateSaverAndLoader serverState = null;
 
-	//public static boolean hordeNight = false;
-
 	public static int globalSpawnCounter = 0;
 
 	@Override

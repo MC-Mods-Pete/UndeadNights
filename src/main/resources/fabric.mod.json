@@ -8,7 +8,7 @@
 		"Pete MC Mods, mcmods.pete@gmail.com"
 	],
 	"contact": {
-		"homepage": "https://modrinth.com/user/PeteMC",
+		"homepage": "https://modrinth.com/mod/undead-nights",
 		"sources": "https://github.com/MC-Mods-Pete/UndeadNights",
 		"issues": "https://github.com/MC-Mods-Pete/UndeadNights/issues"
 	},
@@ -37,10 +37,10 @@
 		"minecraft": "${mc_version_range}",
 		"java": "${java_version_range}",
 		"fabric-api": "*",
-		"cloth-config": ">=11.1.118"
+		"cloth-config": ">=${cloth_config_version}"
 	},
 	"suggests": {
-		"modmenu": ">=7.0.1",
+		"modmenu": ">=${modmenu_version}",
 		"another-mod": "*"
 	}
 }
