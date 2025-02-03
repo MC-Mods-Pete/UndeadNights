@@ -69,7 +69,7 @@ public class UndeadSpawner implements CustomSpawner {
         }
 
         // Are we in the Overworld?
-        if (!level.dimensionType().hasSkyLight()) {
+        if (!(level.dimension() == Level.OVERWORLD)) {
             return 0;
         }
         
@@ -306,6 +306,7 @@ public class UndeadSpawner implements CustomSpawner {
                             break;
                         }
                     }
+                    d = 0;
                     if (!(UndeadNights.globalSpawnCounter < Config.getHordeZombiesSpawnCap())) {
                         break;
                     }
@@ -314,6 +315,9 @@ public class UndeadSpawner implements CustomSpawner {
                 UndeadNights.serverState.setSpawnZombies(false);
                 UndeadNights.serverState.setRespawnZombies(true);
                 UndeadNights.serverState.setDaysCounter(Config.getDaysBetweenHordeNights());
+                if (Config.getPrintDebugMessages()) {
+                    UndeadNights.LOGGER.info("Spawned Waves for every player: DaysCounter: {} GlobalSpawnCounter: {} Spawn: {}, respawn: {}", UndeadNights.serverState.getDaysCounter(), UndeadNights.globalSpawnCounter, UndeadNights.serverState.getSpawnZombies(), UndeadNights.serverState.getRespawnZombies());
+                }
                 d = 0;
                 x = 0;
                 z = 0;
