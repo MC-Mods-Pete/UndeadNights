@@ -71,7 +71,7 @@ public class EliteZombieEntity extends Zombie {
                 .add(Attributes.MOVEMENT_SPEED, (double) 0.32F)    // default 0.23F
                 .add(Attributes.ATTACK_DAMAGE, 6.0D)        // default 3.0
                 .add(Attributes.ARMOR, 5.0D)                // default 2.0
-                .add(Attributes.SPAWN_REINFORCEMENTS_CHANCE, 0.0f);
+                .add(Attributes.SPAWN_REINFORCEMENTS_CHANCE);
     }
 
     @Override

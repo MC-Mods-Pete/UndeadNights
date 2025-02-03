@@ -69,7 +69,7 @@ public class UndeadSpawner implements CustomSpawner {
         }
 
         // Are we in the Overworld?
-        if (!level.dimensionType().hasSkyLight()) {
+        if (!(level.dimension() == Level.OVERWORLD)) {
             return 0;
         }
         
@@ -197,7 +197,7 @@ public class UndeadSpawner implements CustomSpawner {
                     BlockPos pos = player.blockPosition();
                     boolean foundHordeSpawnLocation = false;
 
-                    for (int i= 0; i < 20; i++){
+                    for (int i= 0; i < 20; i++) {
                         // for the given min/max distance, calculate the x and z coordinates deltas
                         if (d == 0) {
                             d = randomSource.nextIntBetweenInclusive(Config.getDistanceMin(), Config.getDistanceMax());
@@ -265,7 +265,6 @@ public class UndeadSpawner implements CustomSpawner {
                                 level.addFreshEntity(e);
                                 i++;
                                 if (i >= Config.getZombieHordeWaveSize()) {
-                                    d = 0;
                                     break;
                                 }
                             }
@@ -285,7 +284,6 @@ public class UndeadSpawner implements CustomSpawner {
                                 level.addFreshEntity(e);
                                 i++;
                                 if (i >= Config.getZombieHordeWaveSize()) {
-                                    d = 0;
                                     break;
                                 }
                             }
@@ -304,7 +302,6 @@ public class UndeadSpawner implements CustomSpawner {
                             level.addFreshEntity(e);
                         } else {
                             UndeadNights.LOGGER.info("Spawncap reached, {} Horde Zombies are already loaded into this world.", Config.getHordeZombiesSpawnCap());
-                            d = 0;
                             break;
                         }
                     }

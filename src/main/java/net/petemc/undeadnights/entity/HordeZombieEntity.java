@@ -72,7 +72,7 @@ public class HordeZombieEntity extends Zombie {
                     .add(Attributes.MOVEMENT_SPEED, (double) 0.30F)    // default 0.23F
                     .add(Attributes.ATTACK_DAMAGE, 5.0D)        // default 3.0
                     .add(Attributes.ARMOR, 4.0D)                // default 2.0
-                    .add(Attributes.SPAWN_REINFORCEMENTS_CHANCE, 0.0f);
+                    .add(Attributes.SPAWN_REINFORCEMENTS_CHANCE);
         }
 
     @Override
