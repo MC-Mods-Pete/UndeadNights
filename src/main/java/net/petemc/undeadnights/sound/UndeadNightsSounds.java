@@ -16,8 +16,7 @@ public class UndeadNightsSounds {
     public static final Supplier<SoundEvent> HORDE_SCREAM = registerSoundEvent("horde_scream");
 
     private static Supplier<SoundEvent> registerSoundEvent(String name) {
-        ResourceLocation id = ResourceLocation.tryBuild(UndeadNights.MOD_ID, name);
-        return SOUND_EVENTS.register(name, () -> SoundEvent.createVariableRangeEvent(id));
+        return SOUND_EVENTS.register(name, () -> new SoundEvent(new ResourceLocation(UndeadNights.MOD_ID, name)));
     }
 
     public static void register(IEventBus eventBus) {

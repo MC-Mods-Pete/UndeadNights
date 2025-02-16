@@ -2,10 +2,8 @@ package net.petemc.undeadnights;
 
 import com.mojang.logging.LogUtils;
 import net.minecraft.client.renderer.entity.EntityRenderers;
-import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
 import net.minecraftforge.event.server.ServerStartingEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -49,12 +47,6 @@ public class UndeadNights {
 		event.enqueueWork(() -> {
 
 		});
-	}
-
-	private void addCreative(BuildCreativeModeTabContentsEvent event) {
-		if(event.getTabKey() == CreativeModeTabs.INGREDIENTS) {
-
-		}
 	}
 
 	// You can use SubscribeEvent and let the Event Bus discover methods to call

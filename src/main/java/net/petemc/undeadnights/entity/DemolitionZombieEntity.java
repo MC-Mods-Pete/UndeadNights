@@ -21,6 +21,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.Blocks;
@@ -96,10 +97,10 @@ public class DemolitionZombieEntity extends Zombie {
     @Override
     public boolean hurt(@NotNull DamageSource pSource, float pAmount) {
         if (this.isOnFire()) {
-            Level level = this.level();
+            Level level = this.level;
             BlockPos pos = this.blockPosition();
             this.remove(RemovalReason.KILLED);
-            level.explode(this, pos.getX(), pos.getY(), pos.getZ(), 5, true, Level.ExplosionInteraction.TNT);
+            level.explode(this, pos.getX(), pos.getY(), pos.getZ(), 5, true, Explosion.BlockInteraction.DESTROY);
             return true;
         }
         return super.hurt(pSource, pAmount);
@@ -132,7 +133,7 @@ public class DemolitionZombieEntity extends Zombie {
     protected void initCustomEquipment(@NotNull RandomSource pRandom, @NotNull DifficultyInstance pDifficulty) {
         if (pRandom.nextFloat() < 0.15F * pDifficulty.getSpecialMultiplier()) {
             int i = pRandom.nextInt(2);
-            float f = this.level().getDifficulty() == Difficulty.HARD ? 0.1F : 0.25F;
+            float f = this.level.getDifficulty() == Difficulty.HARD ? 0.1F : 0.25F;
             if (pRandom.nextFloat() < 0.095F) {
                 ++i;
             }

@@ -34,7 +34,7 @@ public class UndeadSpawner implements CustomSpawner {
         BlockPos.MutableBlockPos mutable = new BlockPos.MutableBlockPos(x, y, z);
 
         BlockState blockState = level.getBlockState(mutable);
-        boolean flag1 = blockState.blocksMotion();
+        boolean flag1 = blockState.getMaterial().blocksMotion();
         boolean flag2 = blockState.getFluidState().is(FluidTags.WATER);
         return (flag1 && !flag2);
     }
@@ -242,7 +242,7 @@ public class UndeadSpawner implements CustomSpawner {
                     for (int i = 0; i < Config.getZombieHordeWaveSize(); i++) {
                         if (UndeadNights.globalSpawnCounter < Config.getHordeZombiesSpawnCap()) {
                             if (i == 0) {
-                                player.level().playSound(null, player.getX(), player.getY(), player.getZ(), UndeadNightsSounds.HORDE_SCREAM.get(), SoundSource.HOSTILE, 4.0F, 1);
+                                player.level.playSound(null, player.getX(), player.getY(), player.getZ(), UndeadNightsSounds.HORDE_SCREAM.get(), SoundSource.HOSTILE, 4.0F, 1);
                                 player.sendSystemMessage(Component.translatable("message.undeadnights.horde_spawned").withStyle(ChatFormatting.RED));
                                 if (Config.getPrintDebugMessages()) {
                                     UndeadNights.LOGGER.info("A Horde has spanned!");

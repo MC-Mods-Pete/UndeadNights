@@ -114,7 +114,7 @@ public class HordeZombieEntity extends Zombie {
     @Override
     protected void populateDefaultEquipmentSlots(@NotNull RandomSource pRandom, @NotNull DifficultyInstance pDifficulty) {
         initCustomEquipment(pRandom, pDifficulty);
-        if (pRandom.nextFloat() < (this.level().getDifficulty() == Difficulty.HARD ? 0.07F : 0.03F)) {
+        if (pRandom.nextFloat() < (this.level.getDifficulty() == Difficulty.HARD ? 0.07F : 0.03F)) {
             int i = random.nextInt(3);
             if (i == 0) {
                 this.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.IRON_SWORD));
@@ -128,7 +128,7 @@ public class HordeZombieEntity extends Zombie {
     protected void initCustomEquipment(RandomSource random, DifficultyInstance localDifficulty) {
         if (random.nextFloat() < 0.2F * localDifficulty.getSpecialMultiplier()) {
             int i = random.nextInt(2);
-            float f = this.level().getDifficulty() == Difficulty.HARD ? 0.2F : 0.45F;
+            float f = this.level.getDifficulty() == Difficulty.HARD ? 0.2F : 0.45F;
             if (random.nextFloat() < 0.095F) {
                 i++;
             }
