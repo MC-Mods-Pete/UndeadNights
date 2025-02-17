@@ -1,7 +1,7 @@
 package net.petemc.undeadnights.event;
 
-import net.minecraftforge.event.entity.EntityJoinLevelEvent;
-import net.minecraftforge.event.entity.EntityLeaveLevelEvent;
+import net.minecraftforge.event.entity.EntityJoinWorldEvent;
+import net.minecraftforge.event.entity.EntityLeaveWorldEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.petemc.undeadnights.Config;
@@ -14,8 +14,8 @@ public class ModEvents {
     @Mod.EventBusSubscriber(modid = UndeadNights.MOD_ID)
     public static class ForgeEvents {
         @SubscribeEvent
-        public static void onEntityJoinWorld(EntityJoinLevelEvent event) {
-            if(!event.getLevel().isClientSide()) {
+        public static void onEntityJoinWorld(EntityJoinWorldEvent event) {
+            if(!event.getWorld().isClientSide()) {
                 if (event.getEntity() instanceof HordeZombieEntity || event.getEntity() instanceof DemolitionZombieEntity
                         || event.getEntity() instanceof EliteZombieEntity) {
 
@@ -29,8 +29,8 @@ public class ModEvents {
         }
 
         @SubscribeEvent
-        public static void onEntityLeaveWorld(EntityLeaveLevelEvent event) {
-            if(!event.getLevel().isClientSide()) {
+        public static void onEntityLeaveWorld(EntityLeaveWorldEvent event) {
+            if(!event.getWorld().isClientSide()) {
                 if (event.getEntity() instanceof HordeZombieEntity || event.getEntity() instanceof DemolitionZombieEntity
                         || event.getEntity() instanceof EliteZombieEntity) {
 

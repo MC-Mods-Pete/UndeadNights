@@ -10,7 +10,7 @@ import net.petemc.undeadnights.UndeadNights;
 
 public class ModEntities {
     public static final DeferredRegister<EntityType<?>> ENTITY_TYPES =
-            DeferredRegister.create(ForgeRegistries.ENTITY_TYPES, UndeadNights.MOD_ID);
+            DeferredRegister.create(ForgeRegistries.ENTITIES.getRegistrySuperType(), UndeadNights.MOD_ID);
 
     public static final RegistryObject<EntityType<HordeZombieEntity>> HORDE_ZOMBIE =
             ENTITY_TYPES.register("horde_zombie", () -> EntityType.Builder.of(HordeZombieEntity::new, MobCategory.CREATURE)

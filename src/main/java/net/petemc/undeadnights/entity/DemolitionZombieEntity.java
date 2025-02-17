@@ -2,7 +2,6 @@ package net.petemc.undeadnights.entity;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.util.RandomSource;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.InteractionHand;
@@ -32,6 +31,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.time.LocalDate;
 import java.util.Objects;
+import java.util.Random;
 
 public class DemolitionZombieEntity extends Zombie {
     public DemolitionZombieEntity(EntityType<? extends Zombie> entityType, Level world) {
@@ -41,7 +41,7 @@ public class DemolitionZombieEntity extends Zombie {
     @Nullable
     @Override
     public SpawnGroupData finalizeSpawn(ServerLevelAccessor pLevel, DifficultyInstance pDifficulty, MobSpawnType pReason, @javax.annotation.Nullable SpawnGroupData pSpawnData, @javax.annotation.Nullable CompoundTag pDataTag) {
-        RandomSource randomsource = pLevel.getRandom();
+        Random randomsource = pLevel.getRandom();
         pSpawnData = super.finalizeSpawn(pLevel, pDifficulty, pReason, pSpawnData, pDataTag);
         float f = pDifficulty.getSpecialMultiplier();
         this.setCanPickUpLoot(randomsource.nextFloat() < 0.55F * f);
@@ -52,7 +52,7 @@ public class DemolitionZombieEntity extends Zombie {
         if (pSpawnData instanceof Zombie.ZombieGroupData) {
             this.setCanBreakDoors(true);
             this.populateDefaultEquipmentSlots(randomsource, pDifficulty);
-            this.populateDefaultEquipmentEnchantments(randomsource, pDifficulty);
+            this.populateDefaultEquipmentEnchantments(pDifficulty);
         }
 
         if (this.getItemBySlot(EquipmentSlot.HEAD).isEmpty()) {
@@ -119,8 +119,7 @@ public class DemolitionZombieEntity extends Zombie {
         }
     }
 
-    @Override
-    protected void populateDefaultEquipmentSlots(@NotNull RandomSource pRandom, @NotNull DifficultyInstance pDifficulty) {
+    protected void populateDefaultEquipmentSlots(@NotNull Random pRandom, @NotNull DifficultyInstance pDifficulty) {
         if (Config.getDemolitionZombieTntStackSize() == 0) {
             this.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.TNT));
         }
@@ -130,7 +129,7 @@ public class DemolitionZombieEntity extends Zombie {
         initCustomEquipment(pRandom, pDifficulty);
     }
 
-    protected void initCustomEquipment(@NotNull RandomSource pRandom, @NotNull DifficultyInstance pDifficulty) {
+    protected void initCustomEquipment(@NotNull Random pRandom, @NotNull DifficultyInstance pDifficulty) {
         if (pRandom.nextFloat() < 0.15F * pDifficulty.getSpecialMultiplier()) {
             int i = pRandom.nextInt(2);
             float f = this.level.getDifficulty() == Difficulty.HARD ? 0.1F : 0.25F;

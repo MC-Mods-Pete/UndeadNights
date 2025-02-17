@@ -1,7 +1,6 @@
 package net.petemc.undeadnights.entity;
 
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.util.RandomSource;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.entity.*;
@@ -27,6 +26,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.time.LocalDate;
 import java.util.Objects;
+import java.util.Random;
 
 
 public class HordeZombieEntity extends Zombie {
@@ -37,7 +37,7 @@ public class HordeZombieEntity extends Zombie {
     @Nullable
     @Override
     public SpawnGroupData finalizeSpawn(ServerLevelAccessor pLevel, DifficultyInstance pDifficulty, MobSpawnType pReason, @javax.annotation.Nullable SpawnGroupData pSpawnData, @javax.annotation.Nullable CompoundTag pDataTag) {
-        RandomSource randomsource = pLevel.getRandom();
+        Random randomsource = pLevel.getRandom();
         pSpawnData = super.finalizeSpawn(pLevel, pDifficulty, pReason, pSpawnData, pDataTag);
         float f = pDifficulty.getSpecialMultiplier();
         this.setCanPickUpLoot(randomsource.nextFloat() < 0.55F * f);
@@ -48,7 +48,7 @@ public class HordeZombieEntity extends Zombie {
         if (pSpawnData instanceof Zombie.ZombieGroupData) {
             this.setCanBreakDoors(true);
             this.populateDefaultEquipmentSlots(randomsource, pDifficulty);
-            this.populateDefaultEquipmentEnchantments(randomsource, pDifficulty);
+            this.populateDefaultEquipmentEnchantments(pDifficulty);
         }
 
         if (this.getItemBySlot(EquipmentSlot.HEAD).isEmpty()) {
@@ -111,8 +111,7 @@ public class HordeZombieEntity extends Zombie {
         Objects.requireNonNull(this.getAttribute(Attributes.SPAWN_REINFORCEMENTS_CHANCE)).setBaseValue((double)0.0F);
     }
 
-    @Override
-    protected void populateDefaultEquipmentSlots(@NotNull RandomSource pRandom, @NotNull DifficultyInstance pDifficulty) {
+    protected void populateDefaultEquipmentSlots(@NotNull Random pRandom, @NotNull DifficultyInstance pDifficulty) {
         initCustomEquipment(pRandom, pDifficulty);
         if (pRandom.nextFloat() < (this.level.getDifficulty() == Difficulty.HARD ? 0.07F : 0.03F)) {
             int i = random.nextInt(3);
@@ -125,7 +124,7 @@ public class HordeZombieEntity extends Zombie {
         }
     }
 
-    protected void initCustomEquipment(RandomSource random, DifficultyInstance localDifficulty) {
+    protected void initCustomEquipment(Random random, DifficultyInstance localDifficulty) {
         if (random.nextFloat() < 0.2F * localDifficulty.getSpecialMultiplier()) {
             int i = random.nextInt(2);
             float f = this.level.getDifficulty() == Difficulty.HARD ? 0.2F : 0.45F;

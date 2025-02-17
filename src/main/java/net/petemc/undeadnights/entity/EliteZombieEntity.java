@@ -1,7 +1,6 @@
 package net.petemc.undeadnights.entity;
 
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.util.RandomSource;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.*;
@@ -27,6 +26,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.time.LocalDate;
 import java.util.Objects;
+import java.util.Random;
 
 
 public class EliteZombieEntity extends Zombie {
@@ -37,7 +37,7 @@ public class EliteZombieEntity extends Zombie {
     @Nullable
     @Override
     public SpawnGroupData finalizeSpawn(ServerLevelAccessor pLevel, DifficultyInstance pDifficulty, MobSpawnType pReason, @javax.annotation.Nullable SpawnGroupData pSpawnData, @javax.annotation.Nullable CompoundTag pDataTag) {
-        RandomSource randomsource = pLevel.getRandom();
+        Random randomsource = pLevel.getRandom();
         pSpawnData = super.finalizeSpawn(pLevel, pDifficulty, pReason, pSpawnData, pDataTag);
         float f = pDifficulty.getSpecialMultiplier();
         this.setCanPickUpLoot(randomsource.nextFloat() < 0.55F * f);
@@ -48,7 +48,7 @@ public class EliteZombieEntity extends Zombie {
         if (pSpawnData instanceof Zombie.ZombieGroupData) {
             this.setCanBreakDoors(true);
             this.populateDefaultEquipmentSlots(randomsource, pDifficulty);
-            this.populateDefaultEquipmentEnchantments(randomsource, pDifficulty);
+            this.populateDefaultEquipmentEnchantments(pDifficulty);
         }
 
         if (this.getItemBySlot(EquipmentSlot.HEAD).isEmpty()) {
@@ -90,14 +90,12 @@ public class EliteZombieEntity extends Zombie {
         this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, IronGolem.class, true));
     }
 
-
-    @Override
-    protected void populateDefaultEquipmentSlots(@NotNull RandomSource pRandom, @NotNull DifficultyInstance pDifficulty) {
+    protected void populateDefaultEquipmentSlots(@NotNull Random pRandom, @NotNull DifficultyInstance pDifficulty) {
         this.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.DIAMOND_SWORD));
         initCustomEquipment(pRandom, pDifficulty);
     }
 
-    protected void initCustomEquipment(RandomSource random, DifficultyInstance pDifficulty) {
+    protected void initCustomEquipment(Random random, DifficultyInstance pDifficulty) {
             for (EquipmentSlot equipmentSlot : EquipmentSlot.values()) {
                 if (equipmentSlot.getType() == EquipmentSlot.Type.ARMOR) {
                     ItemStack itemStack = this.getItemBySlot(equipmentSlot);

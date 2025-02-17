@@ -16,7 +16,7 @@ public class PlayerEntityMixin
     public void getMessage (CallbackInfoReturnable<Component> cir)
     {
         if (UndeadNights.serverState.getHordeNight() && Config.getHordeNightsDisableSleeping()) {
-            Component tx = Component.literal("You may not rest now; this is a Night of the Undead");
+            Component tx = Component.nullToEmpty("You may not rest now; this is a Night of the Undead");
             cir.setReturnValue(tx);
         }
     }

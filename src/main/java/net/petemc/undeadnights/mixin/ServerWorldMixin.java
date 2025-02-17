@@ -1,11 +1,14 @@
 package net.petemc.undeadnights.mixin;
 
+import net.minecraft.core.Holder;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.progress.ChunkProgressListener;
 import net.minecraft.world.level.CustomSpawner;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.chunk.ChunkGenerator;
+import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.level.dimension.LevelStem;
 import net.minecraft.world.level.storage.LevelStorageSource;
 import net.minecraft.world.level.storage.ServerLevelData;
@@ -30,7 +33,7 @@ public class ServerWorldMixin
     @Shadow @Final private List<CustomSpawner> customSpawners;
 
     @Inject(method = "<init>", at = @At("TAIL"))
-    public void init(MinecraftServer pServer, Executor pDispatcher, LevelStorageSource.LevelStorageAccess pLevelStorageAccess, ServerLevelData pServerLevelData, ResourceKey<Level> pDimensionKey, LevelStem pLevelStem, ChunkProgressListener pProgressListener, boolean pIsDebug, long pSeed, List<CustomSpawner> pCustomSpawners, boolean pTickTime, CallbackInfo ci)
+    public void init(MinecraftServer pServer, Executor p_203763_, LevelStorageSource.LevelStorageAccess p_203764_, ServerLevelData pLevelData, ResourceKey<Level> pDimension, Holder<DimensionType> pDimensionType, ChunkProgressListener p_203768_, ChunkGenerator p_203769_, boolean pIsDebug, long pSeed, List<CustomSpawner> pCustomSpawners, boolean pTickTime, CallbackInfo ci)
     {
         ArrayList<CustomSpawner> undeadSpawner = new ArrayList<>(this.customSpawners);
         undeadSpawner.add(new UndeadSpawner());
