@@ -9,8 +9,8 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.DifficultyInstance;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.level.CustomSpawner;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
@@ -162,7 +162,7 @@ public class UndeadSpawner implements CustomSpawner {
                                 e.setPersistenceRequired();
                             }
                             DifficultyInstance localDifficulty = level.getCurrentDifficultyAt(player.blockPosition());
-                            e.finalizeSpawn(level, localDifficulty, MobSpawnType.NATURAL, null);
+                            e.finalizeSpawn(level, localDifficulty, EntitySpawnReason.NATURAL, null);
                             e.setTarget(player);
                             level.addFreshEntity(e);
                             if (Config.getPrintDebugMessages()) {
@@ -197,7 +197,7 @@ public class UndeadSpawner implements CustomSpawner {
                     BlockPos pos = player.blockPosition();
                     boolean foundHordeSpawnLocation = false;
 
-                    for (int i= 0; i < 20; i++){
+                    for (int i= 0; i < 20; i++) {
                         // for the given min/max distance, calculate the x and z coordinates deltas
                         if (d == 0) {
                             d = randomSource.nextIntBetweenInclusive(Config.getDistanceMin(), Config.getDistanceMax());
@@ -260,7 +260,7 @@ public class UndeadSpawner implements CustomSpawner {
                                     e.setPersistenceRequired();
                                 }
                                 DifficultyInstance localDifficulty = level.getCurrentDifficultyAt(player.blockPosition());
-                                e.finalizeSpawn(level, localDifficulty, MobSpawnType.NATURAL, null);
+                                e.finalizeSpawn(level, localDifficulty, EntitySpawnReason.NATURAL, null);
                                 e.setTarget(player);
                                 level.addFreshEntity(e);
                                 i++;
@@ -279,7 +279,7 @@ public class UndeadSpawner implements CustomSpawner {
                                     e.setPersistenceRequired();
                                 }
                                 DifficultyInstance localDifficulty = level.getCurrentDifficultyAt(player.blockPosition());
-                                e.finalizeSpawn(level, localDifficulty, MobSpawnType.NATURAL, null);
+                                e.finalizeSpawn(level, localDifficulty, EntitySpawnReason.NATURAL, null);
                                 e.setTarget(player);
                                 level.addFreshEntity(e);
                                 i++;
@@ -297,10 +297,9 @@ public class UndeadSpawner implements CustomSpawner {
                                 e.setPersistenceRequired();
                             }
                             DifficultyInstance localDifficulty = level.getCurrentDifficultyAt(player.blockPosition());
-                            e.finalizeSpawn(level, localDifficulty, MobSpawnType.NATURAL, null);
+                            e.finalizeSpawn(level, localDifficulty, EntitySpawnReason.NATURAL, null);
                             e.setTarget(player);
                             level.addFreshEntity(e);
-
                         } else {
                             UndeadNights.LOGGER.info("Spawncap reached, {} Horde Zombies are already loaded into this world.", Config.getHordeZombiesSpawnCap());
                             break;

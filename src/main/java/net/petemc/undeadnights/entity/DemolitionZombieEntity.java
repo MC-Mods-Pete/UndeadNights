@@ -39,19 +39,19 @@ public class DemolitionZombieEntity extends Zombie {
 
     @Nullable
     @Override
-    public SpawnGroupData finalizeSpawn(ServerLevelAccessor pLevel, DifficultyInstance pDifficulty, MobSpawnType pSpawnType, @javax.annotation.Nullable SpawnGroupData pSpawnGroupData) {
-        RandomSource randomsource = pLevel.getRandom();
-        pSpawnGroupData = super.finalizeSpawn(pLevel, pDifficulty, pSpawnType, pSpawnGroupData);
-        float f = pDifficulty.getSpecialMultiplier();
+    public SpawnGroupData finalizeSpawn(ServerLevelAccessor level, @NotNull DifficultyInstance difficulty, @NotNull EntitySpawnReason spawnReason, @Nullable SpawnGroupData spawnGroupData) {
+        RandomSource randomsource = level.getRandom();
+        spawnGroupData = super.finalizeSpawn(level, difficulty, spawnReason, spawnGroupData);
+        float f = difficulty.getSpecialMultiplier();
         this.setCanPickUpLoot(randomsource.nextFloat() < 0.55F * f);
-        if (pSpawnGroupData == null) {
-            pSpawnGroupData = new Zombie.ZombieGroupData(false, false);
+        if (spawnGroupData == null) {
+            spawnGroupData = new ZombieGroupData(false, false);
         }
 
-        if (pSpawnGroupData instanceof ZombieGroupData zombie$zombiegroupdata) {
+        if (spawnGroupData instanceof ZombieGroupData) {
             this.setCanBreakDoors(true);
-            this.populateDefaultEquipmentSlots(randomsource, pDifficulty);
-            this.populateDefaultEquipmentEnchantments(pLevel, randomsource, pDifficulty);
+            this.populateDefaultEquipmentSlots(randomsource, difficulty);
+            this.populateDefaultEquipmentEnchantments(level, randomsource, difficulty);
         }
 
         if (this.getItemBySlot(EquipmentSlot.HEAD).isEmpty()) {
@@ -66,7 +66,7 @@ public class DemolitionZombieEntity extends Zombie {
 
         this.handleAttributes(f);
         this.setBaby(false);
-        return pSpawnGroupData;
+        return spawnGroupData;
     }
 
     public static AttributeSupplier.@NotNull Builder createAttributes() {
@@ -84,7 +84,7 @@ public class DemolitionZombieEntity extends Zombie {
         this.goalSelector.addGoal(1, new FloatGoal(this));
         this.goalSelector.addGoal(2, new DemolitionZombieIgniteGoal(this));
         this.goalSelector.addGoal(3, new ZombieAttackGoal(this, 1.0, false));
-        this.goalSelector.addGoal(4, new DemolitionZombieEntity.ChasePlayerGoal(this));
+        this.goalSelector.addGoal(4, new ChasePlayerGoal(this));
         this.goalSelector.addGoal(6, new MoveThroughVillageGoal(this, 1.0, true, 4, this::canBreakDoors));
         this.goalSelector.addGoal(7, new WaterAvoidingRandomStrollGoal(this, 1.0));
         this.targetSelector.addGoal(1, new HurtByTargetGoal(this).setAlertOthers(HordeZombieEntity.class));
@@ -94,26 +94,25 @@ public class DemolitionZombieEntity extends Zombie {
     }
 
     @Override
-    public boolean hurt(@NotNull DamageSource pSource, float pAmount) {
+    public boolean hurtServer(@NotNull ServerLevel level, @NotNull DamageSource pSource, float pAmount) {
         if (this.isOnFire()) {
-            Level level = this.level();
             BlockPos pos = this.blockPosition();
             this.remove(RemovalReason.KILLED);
             level.explode(this, pos.getX(), pos.getY(), pos.getZ(), 5, true, Level.ExplosionInteraction.TNT);
             return true;
         }
-        return super.hurt(pSource, pAmount);
+        return super.hurtServer(level, pSource, pAmount);
     }
 
     @Override
-    protected void dropCustomDeathLoot(@NotNull ServerLevel pLevel, @NotNull DamageSource pDamageSource, boolean pRecentlyHit) {
-        super.dropCustomDeathLoot(pLevel, pDamageSource, pRecentlyHit);
-        dropInventory();
+    protected void dropCustomDeathLoot(@NotNull ServerLevel level, @NotNull DamageSource damageSource, boolean recentlyHit) {
+        super.dropCustomDeathLoot(level, damageSource, recentlyHit);
+        dropInventory(level);
     }
 
-    public void dropInventory() {
+    public void dropInventory(ServerLevel level) {
         if (!this.getMainHandItem().isEmpty()) {
-            this.spawnAtLocation(this.getMainHandItem());
+            this.spawnAtLocation(level, this.getMainHandItem());
             this.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
         }
     }
