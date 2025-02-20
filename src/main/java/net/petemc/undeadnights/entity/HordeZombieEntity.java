@@ -36,19 +36,19 @@ public class HordeZombieEntity extends Zombie {
 
     @Nullable
     @Override
-    public SpawnGroupData finalizeSpawn(ServerLevelAccessor pLevel, DifficultyInstance pDifficulty, MobSpawnType pReason, @javax.annotation.Nullable SpawnGroupData pSpawnData, @javax.annotation.Nullable CompoundTag pDataTag) {
+    public SpawnGroupData finalizeSpawn(ServerLevelAccessor pLevel, DifficultyInstance pDifficulty, MobSpawnType pSpawnType, @javax.annotation.Nullable SpawnGroupData pSpawnGroupData) {
         RandomSource randomsource = pLevel.getRandom();
-        pSpawnData = super.finalizeSpawn(pLevel, pDifficulty, pReason, pSpawnData, pDataTag);
+        pSpawnGroupData = super.finalizeSpawn(pLevel, pDifficulty, pSpawnType, pSpawnGroupData);
         float f = pDifficulty.getSpecialMultiplier();
         this.setCanPickUpLoot(randomsource.nextFloat() < 0.55F * f);
-        if (pSpawnData == null) {
-            pSpawnData = new Zombie.ZombieGroupData(false, false);
+        if (pSpawnGroupData == null) {
+            pSpawnGroupData = new Zombie.ZombieGroupData(false, false);
         }
 
-        if (pSpawnData instanceof Zombie.ZombieGroupData) {
+        if (pSpawnGroupData instanceof ZombieGroupData zombie$zombiegroupdata) {
             this.setCanBreakDoors(true);
             this.populateDefaultEquipmentSlots(randomsource, pDifficulty);
-            this.populateDefaultEquipmentEnchantments(randomsource, pDifficulty);
+            this.populateDefaultEquipmentEnchantments(pLevel, randomsource, pDifficulty);
         }
 
         if (this.getItemBySlot(EquipmentSlot.HEAD).isEmpty()) {
@@ -63,7 +63,7 @@ public class HordeZombieEntity extends Zombie {
 
         this.handleAttributes(f);
         this.setBaby(false);
-        return pSpawnData;
+        return pSpawnGroupData;
     }
 
         public static AttributeSupplier.@NotNull Builder createAttributes() {
@@ -144,7 +144,7 @@ public class HordeZombieEntity extends Zombie {
             boolean flag = true;
 
             for(EquipmentSlot equipmentslot : EquipmentSlot.values()) {
-                if (equipmentslot.getType() == EquipmentSlot.Type.ARMOR) {
+                if (equipmentslot.getType() == EquipmentSlot.Type.HUMANOID_ARMOR) {
                     ItemStack itemstack = this.getItemBySlot(equipmentslot);
                     if (!flag && random.nextFloat() < f) {
                         break;

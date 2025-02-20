@@ -27,7 +27,7 @@ public class DemolitionZombieIgniteGoal extends Goal {
 		if (!(target instanceof Player)) {
 			return false;
 		}
-		return this.demolitionZombie.getPerceivedTargetDistanceSquareForMeleeAttack(target) < 12.0;
+		return this.demolitionZombie.distanceToSqr(target) < 12.0;
 	}
 
 	@Override
@@ -50,7 +50,7 @@ public class DemolitionZombieIgniteGoal extends Goal {
 		BlockPos pos = this.demolitionZombie.blockPosition();
 		if (tntCoolDown <= 0) {
 			if (this.target != null) {
-				if (this.demolitionZombie.getPerceivedTargetDistanceSquareForMeleeAttack(this.target) < 12.0 && this.demolitionZombie.getSensing().hasLineOfSight(this.target)
+				if (this.demolitionZombie.distanceToSqr(this.target) < 12.0 && this.demolitionZombie.getSensing().hasLineOfSight(this.target)
 						&& this.demolitionZombie.getMainHandItem().getCount() > 0) {
 					PrimedTnt tntEntity = new PrimedTnt(this.demolitionZombie.level(), (double) pos.getX() + 0.5, pos.getY(), (double) pos.getZ() + 0.5, this.demolitionZombie);
 					this.demolitionZombie.level().addFreshEntity(tntEntity);

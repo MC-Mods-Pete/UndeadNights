@@ -1,5 +1,6 @@
 package net.petemc.undeadnights.util;
 
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.saveddata.SavedData;
@@ -69,8 +70,8 @@ public class StateSaverAndLoader extends SavedData {
         this.respawnZombies = val;
         this.setDirty();
     }
-    
-    public static StateSaverAndLoader load(CompoundTag tag) {
+
+    public static StateSaverAndLoader load(CompoundTag tag, HolderLookup.Provider registries) {
         StateSaverAndLoader state = new StateSaverAndLoader();
         state.daysCounter = tag.getInt("daysCounter");
         state.lastMaxDaysCounter = tag.getInt("lastMaxDaysCounter");
@@ -83,7 +84,7 @@ public class StateSaverAndLoader extends SavedData {
     }
 
     @Override
-    public @NotNull CompoundTag save(CompoundTag tag) {
+    public @NotNull CompoundTag save(CompoundTag tag, HolderLookup.@NotNull Provider provider) {
         tag.putInt("daysCounter", daysCounter);
         tag.putInt("lastMaxDaysCounter", lastMaxDaysCounter);
         tag.putInt("tickCounter", tickCounter);
@@ -93,8 +94,11 @@ public class StateSaverAndLoader extends SavedData {
         return tag;
     }
 
-    public static StateSaverAndLoader getServerState(MinecraftServer server) {
-        return server.overworld().getDataStorage().computeIfAbsent(StateSaverAndLoader::load, StateSaverAndLoader::new, UndeadNights.MOD_ID);
+    public static SavedData.Factory<StateSaverAndLoader> factory() {
+        return new SavedData.Factory<>(StateSaverAndLoader::new, StateSaverAndLoader::load, null);
     }
 
+    public static StateSaverAndLoader getServerState(MinecraftServer server) {
+        return server.overworld().getDataStorage().computeIfAbsent(factory(), UndeadNights.MOD_ID);
+    }
 }

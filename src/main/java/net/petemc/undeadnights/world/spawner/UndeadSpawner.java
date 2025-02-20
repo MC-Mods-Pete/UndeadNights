@@ -162,7 +162,7 @@ public class UndeadSpawner implements CustomSpawner {
                                 e.setPersistenceRequired();
                             }
                             DifficultyInstance localDifficulty = level.getCurrentDifficultyAt(player.blockPosition());
-                            e.finalizeSpawn(level, localDifficulty, MobSpawnType.NATURAL, null, null);
+                            e.finalizeSpawn(level, localDifficulty, MobSpawnType.NATURAL, null);
                             e.setTarget(player);
                             level.addFreshEntity(e);
                             if (Config.getPrintDebugMessages()) {
@@ -260,7 +260,7 @@ public class UndeadSpawner implements CustomSpawner {
                                     e.setPersistenceRequired();
                                 }
                                 DifficultyInstance localDifficulty = level.getCurrentDifficultyAt(player.blockPosition());
-                                e.finalizeSpawn(level, localDifficulty, MobSpawnType.NATURAL, null, null);
+                                e.finalizeSpawn(level, localDifficulty, MobSpawnType.NATURAL, null);
                                 e.setTarget(player);
                                 level.addFreshEntity(e);
                                 i++;
@@ -279,7 +279,7 @@ public class UndeadSpawner implements CustomSpawner {
                                     e.setPersistenceRequired();
                                 }
                                 DifficultyInstance localDifficulty = level.getCurrentDifficultyAt(player.blockPosition());
-                                e.finalizeSpawn(level, localDifficulty, MobSpawnType.NATURAL, null, null);
+                                e.finalizeSpawn(level, localDifficulty, MobSpawnType.NATURAL, null);
                                 e.setTarget(player);
                                 level.addFreshEntity(e);
                                 i++;
@@ -297,7 +297,7 @@ public class UndeadSpawner implements CustomSpawner {
                                 e.setPersistenceRequired();
                             }
                             DifficultyInstance localDifficulty = level.getCurrentDifficultyAt(player.blockPosition());
-                            e.finalizeSpawn(level, localDifficulty, MobSpawnType.NATURAL, null, null);
+                            e.finalizeSpawn(level, localDifficulty, MobSpawnType.NATURAL, null);
                             e.setTarget(player);
                             level.addFreshEntity(e);
 
