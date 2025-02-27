@@ -23,18 +23,6 @@ public class ModEvents {
                         //event.getEntity().kill();
                     }
                 }
-
-                /*
-                if (event.getEntity() instanceof HordeZombieEntity || event.getEntity() instanceof DemolitionZombieEntity
-                        || event.getEntity() instanceof EliteZombieEntity) {
-
-                    UndeadNights.globalSpawnCounter++;
-                    if (Config.getPrintDebugMessages()) {
-                        UndeadNights.LOGGER.info("LOAD GlobalSpawnCount: : {} {}", UndeadNights.globalSpawnCounter, event.getEntity().getUUID());
-                    }
-                    //event.getEntity().kill();
-                }
-                */
             }
         }
 
@@ -56,20 +44,6 @@ public class ModEvents {
                         }
                     }
                 }
-                /*
-                if (event.getEntity() instanceof HordeZombieEntity || event.getEntity() instanceof DemolitionZombieEntity
-                        || event.getEntity() instanceof EliteZombieEntity) {
-
-                    UndeadNights.globalSpawnCounter--;
-                    if (Config.getPrintDebugMessages()) {
-                        if (event.getEntity().getRemovalReason() != null) {
-                            UndeadNights.LOGGER.info("UNLOAD GlobalSpawnCount: {} {} {}", UndeadNights.globalSpawnCounter, event.getEntity().getRemovalReason().name(), event.getEntity().getUUID());
-                        } else {
-                            UndeadNights.LOGGER.info("UNLOAD GlobalSpawnCount: {} {}", UndeadNights.globalSpawnCounter, event.getEntity().getUUID());
-                        }
-                    }
-                }
-                */
             }
         }
     }
