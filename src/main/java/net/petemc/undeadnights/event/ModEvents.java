@@ -5,7 +5,7 @@ import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.event.entity.EntityLeaveLevelEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.petemc.undeadnights.Config;
+import net.petemc.undeadnights.config.MainConfig;
 import net.petemc.undeadnights.UndeadNights;
 
 public class ModEvents {
@@ -14,12 +14,14 @@ public class ModEvents {
         @SubscribeEvent
         public static void onEntityJoinWorld(EntityJoinLevelEvent event) {
             if(!event.getLevel().isClientSide()) {
-                if (UndeadNights.serverState.spawnedHordeMobs.contains(event.getEntity().getUUID())) {
-                    UndeadNights.globalSpawnCounter++;
-                    if (Config.getPrintDebugMessages()) {
-                        UndeadNights.LOGGER.info("LOAD GlobalSpawnCount: : {} {}", UndeadNights.globalSpawnCounter, event.getEntity().getUUID());
+                if (UndeadNights.serverState != null) {
+                    if (UndeadNights.serverState.spawnedHordeMobs.contains(event.getEntity().getUUID())) {
+                        UndeadNights.globalSpawnCounter++;
+                        if (MainConfig.getPrintDebugMessages()) {
+                            UndeadNights.LOGGER.info("LOAD GlobalSpawnCount: : {} {}", UndeadNights.globalSpawnCounter, event.getEntity().getUUID());
+                        }
+                        //event.getEntity().kill();
                     }
-                    //event.getEntity().kill();
                 }
 
                 /*
@@ -39,15 +41,17 @@ public class ModEvents {
         @SubscribeEvent
         public static void onEntityLeaveWorld(EntityLeaveLevelEvent event) {
             if(!event.getLevel().isClientSide()) {
-                if (UndeadNights.serverState.spawnedHordeMobs.contains(event.getEntity().getUUID())) {
-                    if (event.getEntity().getRemovalReason() != null) {
-                        if ((event.getEntity().getRemovalReason() == Entity.RemovalReason.KILLED) || (event.getEntity().getRemovalReason() == Entity.RemovalReason.DISCARDED)) {
-                            UndeadNights.globalSpawnCounter--;
-                            UndeadNights.serverState.spawnedHordeMobs.remove(event.getEntity().getUUID());
-                            if (event.getEntity().getRemovalReason() != null) {
-                                UndeadNights.LOGGER.info("UNLOAD GlobalSpawnCount: {} {} {}", UndeadNights.globalSpawnCounter, event.getEntity().getRemovalReason().name(), event.getEntity().getUUID());
-                            } else {
-                                UndeadNights.LOGGER.info("UNLOAD GlobalSpawnCount: {} {}", UndeadNights.globalSpawnCounter, event.getEntity().getUUID());
+                if (UndeadNights.serverState != null) {
+                    if (UndeadNights.serverState.spawnedHordeMobs.contains(event.getEntity().getUUID())) {
+                        if (event.getEntity().getRemovalReason() != null) {
+                            if ((event.getEntity().getRemovalReason() == Entity.RemovalReason.KILLED) || (event.getEntity().getRemovalReason() == Entity.RemovalReason.DISCARDED)) {
+                                UndeadNights.globalSpawnCounter--;
+                                UndeadNights.serverState.spawnedHordeMobs.remove(event.getEntity().getUUID());
+                                if (event.getEntity().getRemovalReason() != null) {
+                                    UndeadNights.LOGGER.info("UNLOAD GlobalSpawnCount: {} {} {}", UndeadNights.globalSpawnCounter, event.getEntity().getRemovalReason().name(), event.getEntity().getUUID());
+                                } else {
+                                    UndeadNights.LOGGER.info("UNLOAD GlobalSpawnCount: {} {}", UndeadNights.globalSpawnCounter, event.getEntity().getUUID());
+                                }
                             }
                         }
                     }

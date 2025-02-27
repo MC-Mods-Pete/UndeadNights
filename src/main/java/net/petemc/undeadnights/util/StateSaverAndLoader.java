@@ -3,7 +3,7 @@ package net.petemc.undeadnights.util;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.saveddata.SavedData;
-import net.petemc.undeadnights.Config;
+import net.petemc.undeadnights.config.MainConfig;
 import net.petemc.undeadnights.UndeadNights;
 import org.jetbrains.annotations.NotNull;
 
@@ -11,8 +11,8 @@ import java.util.HashSet;
 import java.util.UUID;
 
 public class StateSaverAndLoader extends SavedData {
-    private int daysCounter = Config.getDaysBetweenHordeNights();
-    private int lastMaxDaysCounter = Config.getDaysBetweenHordeNights();
+    private int daysCounter = MainConfig.getDaysBetweenHordeNights();
+    private int lastMaxDaysCounter = MainConfig.getDaysBetweenHordeNights();
     private int tickCounter = 60;
     private boolean hordeNight = false;
     private boolean spawnZombies = true;

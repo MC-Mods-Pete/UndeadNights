@@ -24,7 +24,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.Blocks;
-import net.petemc.undeadnights.Config;
+import net.petemc.undeadnights.config.MainConfig;
 import net.petemc.undeadnights.entity.ai.goal.DemolitionZombieIgniteGoal;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -175,7 +175,7 @@ public class DemolitionZombieEntity extends Zombie {
 
     @Override
     protected boolean isSunSensitive() {
-        return Config.getZombiesBurnInDaylight();
+        return MainConfig.getHordeZombiesBurnInDaylight();
     }
 
     @Override

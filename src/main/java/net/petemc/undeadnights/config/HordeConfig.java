@@ -18,17 +18,18 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ConfigManager {
-    private static final File CONFIG_FILE = new File("config/undeadnights_horde_mobs.json");
-    private static MobConfig defaultHordeMob = null;
-    private static final List<MobConfig> specialHordeMobs = new ArrayList<>();
+public class HordeConfig {
+    private static final File CONFIG_FILE = new File("config/undeadnights_horde_mobs_config.json");
+    private static int configVariant = 1;
+    private static int maxWaveSize = 15;
+    private static MobSpawnData defaultHordeMob = null;
+    private static final List<MobSpawnData> hordeMobs = new ArrayList<>();
     private static final int currentConfigVersion = 1;
 
     public static void loadConfig() {
         if (!CONFIG_FILE.exists()) {
-
             var defaultConfObject = getJsonObject();
-
+            UndeadNights.LOGGER.info("Loading {} horde mobs config", UndeadNights.MOD_ID);
             try (FileWriter writer = new FileWriter(CONFIG_FILE)) {
                 Gson gson = new GsonBuilder().setPrettyPrinting().create();
                 gson.toJson(defaultConfObject, writer);  // store objects in JSON
@@ -63,19 +64,34 @@ public class ConfigManager {
 
         try (FileReader reader = new FileReader(CONFIG_FILE)) {
             JsonObject json = new Gson().fromJson(reader, JsonObject.class);
-            String defaultMobId = json.get("defaultHordeMob").getAsString();
-            String defaultMobExtraInfo = json.get("extraSpawnInfo").getAsString();
-            configVersionReadFromFile = json.get("internalConfigVersion").getAsInt();
-            defaultHordeMob = new MobConfig(defaultMobId, 100, defaultMobExtraInfo);
+            configVariant = json.get("configVariant").getAsInt();
+            if (configVariant == 1) {
+                maxWaveSize = json.get("maxWaveSize").getAsInt();
+                String defaultMobId = json.get("defaultHordeMob").getAsString();
+                String defaultMobExtraInfo = json.get("extraSpawnInfo").getAsString();
+                //configVersionReadFromFile = json.get("internalConfigVersion").getAsInt();
+                defaultHordeMob = new MobSpawnData(defaultMobId, 100, 0, 0, defaultMobExtraInfo);
 
-            specialHordeMobs.clear();
-            JsonArray mobsArray = json.getAsJsonArray("specialHordeMobs");
-            for (int i = 0; i < mobsArray.size(); i++) {
-                JsonObject mobObj = mobsArray.get(i).getAsJsonObject();
-                String mobId = mobObj.get("mobId").getAsString();
-                int mobChance = mobObj.get("spawnChance").getAsInt();
-                String mobExtraInfo = mobObj.get("extraSpawnInfo").getAsString();
-                specialHordeMobs.add(new MobConfig(mobId, mobChance, mobExtraInfo));
+                hordeMobs.clear();
+                JsonArray mobsArray = json.getAsJsonArray("hordeMobs");
+                for (int i = 0; i < mobsArray.size(); i++) {
+                    JsonObject mobObj = mobsArray.get(i).getAsJsonObject();
+                    String mobId = mobObj.get("mobId").getAsString();
+                    int mobChance = mobObj.get("spawnChance").getAsInt();
+                    String mobExtraInfo = mobObj.get("extraSpawnInfo").getAsString();
+                    hordeMobs.add(new MobSpawnData(mobId, mobChance, 0, 0,mobExtraInfo));
+                }
+            } else {
+                hordeMobs.clear();
+                JsonArray mobsArray = json.getAsJsonArray("hordeMobs");
+                for (int i = 0; i < mobsArray.size(); i++) {
+                    JsonObject mobObj = mobsArray.get(i).getAsJsonObject();
+                    String mobId = mobObj.get("mobId").getAsString();
+                    int mobCountMin = mobObj.get("countMin").getAsInt();
+                    int mobCountMax = mobObj.get("countMax").getAsInt();
+                    String mobExtraInfo = mobObj.get("extraSpawnInfo").getAsString();
+                    hordeMobs.add(new MobSpawnData(mobId, 0, mobCountMin, mobCountMax, mobExtraInfo));
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -98,21 +114,31 @@ public class ConfigManager {
         waveMobsJson.add(mob);
 
         var defaultConfObject = new JsonObject();
+        defaultConfObject.addProperty("configVariant", 1);
+        defaultConfObject.addProperty("maxWaveSize", 15);
         defaultConfObject.addProperty("defaultHordeMob", "undeadnights:horde_zombie");
         defaultConfObject.addProperty("extraSpawnInfo", "none");
-        defaultConfObject.add("specialHordeMobs", waveMobsJson);
+        defaultConfObject.add("hordeMobs", waveMobsJson);
         defaultConfObject.addProperty("internalConfigVersion", currentConfigVersion);
         return defaultConfObject;
     }
 
-    public static MobConfig getDefaultHordeMob() {
+    public static int getConfigVariant() {
+        return configVariant;
+    }
+
+    public static int getMaxWaveSize() {
+        return maxWaveSize;
+    }
+
+    public static MobSpawnData getDefaultHordeMob() {
         return defaultHordeMob;
     }
 
-    public static List<MobConfig> getSpecialHordeMobs() {
-        return specialHordeMobs;
+    public static List<MobSpawnData> getHordeMobs() {
+        return hordeMobs;
     }
 
-    public record MobConfig(String mobId, int chance, String extra) {
+    public record MobSpawnData(String mobId, int chance, int countMin, int countMax, String extra) {
     }
 }

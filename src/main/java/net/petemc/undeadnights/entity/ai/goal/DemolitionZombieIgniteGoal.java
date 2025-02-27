@@ -7,7 +7,6 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.item.PrimedTnt;
 import net.minecraft.world.entity.player.Player;
-import net.petemc.undeadnights.Config;
 import net.petemc.undeadnights.entity.DemolitionZombieEntity;
 import org.jetbrains.annotations.Nullable;
 
