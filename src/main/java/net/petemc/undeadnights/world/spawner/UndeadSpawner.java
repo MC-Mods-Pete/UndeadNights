@@ -294,6 +294,7 @@ public class UndeadSpawner implements CustomSpawner {
                         UndeadNights.LOGGER.info("Spawning Horde for player: {}", player.getName().getString());
                     }
 
+                    boolean spawnCapReached = false;
                     /*
                      * Horde config variant 1
                      */
@@ -306,7 +307,6 @@ public class UndeadSpawner implements CustomSpawner {
                             for (var mobSpawnData : HordeConfig.getHordeMobs()) {
                                 if (UndeadNights.globalSpawnCounter < MainConfig.getHordeMobsSpawnCap()) {
                                     randomValue = randomSource.nextIntBetweenInclusive(1, 100);
-                                    UndeadNights.LOGGER.info("RandomValue for {} was {}",mobSpawnData.mobId(), randomValue);
                                     spawnHordeMob(level, randomSource, pos, player, (randomValue > (100 - mobSpawnData.chance())) ? mobSpawnData : HordeConfig.getDefaultHordeMob());
                                     waveMobCounter++;
                                     if (waveMobCounter >= HordeConfig.getMaxWaveSize()) {
@@ -314,9 +314,9 @@ public class UndeadSpawner implements CustomSpawner {
                                         break;
                                     }
                                 } else {
-                                    UndeadNights.LOGGER.info("Spawncap reached, {} Horde Zombies are already loaded into this world.", MainConfig.getHordeMobsSpawnCap());
-                                    // don't spawn more mobs in this wave
+                                    // spawn cap reached, don't spawn anymore mobs in this wave
                                     waveMobCounter = HordeConfig.getMaxWaveSize();
+                                    spawnCapReached = true;
                                     d = 0;
                                     break;
                                 }
@@ -341,10 +341,12 @@ public class UndeadSpawner implements CustomSpawner {
                             for (int i = 0; i < mobCount; i++) {
                                 spawnHordeMob(level, randomSource, pos, player, mobSpawnData);
                                 if (UndeadNights.globalSpawnCounter >= MainConfig.getHordeMobsSpawnCap()) {
+                                    spawnCapReached = true;
                                     break;
                                 }
                             }
                             if (UndeadNights.globalSpawnCounter >= MainConfig.getHordeMobsSpawnCap()) {
+                                spawnCapReached = true;
                                 break;
                             }
                         }
@@ -359,7 +361,8 @@ public class UndeadSpawner implements CustomSpawner {
                     }
 
                     d = 0;
-                    if (!(UndeadNights.globalSpawnCounter < MainConfig.getHordeMobsSpawnCap())) {
+                    if (spawnCapReached) {
+                        UndeadNights.LOGGER.info("Spawncap reached, {} Horde Zombies are already loaded into this world.", MainConfig.getHordeMobsSpawnCap());
                         break;
                     }
                 } // for loop player
