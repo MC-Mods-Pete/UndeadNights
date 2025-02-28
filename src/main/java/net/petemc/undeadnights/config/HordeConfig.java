@@ -67,7 +67,7 @@ public class HordeConfig {
             configVariant = json.get("configVariant").getAsInt();
             if (configVariant == 1) {
                 maxWaveSize = json.get("maxWaveSize").getAsInt();
-                String defaultMobId = json.get("defaultHordeMob").getAsString();
+                String defaultMobId = json.get("defaultMobId").getAsString();
                 String defaultMobExtraInfo = json.get("extraSpawnInfo").getAsString();
                 //configVersionReadFromFile = json.get("internalConfigVersion").getAsInt();
                 defaultHordeMob = new MobSpawnData(defaultMobId, 100, 0, 0, defaultMobExtraInfo);
@@ -116,7 +116,7 @@ public class HordeConfig {
         var defaultConfObject = new JsonObject();
         defaultConfObject.addProperty("configVariant", 1);
         defaultConfObject.addProperty("maxWaveSize", 15);
-        defaultConfObject.addProperty("defaultHordeMob", "undeadnights:horde_zombie");
+        defaultConfObject.addProperty("defaultMobId", "undeadnights:horde_zombie");
         defaultConfObject.addProperty("extraSpawnInfo", "none");
         defaultConfObject.add("hordeMobs", waveMobsJson);
         defaultConfObject.addProperty("internalConfigVersion", currentConfigVersion);
