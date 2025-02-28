@@ -63,6 +63,7 @@ public class UndeadNights {
 	// You can use SubscribeEvent and let the Event Bus discover methods to call
 	@SubscribeEvent
 	public void onServerStarting(ServerStartingEvent event) {
+		LOGGER.info("Initializing UndeadNights Mod");
 		if (UndeadNights.serverState == null) {
 			UndeadNights.serverState = StateSaverAndLoader.getServerState(event.getServer());
 			// check if the DaysCounter in the config was changed

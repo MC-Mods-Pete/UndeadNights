@@ -29,7 +29,6 @@ public class HordeConfig {
     public static void loadConfig() {
         if (!CONFIG_FILE.exists()) {
             var defaultConfObject = getJsonObject();
-            UndeadNights.LOGGER.info("Loading {} horde mobs config", UndeadNights.MOD_ID);
             try (FileWriter writer = new FileWriter(CONFIG_FILE)) {
                 Gson gson = new GsonBuilder().setPrettyPrinting().create();
                 gson.toJson(defaultConfObject, writer);  // store objects in JSON
@@ -37,6 +36,8 @@ public class HordeConfig {
                 e.printStackTrace();
             }
         }
+
+        UndeadNights.LOGGER.info("Loading {} horde mobs config", UndeadNights.MOD_ID);
 
         int configVersionReadFromFile = 0;
         try (FileReader reader = new FileReader(CONFIG_FILE)) {
