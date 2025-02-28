@@ -18,6 +18,8 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.petemc.undeadnights.client.render.DemolitionZombieRenderer;
 import net.petemc.undeadnights.client.render.EliteZombieRenderer;
 import net.petemc.undeadnights.client.render.HordeZombieRenderer;
+import net.petemc.undeadnights.config.HordeConfig;
+import net.petemc.undeadnights.config.MainConfig;
 import net.petemc.undeadnights.entity.ModEntities;
 import net.petemc.undeadnights.sound.UndeadNightsSounds;
 import net.petemc.undeadnights.util.StateSaverAndLoader;
@@ -42,7 +44,8 @@ public class UndeadNights {
 
 		MinecraftForge.EVENT_BUS.register(this);
 		//modEventBus.addListener(this::addCreative);
-		ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, Config.SPEC_SERVER);
+		ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, MainConfig.SPEC_SERVER);
+		HordeConfig.loadConfig();
 	}
 
 	private void commonSetup(final FMLCommonSetupEvent event) {
@@ -60,7 +63,20 @@ public class UndeadNights {
 	// You can use SubscribeEvent and let the Event Bus discover methods to call
 	@SubscribeEvent
 	public void onServerStarting(ServerStartingEvent event) {
+		LOGGER.info("Initializing UndeadNights Mod");
+		if (UndeadNights.serverState == null) {
+			UndeadNights.serverState = StateSaverAndLoader.getServerState(event.getServer());
+			// check if the DaysCounter in the config was changed
+			if (UndeadNights.serverState.getLastMaxDaysCounter() != MainConfig.getDaysBetweenHordeNights()) {
+				UndeadNights.serverState.setDaysCounter(MainConfig.getDaysBetweenHordeNights());
+				UndeadNights.serverState.setLastMaxDaysCounter(MainConfig.getDaysBetweenHordeNights());
+			}
 
+			if (MainConfig.getPrintDebugMessages()) {
+				UndeadNights.LOGGER.info("INIT DaysCounter: {} LastMaxDaysCounter: {}", UndeadNights.serverState.getDaysCounter(), UndeadNights.serverState.getLastMaxDaysCounter());
+				UndeadNights.LOGGER.info("INIT HordeNight: {} SpawnZombies: {} RespawnZombies: {}", UndeadNights.serverState.getHordeNight(), UndeadNights.serverState.getSpawnZombies(), UndeadNights.serverState.getRespawnZombies());
+			}
+		}
 	}
 
 	// You can use EventBusSubscriber to automatically register all static methods in the class annotated with @SubscribeEvent

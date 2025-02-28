@@ -1,12 +1,13 @@
-package net.petemc.undeadnights;
+package net.petemc.undeadnights.config;
 
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.config.ModConfigEvent;
+import net.petemc.undeadnights.UndeadNights;
 
 @Mod.EventBusSubscriber(modid = UndeadNights.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD)
-public class Config
+public class MainConfig
 {
     public static boolean getUndeadNightsEnabled() {
         return undeadNightsEnabled;
@@ -32,12 +33,9 @@ public class Config
         return distanceMax;
     }
 
-    public static int getZombieHordeWaveSize() {
-        return zombieHordeWaveSize;
-    }
 
-    public static int getHordeZombiesSpawnCap() {
-        return hordeZombiesSpawnCap;
+    public static int getHordeMobsSpawnCap() {
+        return hordeMobsSpawnCap;
     }
 
     public static boolean getSpawnAdditionalWaves() {
@@ -56,32 +54,12 @@ public class Config
         return hordeNightsDisableSleeping;
     }
 
-    public static boolean getPersistentZombies() {
-        return persistentZombies;
+    public static boolean getPersistentMobs() {
+        return persistentMobs;
     }
 
-    public static boolean getZombiesBurnInDaylight() {
-        return zombiesBurnInDaylight;
-    }
-
-    public static boolean getSpawnDemolitionZombies() {
-        return spawnDemolitionZombies;
-    }
-
-    public static int getChanceForDemolitionZombieToSpawn() {
-        return chanceForDemolitionZombieToSpawn;
-    }
-
-    public static int getDemolitionZombieTntStackSize() {
-        return demolitionZombieTntStackSize;
-    }
-
-    public static boolean getSpawnEliteZombies() {
-        return spawnEliteZombies;
-    }
-
-    public static int getChanceForEliteZombieToSpawn() {
-        return chanceForEliteZombieToSpawn;
+    public static boolean getHordeZombiesBurnInDaylight() {
+        return hordeZombiesBurnInDaylight;
     }
 
     public static boolean getSpawnStrayHordeZombies() {
@@ -119,13 +97,9 @@ public class Config
             .comment("Maximum distance a horde will spawn away from the player | default: 75")
             .defineInRange("distanceMax", 75, 10, 256);
 
-    private static final ForgeConfigSpec.IntValue ZOMBIE_HORDE_WAVE_SIZE = BUILDER_SERVER
-            .comment("Size of a wave of zombies | default: 15")
-            .defineInRange("zombieHordeWaveSize", 15, 1, 256);
-
-    private static final ForgeConfigSpec.IntValue HORDE_ZOMBIE_SPAWN_CAP = BUILDER_SERVER
-            .comment("Maximum amount of zombies that can be loaded in the world at the same time | default: 80")
-            .defineInRange("hordeZombiesSpawnCap", 80, 1, 256);
+    private static final ForgeConfigSpec.IntValue HORDE_MOBS_SPAWN_CAP = BUILDER_SERVER
+            .comment("Maximum amount of horde mobs that can be loaded in the world at the same time | default: 80")
+            .defineInRange("hordeMobsSpawnCap", 80, 1, 256);
 
     private static final ForgeConfigSpec.BooleanValue SPAWN_ADDITIONAL_WAVES = BUILDER_SERVER
             .comment("If true, additional waves can spawn in a horde night | default: true")
@@ -143,33 +117,13 @@ public class Config
             .comment("If true, Players can't sleep through horde nights | default: true")
             .define("hordeNightsDisableSleeping", true);
 
-    private static final ForgeConfigSpec.BooleanValue PERSISTENT_ZOMBIES = BUILDER_SERVER
+    private static final ForgeConfigSpec.BooleanValue PERSISTENT_MOBS = BUILDER_SERVER
             .comment("If true, the horde zombies will be persistent and not despawn | default: false")
-            .define("persistentZombies", false);
+            .define("persistentMobs", false);
 
-   private static final ForgeConfigSpec.BooleanValue ZOMBIES_BURN_IN_DAYLIGHT = BUILDER_SERVER
-            .comment("If true, the horde zombies will burn in daylight | default: false")
-            .define("zombiesBurnInDaylight", false);
-
-   private static final ForgeConfigSpec.BooleanValue SPAWN_DEMOLITION_ZOMBIES = BUILDER_SERVER
-            .comment("If true, demolition zombies with TNT will spawn | default: true")
-            .define("spawnDemolitionZombies", true);
-
-   private static final ForgeConfigSpec.IntValue CHANCE_FOR_DEMOLITION_ZOMBIE_TO_SPAWN = BUILDER_SERVER
-            .comment("Chance in % for a demolition zombie to spawn | default: 6")
-            .defineInRange("chanceForDemolitionZombieToSpawn", 6, 1, 100);
-
-   private static final ForgeConfigSpec.IntValue DEMOLITION_ZOMBIE_TNT_STACK_SIZE = BUILDER_SERVER
-            .comment("TNT Stack size a demolition zombie will spawn with (0 = unlimited) | default: 3")
-            .defineInRange("demolitionZombieTntStackSize", 3, 1, 64);
-
-   private static final ForgeConfigSpec.BooleanValue SPAWN_ELITE_ZOMBIES = BUILDER_SERVER
-            .comment("If true, elite zombies will spawn | default: true")
-            .define("spawnEliteZombies", true);
-
-   private static final ForgeConfigSpec.IntValue CHANCE_FOR_ELITE_ZOMBIE_TO_SPAWN = BUILDER_SERVER
-            .comment("Chance in % for an elite zombie to spawn | default: 3")
-            .defineInRange("chanceForEliteZombieToSpawn", 3, 1, 64);
+   private static final ForgeConfigSpec.BooleanValue HORDE_ZOMBIES_BURN_IN_DAYLIGHT = BUILDER_SERVER
+            .comment("If true, the horde zombies (only those added by this mod) will burn in daylight | default: false")
+            .define("hordeZombiesBurnInDaylight", false);
 
    private static final ForgeConfigSpec.BooleanValue SPAWN_STRAY_HORDE_ZOMBIES = BUILDER_SERVER
             .comment("If true, single stray horde zombies can spawn on normal nights | default: true")
@@ -179,13 +133,12 @@ public class Config
             .comment("If true, debug messages will be logged out | default: false")
             .define("printDebugMessages", false);
 
-    static final ForgeConfigSpec SPEC_SERVER = BUILDER_SERVER.build();
-
+   public static final ForgeConfigSpec SPEC_SERVER = BUILDER_SERVER.build();
 
     // Client Config
     private static final ForgeConfigSpec.Builder BUILDER_CLIENT = new ForgeConfigSpec.Builder();
     // no client config
-    static final ForgeConfigSpec SPEC_CLIENT = BUILDER_CLIENT.build();
+    public static final ForgeConfigSpec SPEC_CLIENT = BUILDER_CLIENT.build();
 
 
     private static boolean undeadNightsEnabled = true;
@@ -194,50 +147,39 @@ public class Config
     private static boolean sendHordeNightsCountdownMessage = false;
     private static int distanceMin = 70;
     private static int distanceMax = 75;
-    private static int zombieHordeWaveSize = 15;
-    private static int hordeZombiesSpawnCap = 80;
+    private static int hordeMobsSpawnCap = 80;
     private static boolean spawnAdditionalWaves = true;
     private static int cooldownBetweenWaves = 45;
     private static int chanceForAdditionalWaves = 7;
     private static boolean hordeNightsDisableSleeping = true;
-    private static boolean persistentZombies = false;
-    private static boolean zombiesBurnInDaylight = false;
-    private static boolean spawnDemolitionZombies = true;
-    private static int chanceForDemolitionZombieToSpawn = 6;
-    private static int demolitionZombieTntStackSize = 3;
-    private static boolean spawnEliteZombies = true;
-    private static int chanceForEliteZombieToSpawn = 3;
+    private static boolean persistentMobs = false;
+    private static boolean hordeZombiesBurnInDaylight = false;
     private static boolean spawnStrayHordeZombies = true;
     private static boolean printDebugMessages = false;
 
     @SubscribeEvent
     static void onLoad(final ModConfigEvent event)
     {
-        UndeadNights.LOGGER.info("Loading Config");
         if (SPEC_SERVER.isLoaded()) {
+            UndeadNights.LOGGER.info("Loading {} server config", UndeadNights.MOD_ID);
             undeadNightsEnabled = UNDEAD_NIGHTS_ENABLED.get();
             daysBetweenHordeNights = DAYS_BETWEEN_HORDE_NIGHTS.get();
             chanceForHordeNight = CHANCE_FOR_HORDE_NIGHTS.get();
             sendHordeNightsCountdownMessage = SEND_HORDE_NIGHTS_COUNTDOWN_MESSAGE.get();
             distanceMin = DISTANCE_MIN.get();
             distanceMax = DISTANCE_MAX.get();
-            zombieHordeWaveSize = ZOMBIE_HORDE_WAVE_SIZE.get();
-            hordeZombiesSpawnCap = HORDE_ZOMBIE_SPAWN_CAP.get();
+            hordeMobsSpawnCap = HORDE_MOBS_SPAWN_CAP.get();
             spawnAdditionalWaves = SPAWN_ADDITIONAL_WAVES.get();
             cooldownBetweenWaves = COOLDOWN_BETWEEN_WAVES.get();
             chanceForAdditionalWaves = CHANCE_FOR_ADDITIONAL_WAVES.get();
             hordeNightsDisableSleeping = HORDE_NIGHTS_DISABLE_SLEEPING.get();
-	        persistentZombies = PERSISTENT_ZOMBIES.get();
-            zombiesBurnInDaylight = ZOMBIES_BURN_IN_DAYLIGHT.get();
-            spawnDemolitionZombies = SPAWN_DEMOLITION_ZOMBIES.get();
-            chanceForDemolitionZombieToSpawn = CHANCE_FOR_DEMOLITION_ZOMBIE_TO_SPAWN.get();
-            demolitionZombieTntStackSize = DEMOLITION_ZOMBIE_TNT_STACK_SIZE.get();
-            spawnEliteZombies = SPAWN_ELITE_ZOMBIES.get();
-	        chanceForEliteZombieToSpawn = CHANCE_FOR_ELITE_ZOMBIE_TO_SPAWN.get();
+	        persistentMobs = PERSISTENT_MOBS.get();
+            hordeZombiesBurnInDaylight = HORDE_ZOMBIES_BURN_IN_DAYLIGHT.get();
             spawnStrayHordeZombies = SPAWN_STRAY_HORDE_ZOMBIES.get();
             printDebugMessages = PRINT_DEBUG_MESSAGES.get();
         }
         if (SPEC_CLIENT.isLoaded()) {
+            UndeadNights.LOGGER.info("Loading {} client config", UndeadNights.MOD_ID);
            // no client config
         }
     }

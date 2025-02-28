@@ -1,9 +1,11 @@
 package net.petemc.undeadnights.entity;
 
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.entity.*;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.*;
@@ -20,7 +22,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.Blocks;
-import net.petemc.undeadnights.Config;
+import net.petemc.undeadnights.config.MainConfig;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -35,7 +37,8 @@ public class HordeZombieEntity extends Zombie {
 
     @Nullable
     @Override
-    public SpawnGroupData finalizeSpawn(ServerLevelAccessor level, @NotNull DifficultyInstance difficulty, @NotNull EntitySpawnReason spawnReason, @Nullable SpawnGroupData spawnGroupData) {
+    public SpawnGroupData finalizeSpawn(ServerLevelAccessor level, DifficultyInstance difficulty, EntitySpawnReason spawnReason, @Nullable SpawnGroupData spawnGroupData) {
+
         RandomSource randomsource = level.getRandom();
         spawnGroupData = super.finalizeSpawn(level, difficulty, spawnReason, spawnGroupData);
         float f = difficulty.getSpecialMultiplier();
@@ -44,7 +47,7 @@ public class HordeZombieEntity extends Zombie {
             spawnGroupData = new ZombieGroupData(false, false);
         }
 
-        if (spawnGroupData instanceof ZombieGroupData) {
+        if (spawnGroupData instanceof ZombieGroupData zombie$zombiegroupdata) {
             this.setCanBreakDoors(true);
             this.populateDefaultEquipmentSlots(randomsource, difficulty);
             this.populateDefaultEquipmentEnchantments(level, randomsource, difficulty);
@@ -72,7 +75,7 @@ public class HordeZombieEntity extends Zombie {
                     .add(Attributes.MOVEMENT_SPEED, (double) 0.30F)    // default 0.23F
                     .add(Attributes.ATTACK_DAMAGE, 5.0D)        // default 3.0
                     .add(Attributes.ARMOR, 4.0D)                // default 2.0
-                    .add(Attributes.SPAWN_REINFORCEMENTS_CHANCE);
+                    .add(Attributes.SPAWN_REINFORCEMENTS_CHANCE, 0.0F);
         }
 
     @Override
@@ -96,7 +99,7 @@ public class HordeZombieEntity extends Zombie {
 
     @Override
     protected boolean isSunSensitive() {
-        return Config.getZombiesBurnInDaylight();
+        return MainConfig.getHordeZombiesBurnInDaylight();
     }
 
     @Override
@@ -111,8 +114,8 @@ public class HordeZombieEntity extends Zombie {
     }
 
     @Override
-    protected void populateDefaultEquipmentSlots(@NotNull RandomSource pRandom, @NotNull DifficultyInstance pDifficulty) {
-        initCustomEquipment(pRandom, pDifficulty);
+    protected void populateDefaultEquipmentSlots(@NotNull RandomSource pRandom, @NotNull DifficultyInstance difficulty) {
+        initCustomEquipment(pRandom, difficulty);
         if (pRandom.nextFloat() < (this.level().getDifficulty() == Difficulty.HARD ? 0.07F : 0.03F)) {
             int i = random.nextInt(3);
             if (i == 0) {
