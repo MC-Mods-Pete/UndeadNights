@@ -1,6 +1,5 @@
 package net.petemc.undeadnights.entity;
 
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.InteractionHand;
@@ -21,7 +20,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.Blocks;
-import net.petemc.undeadnights.Config;
+import net.petemc.undeadnights.config.MainConfig;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -36,19 +35,19 @@ public class EliteZombieEntity extends Zombie {
 
     @Nullable
     @Override
-    public SpawnGroupData finalizeSpawn(ServerLevelAccessor pLevel, DifficultyInstance pDifficulty, MobSpawnType pSpawnType, @javax.annotation.Nullable SpawnGroupData pSpawnGroupData) {
-        RandomSource randomsource = pLevel.getRandom();
-        pSpawnGroupData = super.finalizeSpawn(pLevel, pDifficulty, pSpawnType, pSpawnGroupData);
-        float f = pDifficulty.getSpecialMultiplier();
+    public SpawnGroupData finalizeSpawn(ServerLevelAccessor level, @NotNull DifficultyInstance difficulty, @NotNull MobSpawnType mobSpawnType, @Nullable SpawnGroupData spawnGroupData) {
+        RandomSource randomsource = level.getRandom();
+        spawnGroupData = super.finalizeSpawn(level, difficulty, mobSpawnType, spawnGroupData);
+        float f = difficulty.getSpecialMultiplier();
         this.setCanPickUpLoot(randomsource.nextFloat() < 0.55F * f);
-        if (pSpawnGroupData == null) {
-            pSpawnGroupData = new Zombie.ZombieGroupData(false, false);
+        if (spawnGroupData == null) {
+            spawnGroupData = new Zombie.ZombieGroupData(false, false);
         }
 
-        if (pSpawnGroupData instanceof ZombieGroupData zombie$zombiegroupdata) {
+        if (spawnGroupData instanceof ZombieGroupData zombie$zombiegroupdata) {
             this.setCanBreakDoors(true);
-            this.populateDefaultEquipmentSlots(randomsource, pDifficulty);
-            this.populateDefaultEquipmentEnchantments(pLevel, randomsource, pDifficulty);
+            this.populateDefaultEquipmentSlots(randomsource, difficulty);
+            this.populateDefaultEquipmentEnchantments(level, randomsource, difficulty);
         }
 
         if (this.getItemBySlot(EquipmentSlot.HEAD).isEmpty()) {
@@ -63,7 +62,7 @@ public class EliteZombieEntity extends Zombie {
 
         this.handleAttributes(f);
         this.setBaby(false);
-        return pSpawnGroupData;
+        return spawnGroupData;
     }
 
     public static AttributeSupplier.@NotNull Builder createAttributes() {
@@ -73,7 +72,7 @@ public class EliteZombieEntity extends Zombie {
                 .add(Attributes.MOVEMENT_SPEED, (double) 0.32F)    // default 0.23F
                 .add(Attributes.ATTACK_DAMAGE, 6.0D)        // default 3.0
                 .add(Attributes.ARMOR, 5.0D)                // default 2.0
-                .add(Attributes.SPAWN_REINFORCEMENTS_CHANCE);
+                .add(Attributes.SPAWN_REINFORCEMENTS_CHANCE, 0.0F);
     }
 
     @Override
@@ -118,7 +117,7 @@ public class EliteZombieEntity extends Zombie {
 
     @Override
     protected boolean isSunSensitive() {
-        return Config.getZombiesBurnInDaylight();
+        return MainConfig.getHordeZombiesBurnInDaylight();
     }
 
     @Override
