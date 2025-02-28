@@ -36,19 +36,19 @@ public class EliteZombieEntity extends Zombie {
 
     @Nullable
     @Override
-    public SpawnGroupData finalizeSpawn(ServerLevelAccessor pLevel, DifficultyInstance pDifficulty, MobSpawnType pReason, @javax.annotation.Nullable SpawnGroupData pSpawnData, @javax.annotation.Nullable CompoundTag pDataTag) {
-        RandomSource randomsource = pLevel.getRandom();
-        pSpawnData = super.finalizeSpawn(pLevel, pDifficulty, pReason, pSpawnData, pDataTag);
-        float f = pDifficulty.getSpecialMultiplier();
+    public SpawnGroupData finalizeSpawn(ServerLevelAccessor level, @NotNull DifficultyInstance difficulty, @NotNull MobSpawnType mobSpawnType, @Nullable SpawnGroupData spawnGroupData, @Nullable CompoundTag compoundTag) {
+        RandomSource randomsource = level.getRandom();
+        spawnGroupData = super.finalizeSpawn(level, difficulty, mobSpawnType, spawnGroupData, compoundTag);
+        float f = difficulty.getSpecialMultiplier();
         this.setCanPickUpLoot(randomsource.nextFloat() < 0.55F * f);
-        if (pSpawnData == null) {
-            pSpawnData = new Zombie.ZombieGroupData(false, false);
+        if (spawnGroupData == null) {
+            spawnGroupData = new Zombie.ZombieGroupData(false, false);
         }
 
-        if (pSpawnData instanceof Zombie.ZombieGroupData) {
+        if (spawnGroupData instanceof Zombie.ZombieGroupData) {
             this.setCanBreakDoors(true);
-            this.populateDefaultEquipmentSlots(randomsource, pDifficulty);
-            this.populateDefaultEquipmentEnchantments(randomsource, pDifficulty);
+            this.populateDefaultEquipmentSlots(randomsource, difficulty);
+            this.populateDefaultEquipmentEnchantments(randomsource, difficulty);
         }
 
         if (this.getItemBySlot(EquipmentSlot.HEAD).isEmpty()) {
@@ -63,7 +63,7 @@ public class EliteZombieEntity extends Zombie {
 
         this.handleAttributes(f);
         this.setBaby(false);
-        return pSpawnData;
+        return spawnGroupData;
     }
 
     public static AttributeSupplier.@NotNull Builder createAttributes() {
@@ -73,7 +73,7 @@ public class EliteZombieEntity extends Zombie {
                 .add(Attributes.MOVEMENT_SPEED, (double) 0.32F)    // default 0.23F
                 .add(Attributes.ATTACK_DAMAGE, 6.0D)        // default 3.0
                 .add(Attributes.ARMOR, 5.0D)                // default 2.0
-                .add(Attributes.SPAWN_REINFORCEMENTS_CHANCE);
+                .add(Attributes.SPAWN_REINFORCEMENTS_CHANCE, 0.0F);
     }
 
     @Override
