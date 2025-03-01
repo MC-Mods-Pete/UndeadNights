@@ -6,7 +6,8 @@
 	"refmap": "undeadnights.mixins-refmap.json",
 	"mixins": [
 		"ServerWorldMixin",
-		"PlayerEntityMixin"
+		"PlayerEntityMixin",
+		"ZombieMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1
