@@ -4,17 +4,21 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.saveddata.SavedData;
-import net.petemc.undeadnights.Config;
 import net.petemc.undeadnights.UndeadNights;
+import net.petemc.undeadnights.config.MainConfig;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.HashSet;
+import java.util.UUID;
+
 public class StateSaverAndLoader extends SavedData {
-    private int daysCounter = Config.getDaysBetweenHordeNights();
-    private int lastMaxDaysCounter = Config.getDaysBetweenHordeNights();
+    private int daysCounter = MainConfig.getDaysBetweenHordeNights();
+    private int lastMaxDaysCounter = MainConfig.getDaysBetweenHordeNights();
     private int tickCounter = 60;
     private boolean hordeNight = false;
     private boolean spawnZombies = true;
     private boolean respawnZombies = false;
+    public HashSet<UUID> spawnedHordeMobs = new HashSet<UUID>();
 
     // Setter and Getter functions
     public int getDaysCounter() {
@@ -70,7 +74,7 @@ public class StateSaverAndLoader extends SavedData {
         this.respawnZombies = val;
         this.setDirty();
     }
-    
+
     public static StateSaverAndLoader load(CompoundTag tag, HolderLookup.Provider registries) {
         StateSaverAndLoader state = new StateSaverAndLoader();
         state.daysCounter = tag.getInt("daysCounter");
@@ -79,26 +83,37 @@ public class StateSaverAndLoader extends SavedData {
         state.hordeNight = tag.getBoolean("hordeNight");
         state.spawnZombies = tag.getBoolean("spawnZombies");
         state.respawnZombies = tag.getBoolean("respawnZombies");
+        CompoundTag mobUUIDs = tag.getCompound("spawnedHordeMobs");
+        mobUUIDs.getAllKeys().forEach(key -> {
+            UUID hordeMobUUID = mobUUIDs.getUUID(key);
+            state.spawnedHordeMobs.add(hordeMobUUID);
+        });
         state.setDirty();
         return state;
     }
 
     @Override
-    public @NotNull CompoundTag save(CompoundTag tag, HolderLookup.@NotNull Provider registries) {
+    public @NotNull CompoundTag save(CompoundTag tag, HolderLookup.@NotNull Provider provider) {
         tag.putInt("daysCounter", daysCounter);
         tag.putInt("lastMaxDaysCounter", lastMaxDaysCounter);
         tag.putInt("tickCounter", tickCounter);
         tag.putBoolean("hordeNight", hordeNight);
         tag.putBoolean("spawnZombies", spawnZombies);
         tag.putBoolean("respawnZombies", respawnZombies);
+        CompoundTag mobUUIDs = new CompoundTag();
+        spawnedHordeMobs.forEach((uuid) -> {
+            mobUUIDs.putUUID(uuid.toString(), uuid);
+        });
+        tag.put("spawnedHordeMobs", mobUUIDs);
         return tag;
     }
 
-    public static SavedData.Factory<StateSaverAndLoader> factory() {
-        return new SavedData.Factory<>(StateSaverAndLoader::new, StateSaverAndLoader::load, null);
+    public static Factory<StateSaverAndLoader> factory() {
+        return new Factory<>(StateSaverAndLoader::new, StateSaverAndLoader::load, null);
     }
 
     public static StateSaverAndLoader getServerState(MinecraftServer server) {
         return server.overworld().getDataStorage().computeIfAbsent(factory(), UndeadNights.MOD_ID);
     }
+
 }

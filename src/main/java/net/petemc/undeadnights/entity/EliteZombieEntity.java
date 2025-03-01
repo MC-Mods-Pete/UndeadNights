@@ -20,7 +20,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.Blocks;
-import net.petemc.undeadnights.Config;
+import net.petemc.undeadnights.config.MainConfig;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -71,7 +71,7 @@ public class EliteZombieEntity extends Zombie {
                 .add(Attributes.MOVEMENT_SPEED, (double) 0.32F)    // default 0.23F
                 .add(Attributes.ATTACK_DAMAGE, 6.0D)        // default 3.0
                 .add(Attributes.ARMOR, 5.0D)                // default 2.0
-                .add(Attributes.SPAWN_REINFORCEMENTS_CHANCE);
+                .add(Attributes.SPAWN_REINFORCEMENTS_CHANCE,0.0F);
     }
 
     @Override
@@ -116,7 +116,7 @@ public class EliteZombieEntity extends Zombie {
 
     @Override
     protected boolean isSunSensitive() {
-        return Config.getZombiesBurnInDaylight();
+        return MainConfig.getHordeZombiesBurnInDaylight();
     }
 
     @Override
