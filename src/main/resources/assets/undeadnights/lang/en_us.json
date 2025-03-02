@@ -9,6 +9,8 @@
   "message.undeadnights.horde_spawned": "A horde has spawned!",
   "message.undeadnights.horde_night_over": "You feel at ease, this Night of the Undead is over...",
 
+  "sounds.undeadnights.horde_scream": "Horde Scream",
+
   "text.autoconfig.undeadnights.title": "Undead Nights",
   "text.autoconfig.undeadnights.option.undeadNightsEnabled": "Enable Nights of the Undead mod?",
   "text.autoconfig.undeadnights.option.undeadNightsEnabled.@Tooltip": "If enabled, Nights of the Undead (horde nights) are enabled | default: enabled",

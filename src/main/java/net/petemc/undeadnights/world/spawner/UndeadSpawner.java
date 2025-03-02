@@ -306,12 +306,11 @@ public class UndeadSpawner implements SpecialSpawner {
 
                         } else {
                             UndeadNights.LOGGER.info("Spawncap reached, {} Horde Zombies are already loaded into this world.", Config.getHordeZombiesSpawnCap());
-                            d = 0;
                             break;
                         }
                     }
+                    d = 0;
                     if (!(UndeadNights.globalSpawnCounter < Config.getHordeZombiesSpawnCap())) {
-                        d = 0;
                         break;
                     }
                 }
