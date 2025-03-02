@@ -21,7 +21,7 @@ import net.minecraft.util.math.random.Random;
 import net.minecraft.world.LocalDifficulty;
 import net.minecraft.world.ServerWorldAccess;
 import net.minecraft.world.World;
-import net.petemc.undeadnights.config.Config;
+import net.petemc.undeadnights.config.MainConfig;
 import org.jetbrains.annotations.Nullable;
 
 import java.time.LocalDate;
@@ -72,7 +72,7 @@ public class EliteZombieEntity extends ZombieEntity {
                 .add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 0.32f)  // default 0.23000000417232513
                 .add(EntityAttributes.GENERIC_ATTACK_DAMAGE, 6.0)     // default 3.0
                 .add(EntityAttributes.GENERIC_ARMOR, 5.0)             // default 2.0
-                .add(EntityAttributes.ZOMBIE_SPAWN_REINFORCEMENTS);
+                .add(EntityAttributes.ZOMBIE_SPAWN_REINFORCEMENTS, 0.0F);
     }
 
     @Override
@@ -122,7 +122,7 @@ public class EliteZombieEntity extends ZombieEntity {
 
     @Override
     protected boolean burnsInDaylight() {
-        return Config.getZombiesBurnInDaylight();
+        return MainConfig.getHordeZombiesBurnInDaylight();
     }
 
     @Override

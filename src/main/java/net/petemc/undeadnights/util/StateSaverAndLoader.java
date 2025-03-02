@@ -6,16 +6,20 @@ import net.minecraft.world.PersistentState;
 import net.minecraft.world.PersistentStateManager;
 import net.minecraft.world.World;
 import net.petemc.undeadnights.UndeadNights;
-import net.petemc.undeadnights.config.Config;
+import net.petemc.undeadnights.config.MainConfig;
+
+import java.util.HashSet;
+import java.util.UUID;
 
 public class StateSaverAndLoader extends PersistentState {
 
-    private int daysCounter = Config.getDaysBetweenHordeNights();
-    private int lastMaxDaysCounter = Config.getDaysBetweenHordeNights();
+    private int daysCounter = MainConfig.getDaysBetweenHordeNights();
+    private int lastMaxDaysCounter = MainConfig.getDaysBetweenHordeNights();
     private int tickCounter = 60;
     private boolean hordeNight = false;
     private boolean spawnZombies = true;
     private boolean respawnZombies = false;
+    public HashSet<UUID> spawnedHordeMobs = new HashSet<UUID>();
 
     // Setter and Getter functions
     public int getDaysCounter() {
@@ -72,18 +76,6 @@ public class StateSaverAndLoader extends PersistentState {
         this.markDirty();
     }
 
-    @Override
-    public NbtCompound writeNbt(NbtCompound nbt) {
-        nbt.putInt("daysCounter", daysCounter);
-        nbt.putInt("lastMaxDaysCounter", lastMaxDaysCounter);
-        nbt.putInt("tickCounter", tickCounter);
-        nbt.putBoolean("hordeNight", hordeNight);
-        nbt.putBoolean("spawnZombies", spawnZombies);
-        nbt.putBoolean("respawnZombies", respawnZombies);
-
-        return nbt;
-    }
-
     public static StateSaverAndLoader createFromNbt(NbtCompound tag) {
         StateSaverAndLoader state = new StateSaverAndLoader();
         state.daysCounter = tag.getInt("daysCounter");
@@ -92,7 +84,28 @@ public class StateSaverAndLoader extends PersistentState {
         state.hordeNight = tag.getBoolean("hordeNight");
         state.spawnZombies = tag.getBoolean("spawnZombies");
         state.respawnZombies = tag.getBoolean("respawnZombies");
+        NbtCompound mobUUIDs = tag.getCompound("spawnedHordeMobs");
+        mobUUIDs.getKeys().forEach(key -> {
+            UUID hordeMobUUID = mobUUIDs.getUuid(key);
+            state.spawnedHordeMobs.add(hordeMobUUID);
+        });
         return state;
+    }
+
+    @Override
+    public NbtCompound writeNbt(NbtCompound nbt) {
+        nbt.putInt("daysCounter", daysCounter);
+        nbt.putInt("lastMaxDaysCounter", lastMaxDaysCounter);
+        nbt.putInt("tickCounter", tickCounter);
+        nbt.putBoolean("hordeNight", hordeNight);
+        nbt.putBoolean("spawnZombies", spawnZombies);
+        nbt.putBoolean("respawnZombies", respawnZombies);
+        NbtCompound mobUUIDs = new NbtCompound();
+        spawnedHordeMobs.forEach((uuid) -> {
+            mobUUIDs.putUuid(uuid.toString(), uuid);
+        });
+        nbt.put("spawnedHordeMobs", mobUUIDs);
+        return nbt;
     }
 
     /**
