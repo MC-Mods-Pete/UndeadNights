@@ -7,7 +7,6 @@ import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.mob.HostileEntity;
 import net.minecraft.entity.mob.ZombieEntity;
-import net.minecraft.entity.mob.ZombifiedPiglinEntity;
 import net.minecraft.entity.passive.IronGolemEntity;
 import net.minecraft.entity.passive.MerchantEntity;
 import net.minecraft.entity.passive.TurtleEntity;
@@ -15,13 +14,14 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.packet.s2c.play.EntitySpawnS2CPacket;
 import net.minecraft.util.math.random.Random;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.LocalDifficulty;
 import net.minecraft.world.ServerWorldAccess;
 import net.minecraft.world.World;
-import net.petemc.undeadnights.config.Config;
+import net.petemc.undeadnights.config.MainConfig;
 import org.jetbrains.annotations.Nullable;
 
 import java.time.LocalDate;
@@ -70,7 +70,7 @@ public class HordeZombieEntity extends ZombieEntity {
                 .add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 0.30f)  // default 0.23000000417232513
                 .add(EntityAttributes.GENERIC_ATTACK_DAMAGE, 5.0)     // default 3.0
                 .add(EntityAttributes.GENERIC_ARMOR, 4.0)             // default 2.0
-                .add(EntityAttributes.ZOMBIE_SPAWN_REINFORCEMENTS);
+                .add(EntityAttributes.ZOMBIE_SPAWN_REINFORCEMENTS, 0.0F);
     }
 
     @Override
@@ -151,7 +151,7 @@ public class HordeZombieEntity extends ZombieEntity {
 
     @Override
     protected boolean burnsInDaylight() {
-        return Config.getZombiesBurnInDaylight();
+        return MainConfig.getHordeZombiesBurnInDaylight();
     }
 
     @Override
