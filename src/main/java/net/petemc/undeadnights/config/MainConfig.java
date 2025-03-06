@@ -50,6 +50,14 @@ public class MainConfig
         return chanceForAdditionalWaves;
     }
 
+    public static boolean getHordeWavesCanSpawnInWater() {
+        return hordeWavesCanSpawnInWater;
+    }
+
+    public static boolean getHordeWavesCanSpawnOnTrees() {
+        return hordeWavesCanSpawnOnTrees;
+    }
+
     public static boolean getHordeNightsDisableSleeping() {
         return hordeNightsDisableSleeping;
     }
@@ -110,15 +118,23 @@ public class MainConfig
             .defineInRange("cooldownBetweenWaves", 45, 1, Integer.MAX_VALUE);
 
     private static final ModConfigSpec.IntValue CHANCE_FOR_ADDITIONAL_WAVES = BUILDER_SERVER
-            .comment("Chance in % for another zombie wave (checked after every wave cooldown) | default: 7")
+            .comment("Chance in % for another horde wave (checked after every wave cooldown) | default: 7")
             .defineInRange("chanceForAdditionalWaves", 7, 1, 100);
+
+    private static final ModConfigSpec.BooleanValue HORDE_WAVES_CAN_SPAWN_IN_WATER = BUILDER_SERVER
+            .comment("If true, horde waves can spawn in water | default: false")
+            .define("hordeWavesCanSpawnInWater", false);
+
+    private static final ModConfigSpec.BooleanValue HORDE_WAVES_CAN_SPAWN_ON_TREES = BUILDER_SERVER
+            .comment("If true, horde waves can spawn on trees | default: false")
+            .define("hordeWavesCanSpawnOnTrees", false);
 
     private static final ModConfigSpec.BooleanValue HORDE_NIGHTS_DISABLE_SLEEPING = BUILDER_SERVER
             .comment("If true, Players can't sleep through horde nights | default: true")
             .define("hordeNightsDisableSleeping", true);
 
     private static final ModConfigSpec.BooleanValue PERSISTENT_MOBS = BUILDER_SERVER
-            .comment("If true, the horde zombies will be persistent and not despawn | default: false")
+            .comment("If true, the horde mobs will be persistent and not despawn | default: false")
             .define("persistentMobs", false);
 
    private static final ModConfigSpec.BooleanValue HORDE_ZOMBIES_BURN_IN_DAYLIGHT = BUILDER_SERVER
@@ -151,6 +167,8 @@ public class MainConfig
     private static boolean spawnAdditionalWaves = true;
     private static int cooldownBetweenWaves = 45;
     private static int chanceForAdditionalWaves = 7;
+    private static boolean hordeWavesCanSpawnInWater =false;
+    private static boolean hordeWavesCanSpawnOnTrees = false;
     private static boolean hordeNightsDisableSleeping = true;
     private static boolean persistentMobs = false;
     private static boolean hordeZombiesBurnInDaylight = false;
@@ -172,6 +190,8 @@ public class MainConfig
             spawnAdditionalWaves = SPAWN_ADDITIONAL_WAVES.get();
             cooldownBetweenWaves = COOLDOWN_BETWEEN_WAVES.get();
             chanceForAdditionalWaves = CHANCE_FOR_ADDITIONAL_WAVES.get();
+            hordeWavesCanSpawnInWater = HORDE_WAVES_CAN_SPAWN_IN_WATER.get();
+            hordeWavesCanSpawnOnTrees = HORDE_WAVES_CAN_SPAWN_ON_TREES.get();
             hordeNightsDisableSleeping = HORDE_NIGHTS_DISABLE_SLEEPING.get();
 	        persistentMobs = PERSISTENT_MOBS.get();
             hordeZombiesBurnInDaylight = HORDE_ZOMBIES_BURN_IN_DAYLIGHT.get();

@@ -7,6 +7,7 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 import net.neoforged.neoforge.event.entity.EntityLeaveLevelEvent;
 import net.neoforged.neoforge.event.entity.player.CanPlayerSleepEvent;
+import net.neoforged.neoforge.event.server.ServerStoppedEvent;
 import net.petemc.undeadnights.config.MainConfig;
 import net.petemc.undeadnights.UndeadNights;
 
@@ -37,16 +38,26 @@ public class ModEvents {
                             if ((event.getEntity().getRemovalReason() == Entity.RemovalReason.KILLED) || (event.getEntity().getRemovalReason() == Entity.RemovalReason.DISCARDED)) {
                                 UndeadNights.globalSpawnCounter--;
                                 UndeadNights.serverState.spawnedHordeMobs.remove(event.getEntity().getUUID());
-                                if (event.getEntity().getRemovalReason() != null) {
-                                    UndeadNights.LOGGER.info("UNLOAD GlobalSpawnCount: {} {} {}", UndeadNights.globalSpawnCounter, event.getEntity().getRemovalReason().name(), event.getEntity().getUUID());
-                                } else {
-                                    UndeadNights.LOGGER.info("UNLOAD GlobalSpawnCount: {} {}", UndeadNights.globalSpawnCounter, event.getEntity().getUUID());
+                                if (MainConfig.getPrintDebugMessages()) {
+                                    if (event.getEntity().getRemovalReason() != null) {
+                                        UndeadNights.LOGGER.info("UNLOAD GlobalSpawnCount: {} {} {}", UndeadNights.globalSpawnCounter, event.getEntity().getRemovalReason().name(), event.getEntity().getUUID());
+                                    } else {
+                                        UndeadNights.LOGGER.info("UNLOAD GlobalSpawnCount: {} {}", UndeadNights.globalSpawnCounter, event.getEntity().getUUID());
+                                    }
                                 }
                             }
                         }
                     }
                 }
             }
+        }
+
+        @SubscribeEvent
+        public static void onServerStopped(ServerStoppedEvent event) {
+            if (MainConfig.getPrintDebugMessages()) {
+                UndeadNights.LOGGER.info("{}: Server stopped, resetting spawn counter.", UndeadNights.MOD_ID);
+            }
+            UndeadNights.globalSpawnCounter = 0;
         }
 
         @SubscribeEvent
