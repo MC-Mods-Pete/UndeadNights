@@ -24,7 +24,7 @@ import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.Blocks;
-import net.petemc.undeadnights.Config;
+import net.petemc.undeadnights.config.MainConfig;
 import net.petemc.undeadnights.entity.ai.goal.DemolitionZombieIgniteGoal;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -34,25 +34,27 @@ import java.util.Objects;
 import java.util.Random;
 
 public class DemolitionZombieEntity extends Zombie {
+    private int numberTnt = 1;
+
     public DemolitionZombieEntity(EntityType<? extends Zombie> entityType, Level world) {
         super(entityType, world);
     }
 
     @Nullable
     @Override
-    public SpawnGroupData finalizeSpawn(ServerLevelAccessor pLevel, DifficultyInstance pDifficulty, MobSpawnType pReason, @javax.annotation.Nullable SpawnGroupData pSpawnData, @javax.annotation.Nullable CompoundTag pDataTag) {
-        Random randomsource = pLevel.getRandom();
-        pSpawnData = super.finalizeSpawn(pLevel, pDifficulty, pReason, pSpawnData, pDataTag);
-        float f = pDifficulty.getSpecialMultiplier();
+    public SpawnGroupData finalizeSpawn(ServerLevelAccessor level, @NotNull DifficultyInstance difficulty, @NotNull MobSpawnType mobSpawnType, @Nullable SpawnGroupData spawnGroupData, @Nullable CompoundTag compoundTag) {
+        Random randomsource = level.getRandom();
+        spawnGroupData = super.finalizeSpawn(level, difficulty, mobSpawnType, spawnGroupData, compoundTag);
+        float f = difficulty.getSpecialMultiplier();
         this.setCanPickUpLoot(randomsource.nextFloat() < 0.55F * f);
-        if (pSpawnData == null) {
-            pSpawnData = new Zombie.ZombieGroupData(false, false);
+        if (spawnGroupData == null) {
+            spawnGroupData = new ZombieGroupData(false, false);
         }
 
-        if (pSpawnData instanceof Zombie.ZombieGroupData) {
+        if (spawnGroupData instanceof ZombieGroupData) {
             this.setCanBreakDoors(true);
-            this.populateDefaultEquipmentSlots(randomsource, pDifficulty);
-            this.populateDefaultEquipmentEnchantments(pDifficulty);
+            this.populateDefaultEquipmentSlots(randomsource, difficulty);
+            this.populateDefaultEquipmentEnchantments(difficulty);
         }
 
         if (this.getItemBySlot(EquipmentSlot.HEAD).isEmpty()) {
@@ -67,7 +69,7 @@ public class DemolitionZombieEntity extends Zombie {
 
         this.handleAttributes(f);
         this.setBaby(false);
-        return pSpawnData;
+        return spawnGroupData;
     }
 
     public static AttributeSupplier.@NotNull Builder createAttributes() {
@@ -77,7 +79,7 @@ public class DemolitionZombieEntity extends Zombie {
                 .add(Attributes.MOVEMENT_SPEED, (double) 0.30F)    // default 0.23F
                 .add(Attributes.ATTACK_DAMAGE, 5.0D)        // default 3.0
                 .add(Attributes.ARMOR, 4.0D)                // default 2.0
-                .add(Attributes.SPAWN_REINFORCEMENTS_CHANCE);
+                .add(Attributes.SPAWN_REINFORCEMENTS_CHANCE, 0.0F);
     }
 
     @Override
@@ -120,11 +122,11 @@ public class DemolitionZombieEntity extends Zombie {
     }
 
     protected void populateDefaultEquipmentSlots(@NotNull Random pRandom, @NotNull DifficultyInstance pDifficulty) {
-        if (Config.getDemolitionZombieTntStackSize() == 0) {
+        if (numberTnt == 0) {
             this.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.TNT));
         }
-        if ((Config.getDemolitionZombieTntStackSize() > 0) && (Config.getDemolitionZombieTntStackSize() <= 64)){
-            this.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.TNT, Config.getDemolitionZombieTntStackSize()));
+        if ((numberTnt > 0) && (numberTnt <= 64)) {
+            this.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.TNT, numberTnt));
         }
         initCustomEquipment(pRandom, pDifficulty);
     }
@@ -173,7 +175,7 @@ public class DemolitionZombieEntity extends Zombie {
 
     @Override
     protected boolean isSunSensitive() {
-        return Config.getZombiesBurnInDaylight();
+        return MainConfig.getHordeZombiesBurnInDaylight();
     }
 
     @Override
@@ -185,6 +187,14 @@ public class DemolitionZombieEntity extends Zombie {
     @Override
     public void randomizeReinforcementsChance() {
         Objects.requireNonNull(this.getAttribute(Attributes.SPAWN_REINFORCEMENTS_CHANCE)).setBaseValue((double)0.0F);
+    }
+
+    public void setNumberTnt(int value) {
+        this.numberTnt = value;
+    }
+
+    public int getNumberTnt() {
+        return this.numberTnt;
     }
 
     static class ChasePlayerGoal extends Goal {
