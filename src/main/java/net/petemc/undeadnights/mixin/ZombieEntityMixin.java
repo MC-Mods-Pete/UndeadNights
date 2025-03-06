@@ -18,15 +18,12 @@ public class ZombieEntityMixin
     public void damage(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir)
     {
         if ((Object) this instanceof HordeZombieEntity) {
-            UndeadNights.LOGGER.info("-----------------------> Horde");
             cir.setReturnValue(true);
         }
         if ((Object) this instanceof DemolitionZombieEntity) {
-            UndeadNights.LOGGER.info("-----------------------> Demo");
             cir.setReturnValue(true);
         }
         if ((Object) this instanceof EliteZombieEntity) {
-            UndeadNights.LOGGER.info("-----------------------> Elite");
             cir.setReturnValue(true);
         }
     }

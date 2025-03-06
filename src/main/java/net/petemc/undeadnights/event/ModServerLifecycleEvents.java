@@ -6,18 +6,23 @@ import net.petemc.undeadnights.UndeadNights;
 import net.petemc.undeadnights.config.MainConfig;
 import net.petemc.undeadnights.util.StateSaverAndLoader;
 
-public class ServerLifecycleEvent {
+public class ModServerLifecycleEvents {
 
     private static MinecraftServer pServer;
 
-    public ServerLifecycleEvent() {
+    public ModServerLifecycleEvents() {
         ServerLifecycleEvents.SERVER_STARTED.register((server) -> {
             pServer = server;
-            execute();
+            executeServerStarted();
+        });
+
+        ServerLifecycleEvents.SERVER_STOPPED.register((server) -> {
+            pServer = server;
+            executeServerStopped();
         });
     }
 
-    public static void execute() {
+    public static void executeServerStarted() {
         if (UndeadNights.serverState == null) {
             UndeadNights.serverState = StateSaverAndLoader.getServerState(pServer);
             // check if the DaysCounter in the config was changed
@@ -33,5 +38,12 @@ public class ServerLifecycleEvent {
         }
     }
 
-    public static void registerEvent() { new ServerLifecycleEvent(); }
+    public static void executeServerStopped() {
+        if (MainConfig.getPrintDebugMessages()) {
+            UndeadNights.LOGGER.info("{}: Server stopped, resetting spawn counter.", UndeadNights.MOD_ID);
+        }
+        UndeadNights.globalSpawnCounter = 0;
+    }
+
+    public static void registerEvents() { new ModServerLifecycleEvents(); }
 }

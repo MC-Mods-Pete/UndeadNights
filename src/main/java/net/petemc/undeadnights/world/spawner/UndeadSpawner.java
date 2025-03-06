@@ -4,21 +4,20 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.LeavesBlock;
-import net.minecraft.entity.EntityData;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.SpawnReason;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.tag.FluidTags;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
+import net.minecraft.tag.FluidTags;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.random.Random;
+import net.minecraft.util.registry.Registry;
 import net.minecraft.world.Heightmap;
 import net.minecraft.world.LocalDifficulty;
 import net.minecraft.world.World;
@@ -77,7 +76,7 @@ public class UndeadSpawner implements Spawner {
 
     
     private void spawnHordeMob(ServerWorld world, Random randomSource, BlockPos pos, PlayerEntity player, HordeConfig.MobSpawnData mobSpawnData) {
-        EntityType<?> mobType = Registries.ENTITY_TYPE.get(new Identifier(mobSpawnData.mobId()));
+        EntityType<?> mobType = Registry.ENTITY_TYPE.get(new Identifier(mobSpawnData.mobId()));
         MobEntity mob = (MobEntity) mobType.create(world);
         int deltaX = randomSource.nextInt(8);
         int deltaZ = randomSource.nextInt(8);
