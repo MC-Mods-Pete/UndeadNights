@@ -8,7 +8,6 @@ import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.mob.HostileEntity;
 import net.minecraft.entity.mob.ZombieEntity;
-import net.minecraft.entity.mob.ZombifiedPiglinEntity;
 import net.minecraft.entity.passive.IronGolemEntity;
 import net.minecraft.entity.passive.MerchantEntity;
 import net.minecraft.entity.passive.TurtleEntity;
@@ -24,7 +23,7 @@ import net.minecraft.world.Difficulty;
 import net.minecraft.world.LocalDifficulty;
 import net.minecraft.world.ServerWorldAccess;
 import net.minecraft.world.World;
-import net.petemc.undeadnights.config.Config;
+import net.petemc.undeadnights.config.MainConfig;
 import net.petemc.undeadnights.entity.ai.goal.DemolitionZombieIgniteGoal;
 import org.jetbrains.annotations.Nullable;
 
@@ -33,6 +32,8 @@ import java.util.EnumSet;
 import java.util.Objects;
 
 public class DemolitionZombieEntity extends ZombieEntity {
+    private int numberTnt = 1;
+
     public DemolitionZombieEntity(EntityType<? extends ZombieEntity> entityType, World world) {
         super(entityType, world);
     }
@@ -44,7 +45,7 @@ public class DemolitionZombieEntity extends ZombieEntity {
                 .add(EntityAttributes.MOVEMENT_SPEED, 0.30f)  // default 0.23000000417232513
                 .add(EntityAttributes.ATTACK_DAMAGE, 5.0)     // default 3.0
                 .add(EntityAttributes.ARMOR, 4.0)             // default 2.0
-                .add(EntityAttributes.SPAWN_REINFORCEMENTS);
+                .add(EntityAttributes.SPAWN_REINFORCEMENTS, 0.0f);
     }
 
     @Override
@@ -118,11 +119,11 @@ public class DemolitionZombieEntity extends ZombieEntity {
 
     @Override
     protected void initEquipment(Random random, LocalDifficulty localDifficulty) {
-        if (Config.getDemolitionZombieTntStackSize() == 0) {
+        if (numberTnt == 0) {
             this.setStackInHand(Hand.MAIN_HAND, new ItemStack(Items.TNT));
         }
-        if ((Config.getDemolitionZombieTntStackSize() > 0) && (Config.getDemolitionZombieTntStackSize() <= 64)){
-            this.setStackInHand(Hand.MAIN_HAND, new ItemStack(Items.TNT, Config.getDemolitionZombieTntStackSize()));
+        if ((numberTnt > 0) && (numberTnt <= 64)) {
+            this.setStackInHand(Hand.MAIN_HAND, new ItemStack(Items.TNT, numberTnt));
         }
         initCustomEquipment(random, localDifficulty);
     }
@@ -171,7 +172,7 @@ public class DemolitionZombieEntity extends ZombieEntity {
 
     @Override
     protected boolean burnsInDaylight() {
-        return Config.getZombiesBurnInDaylight();
+        return MainConfig.getHordeZombiesBurnInDaylight();
     }
 
     @Override
@@ -183,6 +184,14 @@ public class DemolitionZombieEntity extends ZombieEntity {
     @Override
     protected void initAttributes() {
         Objects.requireNonNull(this.getAttributeInstance(EntityAttributes.SPAWN_REINFORCEMENTS)).setBaseValue(0.0F);
+    }
+
+    public void setNumberTnt(int value) {
+        this.numberTnt = value;
+    }
+
+    public int getNumberTnt() {
+        return this.numberTnt;
     }
 
     static class ChasePlayerGoal extends Goal {
