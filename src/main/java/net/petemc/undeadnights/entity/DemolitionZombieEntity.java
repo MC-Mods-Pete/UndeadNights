@@ -18,19 +18,19 @@ import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.random.Random;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.LocalDifficulty;
 import net.minecraft.world.ServerWorldAccess;
 import net.minecraft.world.World;
+import net.minecraft.world.explosion.Explosion;
 import net.petemc.undeadnights.config.MainConfig;
 import net.petemc.undeadnights.entity.ai.goal.DemolitionZombieIgniteGoal;
 import org.jetbrains.annotations.Nullable;
 
 import java.time.LocalDate;
-import java.time.temporal.ChronoField;
 import java.util.EnumSet;
 import java.util.Objects;
+import java.util.Random;
 
 public class DemolitionZombieEntity extends ZombieEntity {
     private int numberTnt = 1;
@@ -79,14 +79,14 @@ public class DemolitionZombieEntity extends ZombieEntity {
 
         if (entityData instanceof ZombieData) {
             this.setCanBreakDoors(this.shouldBreakDoors() && random.nextFloat() < f * 0.1F);
-            this.initEquipment(random, difficulty);
-            this.updateEnchantments(random, difficulty);
+            this.initEquipment(difficulty);
+            this.updateEnchantments(difficulty);
         }
 
         if (this.getEquippedStack(EquipmentSlot.HEAD).isEmpty()) {
             LocalDate localDate = LocalDate.now();
-            int i = localDate.get(ChronoField.DAY_OF_MONTH);
-            int j = localDate.get(ChronoField.MONTH_OF_YEAR);
+            int i = localDate.getDayOfMonth();
+            int j = localDate.getMonth().getValue();
             if (j == 10 && i == 31 && random.nextFloat() < 0.25F) {
                 this.equipStack(EquipmentSlot.HEAD, new ItemStack(random.nextFloat() < 0.1F ? Blocks.JACK_O_LANTERN : Blocks.CARVED_PUMPKIN));
                 this.armorDropChances[EquipmentSlot.HEAD.getEntitySlotId()] = 0.0F;
@@ -101,7 +101,7 @@ public class DemolitionZombieEntity extends ZombieEntity {
             World world = this.getEntityWorld();
             BlockPos pos = this.getBlockPos();
             this.remove(RemovalReason.KILLED);
-            world.createExplosion(this, pos.getX(), pos.getY(), pos.getZ(), 5, true, World.ExplosionSourceType.TNT);
+            world.createExplosion(this, pos.getX(), pos.getY(), pos.getZ(), 5, true, Explosion.DestructionType.DESTROY);
             return true;
         }
         return super.damage(source, amount);
@@ -122,17 +122,17 @@ public class DemolitionZombieEntity extends ZombieEntity {
     }
 
     @Override
-    protected void initEquipment(Random random, LocalDifficulty localDifficulty) {
+    protected void initEquipment(LocalDifficulty localDifficulty) {
         if (numberTnt == 0) {
             this.setStackInHand(Hand.MAIN_HAND, new ItemStack(Items.TNT));
         }
         if ((numberTnt > 0) && (numberTnt <= 64)) {
             this.setStackInHand(Hand.MAIN_HAND, new ItemStack(Items.TNT, numberTnt));
         }
-        initCustomEquipment(random, localDifficulty);
+        initCustomEquipment(localDifficulty);
     }
 
-    protected void initCustomEquipment(Random random, LocalDifficulty localDifficulty) {
+    protected void initCustomEquipment(LocalDifficulty localDifficulty) {
         if (random.nextFloat() < 0.15F * localDifficulty.getClampedLocalDifficulty()) {
             int i = random.nextInt(2);
             float f = this.getWorld().getDifficulty() == Difficulty.HARD ? 0.1F : 0.25F;

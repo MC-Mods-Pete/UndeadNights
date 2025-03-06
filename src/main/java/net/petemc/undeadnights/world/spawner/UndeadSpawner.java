@@ -4,21 +4,19 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.LeavesBlock;
-import net.minecraft.entity.EntityData;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.SpawnReason;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.tag.FluidTags;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
+import net.minecraft.tag.FluidTags;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.random.Random;
+import net.minecraft.util.registry.Registry;
 import net.minecraft.world.Heightmap;
 import net.minecraft.world.LocalDifficulty;
 import net.minecraft.world.World;
@@ -30,6 +28,9 @@ import net.petemc.undeadnights.entity.DemolitionZombieEntity;
 import net.petemc.undeadnights.entity.HordeZombieEntity;
 import net.petemc.undeadnights.entity.ModEntities;
 import net.petemc.undeadnights.sound.UndeadNightsSounds;
+
+import java.text.NumberFormat;
+import java.util.Random;
 
 public class UndeadSpawner implements Spawner {
     private double x = 0;
@@ -58,8 +59,8 @@ public class UndeadSpawner implements Spawner {
         double _d = 0;
         double _x = 0;
         double _z = 0;
-        _d = random.nextBetween(distanceMin, distanceMax);
-        _x = random.nextBetween(0, (int) _d);
+        _d = random.nextInt(distanceMin, distanceMax);
+        _x = random.nextInt(0, (int) _d);
         if (_x == 0) {
             _z = _d;
         } else {
@@ -77,7 +78,7 @@ public class UndeadSpawner implements Spawner {
 
     
     private void spawnHordeMob(ServerWorld world, Random randomSource, BlockPos pos, PlayerEntity player, HordeConfig.MobSpawnData mobSpawnData) {
-        EntityType<?> mobType = Registries.ENTITY_TYPE.get(new Identifier(mobSpawnData.mobId()));
+        EntityType<?> mobType = Registry.ENTITY_TYPE.get(new Identifier(mobSpawnData.mobId()));
         MobEntity mob = (MobEntity) mobType.create(world);
         int deltaX = randomSource.nextInt(8);
         int deltaZ = randomSource.nextInt(8);
@@ -165,7 +166,7 @@ public class UndeadSpawner implements Spawner {
                 } else {
                     UndeadNights.serverState.setTickCounter(MainConfig.getCooldownBetweenWaves() * 20);
                 }
-                randomValue = randomSource.nextBetween(1, 100);
+                randomValue = randomSource.nextInt(1, 100);
                 if (randomValue > (100 - MainConfig.getChanceForAdditionalWaves())) {
                     if (MainConfig.getPrintDebugMessages()) {
                         UndeadNights.LOGGER.info("New Wave, randomValue was: {}", randomValue);
@@ -187,9 +188,9 @@ public class UndeadSpawner implements Spawner {
                 if ((UndeadNights.serverState.getDaysCounter() > 0) && (MainConfig.getSendHordeNightsCountdownMessage())) {
                     for (ServerPlayerEntity player : world.getPlayers()) {
                         if (UndeadNights.serverState.getDaysCounter() > 1) {
-                            player.sendMessage(Text.translatable("message.undeadnights.nights_remaining", String.valueOf(UndeadNights.serverState.getDaysCounter())));
+                            player.sendMessage(Text.of(String.valueOf(UndeadNights.serverState.getDaysCounter()) + " nights remaining until the next Night of the Undead!"), false);
                         } else {
-                            player.sendMessage(Text.translatable("message.undeadnights.last_nights"));
+                            player.sendMessage(Text.of("This is the last night before the next Night of the Undead!"), false);
                         }
                     }
                 }
@@ -227,14 +228,14 @@ public class UndeadSpawner implements Spawner {
 
             // this is the first tick of a new night
             if (nightIsStarting) {
-                randomValue = randomSource.nextBetween(1, 100);
+                randomValue = randomSource.nextInt(1, 100);
                 if (!(randomValue > (100 - MainConfig.getChanceForHordeNight()))) {
                     return 0;
                 } else {
                     UndeadNights.serverState.setHordeNight(true);
                     UndeadNights.serverState.setSpawnZombies(true);
                     for (ServerPlayerEntity player : world.getPlayers()) {
-                        player.sendMessage(Text.translatable("message.undeadnights.horde_night").formatted(Formatting.RED));
+                        player.sendMessage(Text.of("The sun is starting to set and you feel uneasy about the coming night...").copy().formatted(Formatting.RED), false);
                     }
                     if (MainConfig.getPrintDebugMessages()) {
                         UndeadNights.LOGGER.info("The coming night is a Horde Night, HordeNight: {}", UndeadNights.serverState.getHordeNight());
@@ -252,8 +253,8 @@ public class UndeadSpawner implements Spawner {
                     for (int i= 0; i < 20; i++){
                         // for the given min/max distance, calculate the x and z coordinates deltas
                         if (d == 0) {
-                            d = randomSource.nextBetween(MainConfig.getDistanceMin(), MainConfig.getDistanceMax());
-                            x = randomSource.nextBetween(0, (int) d);
+                            d = randomSource.nextInt(MainConfig.getDistanceMin(), MainConfig.getDistanceMax());
+                            x = randomSource.nextInt(0, (int) d);
                             if (x == 0) {
                                 z = d;
                             } else {
@@ -303,7 +304,7 @@ public class UndeadSpawner implements Spawner {
                         while (waveMobCounter < (HordeConfig.getMaxWaveSize())) {
                             for (var mobSpawnData : HordeConfig.getHordeMobs()) {
                                 if (UndeadNights.globalSpawnCounter < MainConfig.getHordeMobsSpawnCap()) {
-                                    randomValue = randomSource.nextBetween(1, 100);
+                                    randomValue = randomSource.nextInt(1, 100);
                                     spawnHordeMob(world, randomSource, pos, player, (randomValue > (100 - mobSpawnData.chance())) ? mobSpawnData : HordeConfig.getDefaultHordeMob());
                                     waveMobCounter++;
                                     if (waveMobCounter >= HordeConfig.getMaxWaveSize()) {
@@ -333,7 +334,7 @@ public class UndeadSpawner implements Spawner {
                             if (mobSpawnData.countMin() >= mobSpawnData.countMax()) {
                                 mobCount = mobSpawnData.countMin();
                             } else {
-                                mobCount = randomSource.nextBetween(mobSpawnData.countMin(),mobSpawnData.countMax());
+                                mobCount = randomSource.nextInt(mobSpawnData.countMin(),mobSpawnData.countMax());
                             }
                             for (int i = 0; i < mobCount; i++) {
                                 spawnHordeMob(world, randomSource, pos, player, mobSpawnData);
@@ -351,7 +352,7 @@ public class UndeadSpawner implements Spawner {
 
                     if (currentHordeCounter != UndeadNights.globalSpawnCounter) {
                         player.getWorld().playSound(null, player.getX(), player.getY(), player.getZ(), UndeadNightsSounds.HORDE_SCREAM, SoundCategory.HOSTILE, 4.0F, 1);
-                        player.sendMessage(Text.translatable("message.undeadnights.horde_spawned").formatted(Formatting.RED));
+                        player.sendMessage(Text.of("A horde has spawned!").copy().formatted(Formatting.RED), false);
                         if (MainConfig.getPrintDebugMessages()) {
                             UndeadNights.LOGGER.info("A Horde has spanned!");
                         }
@@ -378,7 +379,7 @@ public class UndeadSpawner implements Spawner {
         } else {
             if (UndeadNights.serverState.getHordeNight()) {
                 for (ServerPlayerEntity player : world.getPlayers()) {
-                    player.sendMessage(Text.translatable("message.undeadnights.horde_night_over"));
+                    player.sendMessage(Text.of("You feel at ease, this Night of the Undead is over..."), false);
                 }
                 UndeadNights.serverState.setDaysCounter(MainConfig.getDaysBetweenHordeNights());
                 if (MainConfig.getPrintDebugMessages()) {

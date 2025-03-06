@@ -16,7 +16,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.packet.s2c.play.EntitySpawnS2CPacket;
-import net.minecraft.util.math.random.Random;
 import net.minecraft.world.*;
 import net.petemc.undeadnights.config.MainConfig;
 import org.jetbrains.annotations.Nullable;
@@ -24,6 +23,7 @@ import org.jetbrains.annotations.Nullable;
 import java.time.LocalDate;
 import java.util.EnumSet;
 import java.util.Objects;
+import java.util.Random;
 
 
 public class HordeZombieEntity extends ZombieEntity {
@@ -46,8 +46,8 @@ public class HordeZombieEntity extends ZombieEntity {
 
         if (entityData instanceof ZombieData) {
             this.setCanBreakDoors(this.shouldBreakDoors() && random.nextFloat() < f * 0.1F);
-            this.initEquipment(random, difficulty);
-            this.updateEnchantments(random, difficulty);
+            this.initEquipment(difficulty);
+            this.updateEnchantments(difficulty);
         }
 
         if (this.getEquippedStack(EquipmentSlot.HEAD).isEmpty()) {
@@ -98,8 +98,8 @@ public class HordeZombieEntity extends ZombieEntity {
     }
 
     @Override
-    protected void initEquipment(Random random, LocalDifficulty localDifficulty) {
-        initCustomEquipment(random, localDifficulty);
+    protected void initEquipment(LocalDifficulty localDifficulty) {
+        initCustomEquipment(localDifficulty);
         if (random.nextFloat() < (this.getWorld().getDifficulty() == Difficulty.HARD ? 0.07F : 0.03F)) {
             int i = random.nextInt(3);
             if (i == 0) {
@@ -111,7 +111,7 @@ public class HordeZombieEntity extends ZombieEntity {
         }
     }
 
-    protected void initCustomEquipment(Random random, LocalDifficulty localDifficulty) {
+    protected void initCustomEquipment(LocalDifficulty localDifficulty) {
         if (random.nextFloat() < 0.2F * localDifficulty.getClampedLocalDifficulty()) {
             int i = random.nextInt(2);
             float f = this.getWorld().getDifficulty() == Difficulty.HARD ? 0.2F : 0.45F;

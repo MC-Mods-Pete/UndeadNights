@@ -2,7 +2,6 @@ package net.petemc.undeadnights.mixin;
 
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.mob.ZombieEntity;
-import net.petemc.undeadnights.UndeadNights;
 import net.petemc.undeadnights.entity.DemolitionZombieEntity;
 import net.petemc.undeadnights.entity.EliteZombieEntity;
 import net.petemc.undeadnights.entity.HordeZombieEntity;
@@ -18,15 +17,12 @@ public class ZombieEntityMixin
     public void damage(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir)
     {
         if ((Object) this instanceof HordeZombieEntity) {
-            UndeadNights.LOGGER.info("-----------------------> Horde");
             cir.setReturnValue(true);
         }
         if ((Object) this instanceof DemolitionZombieEntity) {
-            UndeadNights.LOGGER.info("-----------------------> Demo");
             cir.setReturnValue(true);
         }
         if ((Object) this instanceof EliteZombieEntity) {
-            UndeadNights.LOGGER.info("-----------------------> Elite");
             cir.setReturnValue(true);
         }
     }
