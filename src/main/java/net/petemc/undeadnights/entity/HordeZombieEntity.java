@@ -21,13 +21,12 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.Blocks;
-import net.petemc.undeadnights.Config;
+import net.petemc.undeadnights.config.MainConfig;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.time.LocalDate;
 import java.util.Objects;
-
 
 public class HordeZombieEntity extends Zombie {
     public HordeZombieEntity(EntityType<? extends Zombie> entityType, Level level) {
@@ -36,19 +35,19 @@ public class HordeZombieEntity extends Zombie {
 
     @Nullable
     @Override
-    public SpawnGroupData finalizeSpawn(ServerLevelAccessor pLevel, DifficultyInstance pDifficulty, MobSpawnType pReason, @javax.annotation.Nullable SpawnGroupData pSpawnData, @javax.annotation.Nullable CompoundTag pDataTag) {
-        RandomSource randomsource = pLevel.getRandom();
-        pSpawnData = super.finalizeSpawn(pLevel, pDifficulty, pReason, pSpawnData, pDataTag);
-        float f = pDifficulty.getSpecialMultiplier();
+    public SpawnGroupData finalizeSpawn(ServerLevelAccessor level, @NotNull DifficultyInstance difficulty, @NotNull MobSpawnType mobSpawnType, @Nullable SpawnGroupData spawnGroupData, @Nullable CompoundTag compoundTag) {
+        RandomSource randomsource = level.getRandom();
+        spawnGroupData = super.finalizeSpawn(level, difficulty, mobSpawnType, spawnGroupData, compoundTag);
+        float f = difficulty.getSpecialMultiplier();
         this.setCanPickUpLoot(randomsource.nextFloat() < 0.55F * f);
-        if (pSpawnData == null) {
-            pSpawnData = new Zombie.ZombieGroupData(false, false);
+        if (spawnGroupData == null) {
+            spawnGroupData = new ZombieGroupData(false, false);
         }
 
-        if (pSpawnData instanceof Zombie.ZombieGroupData) {
+        if (spawnGroupData instanceof ZombieGroupData) {
             this.setCanBreakDoors(true);
-            this.populateDefaultEquipmentSlots(randomsource, pDifficulty);
-            this.populateDefaultEquipmentEnchantments(randomsource, pDifficulty);
+            this.populateDefaultEquipmentSlots(randomsource, difficulty);
+            this.populateDefaultEquipmentEnchantments(randomsource, difficulty);
         }
 
         if (this.getItemBySlot(EquipmentSlot.HEAD).isEmpty()) {
@@ -63,7 +62,7 @@ public class HordeZombieEntity extends Zombie {
 
         this.handleAttributes(f);
         this.setBaby(false);
-        return pSpawnData;
+        return spawnGroupData;
     }
 
         public static AttributeSupplier.@NotNull Builder createAttributes() {
@@ -73,7 +72,7 @@ public class HordeZombieEntity extends Zombie {
                     .add(Attributes.MOVEMENT_SPEED, (double) 0.30F)    // default 0.23F
                     .add(Attributes.ATTACK_DAMAGE, 5.0D)        // default 3.0
                     .add(Attributes.ARMOR, 4.0D)                // default 2.0
-                    .add(Attributes.SPAWN_REINFORCEMENTS_CHANCE);
+                    .add(Attributes.SPAWN_REINFORCEMENTS_CHANCE, 0.0F);
         }
 
     @Override
@@ -81,7 +80,7 @@ public class HordeZombieEntity extends Zombie {
         this.goalSelector.addGoal(1, new FloatGoal(this));
         this.goalSelector.addGoal(2, new ZombieAttackGoal(this, 1.0, false));
         //this.goalSelector.addGoal(3, new PounceAtTargetGoal(this, 0.4F));
-        this.goalSelector.addGoal(4, new HordeZombieEntity.ChasePlayerGoal(this));
+        this.goalSelector.addGoal(4, new ChasePlayerGoal(this));
         this.goalSelector.addGoal(6, new MoveThroughVillageGoal(this, 1.0, true, 4, this::canBreakDoors));
         this.goalSelector.addGoal(7, new WaterAvoidingRandomStrollGoal(this, 1.0));
         this.targetSelector.addGoal(1, new HurtByTargetGoal(this).setAlertOthers(HordeZombieEntity.class));
@@ -97,7 +96,7 @@ public class HordeZombieEntity extends Zombie {
 
     @Override
     protected boolean isSunSensitive() {
-        return Config.getZombiesBurnInDaylight();
+        return MainConfig.getHordeZombiesBurnInDaylight();
     }
 
     @Override
