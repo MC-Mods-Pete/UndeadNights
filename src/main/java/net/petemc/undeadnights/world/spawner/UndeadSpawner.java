@@ -18,6 +18,9 @@ import net.minecraft.world.entity.monster.Zombie;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.CustomSpawner;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -40,9 +43,17 @@ public class UndeadSpawner implements CustomSpawner {
         BlockPos.MutableBlockPos mutable = new BlockPos.MutableBlockPos(x, y, z);
 
         BlockState blockState = level.getBlockState(mutable);
-        boolean flag1 = blockState.blocksMotion();
-        boolean flag2 = blockState.getFluidState().is(FluidTags.WATER);
-        return (flag1 && !flag2);
+        Block block = blockState.getBlock();
+        boolean doesNotblockMovement = block != Blocks.COBWEB && block != Blocks.BAMBOO_SAPLING;
+        boolean notWater = true;
+        if (!MainConfig.getHordeWavesCanSpawnInWater()) {
+            notWater = !(blockState.getFluidState().is(FluidTags.WATER));
+        }
+        boolean notLeaves = true;
+        if (!MainConfig.getHordeWavesCanSpawnOnTrees()) {
+            notLeaves = !(blockState.getBlock() instanceof LeavesBlock);
+        }
+        return doesNotblockMovement && notLeaves && notWater;
     }
 
     private BlockPos getBlockPosWithDistance(BlockPos pos, Level level, int distanceMin, int distanceMax) {
@@ -64,7 +75,7 @@ public class UndeadSpawner implements CustomSpawner {
             _z = _z * -1;
         }
 
-        return new BlockPos(pos.getX() + (int) _x, level.getHeight(Heightmap.Types.WORLD_SURFACE, pos.getX() + (int) _x, pos.getZ() + (int) _z), pos.getZ() + (int) _z);
+        return new BlockPos(pos.getX() + (int) _x, level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, pos.getX() + (int) _x, pos.getZ() + (int) _z), pos.getZ() + (int) _z);
     }
 
     
@@ -75,7 +86,18 @@ public class UndeadSpawner implements CustomSpawner {
         int deltaX = randomSource.nextInt(8);
         int deltaZ = randomSource.nextInt(8);
         assert mob != null;
-        mob.setPos(pos.getX() + deltaX, level.getHeight(Heightmap.Types.WORLD_SURFACE, pos.getX() + deltaX, pos.getZ() + deltaZ), pos.getZ() + deltaZ);
+        BlockPos.MutableBlockPos mutable = new BlockPos.MutableBlockPos(pos.getX(), pos.getY() - 1, pos.getZ());
+        BlockState blockState = level.getBlockState(mutable);
+        int y = 0;
+        if (blockState.getFluidState().is(FluidTags.WATER)) {
+            y = level.getHeight(Heightmap.Types.WORLD_SURFACE, pos.getX() + deltaX, pos.getZ() + deltaZ);
+        }
+        if ((MainConfig.getHordeWavesCanSpawnOnTrees())) {
+            y = level.getHeight(Heightmap.Types.MOTION_BLOCKING, pos.getX() + deltaX, pos.getZ() + deltaZ);
+        } else {
+            y = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, pos.getX() + deltaX, pos.getZ() + deltaZ);
+        }
+        mob.setPos(pos.getX() + deltaX, y, pos.getZ() + deltaZ);
         if (MainConfig.getPersistentMobs()) {
             mob.setPersistenceRequired();
         }
@@ -106,7 +128,7 @@ public class UndeadSpawner implements CustomSpawner {
         } catch (Exception e) {
             UndeadNights.LOGGER.warn("Reading entry {} from the config file failed! Spawning default horde zombie instead.", mobSpawnData.mobId());
             HordeZombieEntity hZombie = new HordeZombieEntity(ModEntities.HORDE_ZOMBIE.get(), level);
-            hZombie.setPos(pos.getX() + deltaX, level.getHeight(Heightmap.Types.WORLD_SURFACE, pos.getX() + deltaX, pos.getZ() + deltaZ), pos.getZ() + deltaZ);
+            hZombie.setPos(pos.getX() + deltaX, level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, pos.getX() + deltaX, pos.getZ() + deltaZ), pos.getZ() + deltaZ);
             if (MainConfig.getPersistentMobs()) {
                 hZombie.setPersistenceRequired();
             }
@@ -213,15 +235,7 @@ public class UndeadSpawner implements CustomSpawner {
                         if (!checkSpawnLocation(level, pos.getX(), pos.getY() - 1, pos.getZ())) {
                             return 0;
                         } else {
-                            HordeZombieEntity e = new HordeZombieEntity(ModEntities.HORDE_ZOMBIE.get(), level);
-                            e.setPos(pos.getX(), pos.getY(), pos.getZ());
-                            if (MainConfig.getPersistentMobs()) {
-                                e.setPersistenceRequired();
-                            }
-                            DifficultyInstance localDifficulty = level.getCurrentDifficultyAt(player.blockPosition());
-                            e.finalizeSpawn(level, localDifficulty, EntitySpawnReason.NATURAL, null);
-                            e.setTarget(player);
-                            level.addFreshEntity(e);
+                            spawnHordeMob(level, randomSource, pos, player, new HordeConfig.MobSpawnData("undeadnights:horde_zombie",100, 0, 0, "none"));
                             if (MainConfig.getPrintDebugMessages()) {
                                 UndeadNights.LOGGER.info("A stray horde zombie spawned!");
                             }
@@ -274,7 +288,7 @@ public class UndeadSpawner implements CustomSpawner {
                         }
 
                         pos = player.blockPosition().offset((int) x, 0, (int) z);
-                        pos = new BlockPos(pos.getX(), level.getHeight(Heightmap.Types.WORLD_SURFACE, pos.getX(), pos.getZ()), pos.getZ());
+                        pos = new BlockPos(pos.getX(), level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, pos.getX(), pos.getZ()), pos.getZ());
                         foundHordeSpawnLocation = checkSpawnLocation(level, pos.getX(), pos.getY() - 1, pos.getZ());
                         if (!foundHordeSpawnLocation) {
                             d = 0;
