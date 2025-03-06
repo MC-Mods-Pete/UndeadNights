@@ -33,11 +33,11 @@ import java.time.LocalDate;
 import java.util.Objects;
 
 public class DemolitionZombieEntity extends Zombie {
+    private int numberTnt = 1;
+
     public DemolitionZombieEntity(EntityType<? extends Zombie> entityType, Level world) {
         super(entityType, world);
     }
-
-    private int numberTnt = 1;
 
     @Nullable
     @Override
