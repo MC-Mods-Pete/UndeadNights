@@ -28,7 +28,6 @@ import net.petemc.undeadnights.entity.ai.goal.DemolitionZombieIgniteGoal;
 import org.jetbrains.annotations.Nullable;
 
 import java.time.LocalDate;
-import java.time.temporal.ChronoField;
 import java.util.EnumSet;
 import java.util.Objects;
 
@@ -85,8 +84,8 @@ public class DemolitionZombieEntity extends ZombieEntity {
 
         if (this.getEquippedStack(EquipmentSlot.HEAD).isEmpty()) {
             LocalDate localDate = LocalDate.now();
-            int i = localDate.get(ChronoField.DAY_OF_MONTH);
-            int j = localDate.get(ChronoField.MONTH_OF_YEAR);
+            int i = localDate.getDayOfMonth();
+            int j = localDate.getMonth().getValue();
             if (j == 10 && i == 31 && random.nextFloat() < 0.25F) {
                 this.equipStack(EquipmentSlot.HEAD, new ItemStack(random.nextFloat() < 0.1F ? Blocks.JACK_O_LANTERN : Blocks.CARVED_PUMPKIN));
                 this.armorDropChances[EquipmentSlot.HEAD.getEntitySlotId()] = 0.0F;
