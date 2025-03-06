@@ -5,7 +5,8 @@
 	"mixins": [
 		"ServerWorldMixin",
 		"ServerPlayerEntityMixin",
-		"PlayerEntityMixin"
+		"PlayerEntityMixin",
+		"ZombieEntityMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

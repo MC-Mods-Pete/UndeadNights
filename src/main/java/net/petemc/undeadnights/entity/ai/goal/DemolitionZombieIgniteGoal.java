@@ -7,7 +7,6 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.math.BlockPos;
-import net.petemc.undeadnights.config.Config;
 import net.petemc.undeadnights.entity.DemolitionZombieEntity;
 import org.jetbrains.annotations.Nullable;
 
@@ -55,7 +54,7 @@ public class DemolitionZombieIgniteGoal extends Goal {
 					TntEntity tntEntity = new TntEntity(this.demolitionZombie.getEntityWorld(), (double) pos.getX() + 0.5, pos.getY(), (double) pos.getZ() + 0.5, this.demolitionZombie);
 					this.demolitionZombie.getEntityWorld().spawnEntity(tntEntity);
 					this.demolitionZombie.getEntityWorld().playSound(null, tntEntity.getX(), tntEntity.getY(), tntEntity.getZ(), SoundEvents.ENTITY_TNT_PRIMED, SoundCategory.BLOCKS, 1.0F, 1.0F);
-					if (Config.getDemolitionZombieTntStackSize() != 0) {
+					if (this.demolitionZombie.getNumberTnt() != 0) {
 						this.demolitionZombie.getMainHandStack().decrement(1);
 					}
 					tntCoolDown = 5 * 20;
