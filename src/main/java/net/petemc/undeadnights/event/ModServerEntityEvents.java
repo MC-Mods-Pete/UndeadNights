@@ -50,8 +50,6 @@ public class ModServerEntityEvents {
                         UndeadNights.serverState.spawnedHordeMobs.remove(pEntity.getUuid());
                         if (MainConfig.getPrintDebugMessages()) {
                             UndeadNights.LOGGER.info("UNLOAD GlobalSpawnCount: {} {} {}", UndeadNights.globalSpawnCounter, pEntity.getRemovalReason().name(), pEntity.getUuid());
-                        } else {
-                            UndeadNights.LOGGER.info("UNLOAD GlobalSpawnCount: {} {}", UndeadNights.globalSpawnCounter, pEntity.getUuid());
                         }
                     }
                 }
