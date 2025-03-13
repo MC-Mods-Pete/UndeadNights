@@ -41,8 +41,6 @@ public class ModEvents {
                                 if (MainConfig.getPrintDebugMessages()) {
                                     if (event.getEntity().getRemovalReason() != null) {
                                         UndeadNights.LOGGER.info("UNLOAD GlobalSpawnCount: {} {} {}", UndeadNights.globalSpawnCounter, event.getEntity().getRemovalReason().name(), event.getEntity().getUUID());
-                                    } else {
-                                        UndeadNights.LOGGER.info("UNLOAD GlobalSpawnCount: {} {}", UndeadNights.globalSpawnCounter, event.getEntity().getUUID());
                                     }
                                 }
                             }
