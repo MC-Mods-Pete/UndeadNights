@@ -1,13 +1,17 @@
 package net.petemc.undeadnights.event;
 
 import net.minecraft.world.entity.Entity;
+import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.event.entity.EntityLeaveLevelEvent;
 import net.minecraftforge.event.entity.living.ZombieEvent;
-import net.minecraftforge.event.server.ServerStoppedEvent;
 import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.server.command.ConfigCommand;
+import net.petemc.undeadnights.command.HordeMobsCommand;
+import net.petemc.undeadnights.command.SpawnHordeCommand;
+import net.petemc.undeadnights.command.StatusCommand;
 import net.petemc.undeadnights.config.MainConfig;
 import net.petemc.undeadnights.UndeadNights;
 import net.petemc.undeadnights.entity.DemolitionZombieEntity;
@@ -34,9 +38,15 @@ public class ModEvents {
             if(!event.getLevel().isClientSide()) {
                 if (UndeadNights.serverState != null) {
                     if (UndeadNights.serverState.spawnedHordeMobs.contains(event.getEntity().getUUID())) {
-                        UndeadNights.globalSpawnCounter++;
-                        if (MainConfig.getPrintDebugMessages()) {
-                            UndeadNights.LOGGER.info("LOAD GlobalSpawnCount: : {} {}", UndeadNights.globalSpawnCounter, event.getEntity().getUUID());
+                        if (UndeadNights.serverState.hordeMobsToRemove.contains(event.getEntity().getUUID())) {
+                            UndeadNights.serverState.hordeMobsToRemove.remove(event.getEntity().getUUID());
+                            event.setCanceled(true);
+                            UndeadNights.LOGGER.info("LOAD canceled, Entity marked for removal: {}", event.getEntity().getUUID());
+                        } else {
+                            UndeadNights.globalSpawnCounter++;
+                            if (MainConfig.getPrintDebugMessages()) {
+                                UndeadNights.LOGGER.info("LOAD GlobalSpawnCount  : {} {}", UndeadNights.globalSpawnCounter, event.getEntity().getUUID());
+                            }
                         }
                         //event.getEntity().kill();
                     }
@@ -64,11 +74,12 @@ public class ModEvents {
         }
 
         @SubscribeEvent
-        public static void onServerStopped(ServerStoppedEvent event) {
-            if (MainConfig.getPrintDebugMessages()) {
-                UndeadNights.LOGGER.info("{}: Server stopped, resetting spawn counter.", UndeadNights.MOD_ID);
-            }
-            UndeadNights.globalSpawnCounter = 0;
+        public static void onCommandsRegister(RegisterCommandsEvent event) {
+            new SpawnHordeCommand(event.getDispatcher());
+            new HordeMobsCommand(event.getDispatcher());
+            new StatusCommand(event.getDispatcher());
+
+            ConfigCommand.register(event.getDispatcher());
         }
     }
 }

@@ -18,6 +18,7 @@ public class StateSaverAndLoader extends SavedData {
     private boolean spawnZombies = true;
     private boolean respawnZombies = false;
     public HashSet<UUID> spawnedHordeMobs = new HashSet<UUID>();
+    public HashSet<UUID> hordeMobsToRemove = new HashSet<UUID>();
 
     // Setter and Getter functions
     public int getDaysCounter() {
@@ -87,6 +88,11 @@ public class StateSaverAndLoader extends SavedData {
             UUID hordeMobUUID = mobUUIDs.getUUID(key);
             state.spawnedHordeMobs.add(hordeMobUUID);
         });
+        CompoundTag removeMobUUIDs = tag.getCompound("hordeMobsToRemove");
+        removeMobUUIDs.getAllKeys().forEach(key -> {
+            UUID hordeMobUUID = removeMobUUIDs.getUUID(key);
+            state.hordeMobsToRemove.add(hordeMobUUID);
+        });
         state.setDirty();
         return state;
     }
@@ -104,11 +110,15 @@ public class StateSaverAndLoader extends SavedData {
             mobUUIDs.putUUID(uuid.toString(), uuid);
         });
         tag.put("spawnedHordeMobs", mobUUIDs);
+        CompoundTag removeMobUUIDs = new CompoundTag();
+        hordeMobsToRemove.forEach((uuid) -> {
+            removeMobUUIDs.putUUID(uuid.toString(), uuid);
+        });
+        tag.put("hordeMobsToRemove", removeMobUUIDs);
         return tag;
     }
 
     public static StateSaverAndLoader getServerState(MinecraftServer server) {
         return server.overworld().getDataStorage().computeIfAbsent(StateSaverAndLoader::load, StateSaverAndLoader::new, UndeadNights.MOD_ID);
     }
-
 }
