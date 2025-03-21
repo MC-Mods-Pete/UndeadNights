@@ -10,7 +10,6 @@ import net.minecraft.entity.mob.HostileEntity;
 import net.minecraft.entity.mob.ZombieEntity;
 import net.minecraft.entity.passive.IronGolemEntity;
 import net.minecraft.entity.passive.MerchantEntity;
-import net.minecraft.entity.passive.TurtleEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -42,10 +41,10 @@ public class DemolitionZombieEntity extends ZombieEntity {
         return HostileEntity.createHostileAttributes()
                 .add(EntityAttributes.MAX_HEALTH, 40.0)       // default 20.0
                 .add(EntityAttributes.FOLLOW_RANGE, 128.0)    // default 35.0
-                .add(EntityAttributes.MOVEMENT_SPEED, 0.30f)  // default 0.23000000417232513
+                .add(EntityAttributes.MOVEMENT_SPEED, 0.30)   // default 0.23000000417232513
                 .add(EntityAttributes.ATTACK_DAMAGE, 5.0)     // default 3.0
                 .add(EntityAttributes.ARMOR, 4.0)             // default 2.0
-                .add(EntityAttributes.SPAWN_REINFORCEMENTS, 0.0f);
+                .add(EntityAttributes.SPAWN_REINFORCEMENTS, 0.0);
     }
 
     @Override
@@ -58,9 +57,8 @@ public class DemolitionZombieEntity extends ZombieEntity {
         this.goalSelector.add(7, new WanderAroundFarGoal(this, 1.0));
         this.targetSelector.add(1, new RevengeGoal(this).setGroupRevenge(HordeZombieEntity.class));
         this.targetSelector.add(2, new ActiveTargetGoal<>(this, PlayerEntity.class, false, false));
-        this.targetSelector.add(3, new ActiveTargetGoal<>(this, MerchantEntity.class, false));
+        this.targetSelector.add(3, new ActiveTargetGoal<>(this, MerchantEntity.class, true));
         this.targetSelector.add(3, new ActiveTargetGoal<>(this, IronGolemEntity.class, true));
-        this.targetSelector.add(5, new ActiveTargetGoal<>(this, TurtleEntity.class, 10, true, false, TurtleEntity.BABY_TURTLE_ON_LAND_FILTER));
     }
 
     @Nullable
