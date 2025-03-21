@@ -9,7 +9,6 @@ import net.minecraft.entity.mob.HostileEntity;
 import net.minecraft.entity.mob.ZombieEntity;
 import net.minecraft.entity.passive.IronGolemEntity;
 import net.minecraft.entity.passive.MerchantEntity;
-import net.minecraft.entity.passive.TurtleEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -17,7 +16,10 @@ import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.packet.s2c.play.EntitySpawnS2CPacket;
 import net.minecraft.util.math.random.Random;
-import net.minecraft.world.*;
+import net.minecraft.world.Difficulty;
+import net.minecraft.world.LocalDifficulty;
+import net.minecraft.world.ServerWorldAccess;
+import net.minecraft.world.World;
 import net.petemc.undeadnights.config.MainConfig;
 import org.jetbrains.annotations.Nullable;
 
@@ -41,7 +43,7 @@ public class HordeZombieEntity extends ZombieEntity {
         float f = difficulty.getClampedLocalDifficulty();
         this.setCanPickUpLoot(random.nextFloat() < 0.55F * f);
         if (entityData == null) {
-            entityData = new ZombieEntity.ZombieData(false, false);
+            entityData = new ZombieData(false, false);
         }
 
         if (entityData instanceof ZombieData) {
@@ -66,25 +68,23 @@ public class HordeZombieEntity extends ZombieEntity {
         return HostileEntity.createHostileAttributes()
                 .add(EntityAttributes.GENERIC_MAX_HEALTH, 40.0)       // default 20.0
                 .add(EntityAttributes.GENERIC_FOLLOW_RANGE, 128.0)    // default 35.0
-                .add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 0.30f)  // default 0.23000000417232513
+                .add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 0.30)   // default 0.23000000417232513
                 .add(EntityAttributes.GENERIC_ATTACK_DAMAGE, 5.0)     // default 3.0
                 .add(EntityAttributes.GENERIC_ARMOR, 4.0)             // default 2.0
-                .add(EntityAttributes.ZOMBIE_SPAWN_REINFORCEMENTS, 0.0F);
+                .add(EntityAttributes.ZOMBIE_SPAWN_REINFORCEMENTS, 0.0);
     }
 
     @Override
     protected void initCustomGoals() {
         this.goalSelector.add(1, new SwimGoal(this));
         this.goalSelector.add(2, new ZombieAttackGoal(this, 1.0, false));
-        //this.goalSelector.add(3, new PounceAtTargetGoal(this, 0.4F));
-        this.goalSelector.add(4, new HordeZombieEntity.ChasePlayerGoal(this));
+        this.goalSelector.add(4, new ChasePlayerGoal(this));
         this.goalSelector.add(6, new MoveThroughVillageGoal(this, 1.0, true, 4, this::canBreakDoors));
         this.goalSelector.add(7, new WanderAroundFarGoal(this, 1.0));
         this.targetSelector.add(1, new RevengeGoal(this).setGroupRevenge(HordeZombieEntity.class));
         this.targetSelector.add(2, new ActiveTargetGoal<>(this, PlayerEntity.class, false, false));
-        this.targetSelector.add(3, new ActiveTargetGoal<>(this, MerchantEntity.class, false));
+        this.targetSelector.add(3, new ActiveTargetGoal<>(this, MerchantEntity.class, true));
         this.targetSelector.add(3, new ActiveTargetGoal<>(this, IronGolemEntity.class, true));
-        this.targetSelector.add(5, new ActiveTargetGoal<>(this, TurtleEntity.class, 10, true, false, TurtleEntity.BABY_TURTLE_ON_LAND_FILTER));
     }
 
     @Override
@@ -201,7 +201,7 @@ public class HordeZombieEntity extends ZombieEntity {
 
         public ChasePlayerGoal(HordeZombieEntity hordeZombie) {
             this.hordeZombie = hordeZombie;
-            this.setControls(EnumSet.of(Goal.Control.JUMP, Goal.Control.MOVE));
+            this.setControls(EnumSet.of(Control.JUMP, Control.MOVE));
         }
 
         @Override
