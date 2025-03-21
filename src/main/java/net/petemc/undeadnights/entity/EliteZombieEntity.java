@@ -13,7 +13,7 @@ import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.animal.IronGolem;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.monster.Zombie;
-import net.minecraft.world.entity.npc.WanderingTrader;
+import net.minecraft.world.entity.npc.AbstractVillager;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -68,25 +68,24 @@ public class EliteZombieEntity extends Zombie {
 
     public static AttributeSupplier.@NotNull Builder createAttributes() {
         return Monster.createMonsterAttributes()
-                .add(Attributes.MAX_HEALTH, 40.0F)          // default 20.F
-                .add(Attributes.FOLLOW_RANGE, 128.0D)       // default 35.0D
-                .add(Attributes.MOVEMENT_SPEED, (double) 0.32F)    // default 0.23F
-                .add(Attributes.ATTACK_DAMAGE, 6.0D)        // default 3.0
-                .add(Attributes.ARMOR, 5.0D)                // default 2.0
-                .add(Attributes.SPAWN_REINFORCEMENTS_CHANCE, 0.0F);
+                .add(Attributes.MAX_HEALTH, 40.0)          // default 20.F
+                .add(Attributes.FOLLOW_RANGE, 128.0)       // default 35.0D
+                .add(Attributes.MOVEMENT_SPEED, 0.32)      // default 0.23F
+                .add(Attributes.ATTACK_DAMAGE, 6.0)        // default 3.0
+                .add(Attributes.ARMOR, 5.0)                // default 2.0
+                .add(Attributes.SPAWN_REINFORCEMENTS_CHANCE, 0.0);
     }
 
     @Override
     protected void addBehaviourGoals() {
         this.goalSelector.addGoal(1, new FloatGoal(this));
         this.goalSelector.addGoal(2, new ZombieAttackGoal(this, 1.0, false));
-        //this.goalSelector.addGoal(3, new PounceAtTargetGoal(this, 0.4F));
         this.goalSelector.addGoal(4, new ChasePlayerGoal(this));
         this.goalSelector.addGoal(6, new MoveThroughVillageGoal(this, 1.0, true, 4, this::canBreakDoors));
-        this.goalSelector.addGoal(7, new WaterAvoidingRandomStrollGoal(this, 1.0));
+        this.goalSelector.addGoal(7, new RandomStrollGoal(this, 1.0));
         this.targetSelector.addGoal(1, new HurtByTargetGoal(this).setAlertOthers(HordeZombieEntity.class));
         this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, false, false));
-        this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, WanderingTrader.class, false));
+        this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, AbstractVillager.class, false));
         this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, IronGolem.class, true));
     }
 
