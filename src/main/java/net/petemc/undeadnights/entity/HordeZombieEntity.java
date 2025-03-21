@@ -1,11 +1,9 @@
 package net.petemc.undeadnights.entity;
 
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.entity.*;
-import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.*;
@@ -14,7 +12,7 @@ import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.animal.IronGolem;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.monster.Zombie;
-import net.minecraft.world.entity.npc.WanderingTrader;
+import net.minecraft.world.entity.npc.AbstractVillager;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -29,7 +27,6 @@ import org.jetbrains.annotations.Nullable;
 import java.time.LocalDate;
 import java.util.Objects;
 
-
 public class HordeZombieEntity extends Zombie {
     public HordeZombieEntity(EntityType<? extends Zombie> entityType, Level level) {
         super(entityType, level);
@@ -38,7 +35,6 @@ public class HordeZombieEntity extends Zombie {
     @Nullable
     @Override
     public SpawnGroupData finalizeSpawn(ServerLevelAccessor level, DifficultyInstance difficulty, EntitySpawnReason spawnReason, @Nullable SpawnGroupData spawnGroupData) {
-
         RandomSource randomsource = level.getRandom();
         spawnGroupData = super.finalizeSpawn(level, difficulty, spawnReason, spawnGroupData);
         float f = difficulty.getSpecialMultiplier();
@@ -70,25 +66,24 @@ public class HordeZombieEntity extends Zombie {
 
         public static AttributeSupplier.@NotNull Builder createAttributes() {
             return Monster.createMonsterAttributes()
-                    .add(Attributes.MAX_HEALTH, 40.0F)          // default 20.F
-                    .add(Attributes.FOLLOW_RANGE, 128.0D)       // default 35.0D
-                    .add(Attributes.MOVEMENT_SPEED, (double) 0.30F)    // default 0.23F
-                    .add(Attributes.ATTACK_DAMAGE, 5.0D)        // default 3.0
-                    .add(Attributes.ARMOR, 4.0D)                // default 2.0
-                    .add(Attributes.SPAWN_REINFORCEMENTS_CHANCE, 0.0F);
+                    .add(Attributes.MAX_HEALTH, 40.0)          // default 20.F
+                    .add(Attributes.FOLLOW_RANGE, 128.0)       // default 35.0D
+                    .add(Attributes.MOVEMENT_SPEED, 0.30)      // default 0.23F
+                    .add(Attributes.ATTACK_DAMAGE, 5.0)        // default 3.0
+                    .add(Attributes.ARMOR, 4.0)                // default 2.0
+                    .add(Attributes.SPAWN_REINFORCEMENTS_CHANCE, 0.0);
         }
 
     @Override
     protected void addBehaviourGoals() {
         this.goalSelector.addGoal(1, new FloatGoal(this));
         this.goalSelector.addGoal(2, new ZombieAttackGoal(this, 1.0, false));
-        //this.goalSelector.addGoal(3, new PounceAtTargetGoal(this, 0.4F));
         this.goalSelector.addGoal(4, new ChasePlayerGoal(this));
         this.goalSelector.addGoal(6, new MoveThroughVillageGoal(this, 1.0, true, 4, this::canBreakDoors));
-        this.goalSelector.addGoal(7, new WaterAvoidingRandomStrollGoal(this, 1.0));
+        this.goalSelector.addGoal(7, new RandomStrollGoal(this, 1.0));
         this.targetSelector.addGoal(1, new HurtByTargetGoal(this).setAlertOthers(HordeZombieEntity.class));
-        this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, false, false));
-        this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, WanderingTrader.class, false));
+        this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, false));
+        this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, AbstractVillager.class, true));
         this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, IronGolem.class, true));
     }
 
@@ -114,8 +109,8 @@ public class HordeZombieEntity extends Zombie {
     }
 
     @Override
-    protected void populateDefaultEquipmentSlots(@NotNull RandomSource pRandom, @NotNull DifficultyInstance difficulty) {
-        initCustomEquipment(pRandom, difficulty);
+    protected void populateDefaultEquipmentSlots(@NotNull RandomSource pRandom, @NotNull DifficultyInstance pDifficulty) {
+        initCustomEquipment(pRandom, pDifficulty);
         if (pRandom.nextFloat() < (this.level().getDifficulty() == Difficulty.HARD ? 0.07F : 0.03F)) {
             int i = random.nextInt(3);
             if (i == 0) {
