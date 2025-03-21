@@ -19,6 +19,7 @@ import net.petemc.undeadnights.client.render.HordeZombieRenderer;
 import net.petemc.undeadnights.config.HordeConfig;
 import net.petemc.undeadnights.config.MainConfig;
 import net.petemc.undeadnights.entity.ModEntities;
+import net.petemc.undeadnights.item.ModItems;
 import net.petemc.undeadnights.sound.UndeadNightsSounds;
 import net.petemc.undeadnights.util.StateSaverAndLoader;
 import org.slf4j.Logger;
@@ -37,11 +38,11 @@ public class UndeadNights {
 
 		UndeadNightsSounds.register(modEventBus);
 		ModEntities.register(modEventBus);
+		ModItems.register(modEventBus);
 
 		modEventBus.addListener(this::commonSetup);
 
 		MinecraftForge.EVENT_BUS.register(this);
-		//modEventBus.addListener(this::addCreative);
 		ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, MainConfig.SPEC_SERVER);
 		HordeConfig.loadConfig();
 	}
