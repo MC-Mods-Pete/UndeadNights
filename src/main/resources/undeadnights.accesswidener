@@ -1,0 +1,2 @@
+accessWidener v2 named
+accessible field net/minecraft/entity/mob/MobEntity targetSelector Lnet/minecraft/entity/ai/goal/GoalSelector;

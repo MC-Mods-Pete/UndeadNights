@@ -20,6 +20,7 @@ public class StateSaverAndLoader extends PersistentState {
     private boolean spawnZombies = true;
     private boolean respawnZombies = false;
     public HashSet<UUID> spawnedHordeMobs = new HashSet<UUID>();
+    public HashSet<UUID> hordeMobsToRemove = new HashSet<UUID>();
 
     // Setter and Getter functions
     public int getDaysCounter() {
@@ -89,6 +90,11 @@ public class StateSaverAndLoader extends PersistentState {
             UUID hordeMobUUID = mobUUIDs.getUuid(key);
             state.spawnedHordeMobs.add(hordeMobUUID);
         });
+        NbtCompound removeMobUUIDs = tag.getCompound("hordeMobsToRemove");
+        removeMobUUIDs.getKeys().forEach(key -> {
+            UUID hordeMobUUID = removeMobUUIDs.getUuid(key);
+            state.hordeMobsToRemove.add(hordeMobUUID);
+        });
         return state;
     }
 
@@ -105,6 +111,11 @@ public class StateSaverAndLoader extends PersistentState {
             mobUUIDs.putUuid(uuid.toString(), uuid);
         });
         nbt.put("spawnedHordeMobs", mobUUIDs);
+        NbtCompound removeMobUUIDs = new NbtCompound();
+        hordeMobsToRemove.forEach((uuid) -> {
+            removeMobUUIDs.putUuid(uuid.toString(), uuid);
+        });
+        nbt.put("hordeMobsToRemove", removeMobUUIDs);
         return nbt;
     }
 
