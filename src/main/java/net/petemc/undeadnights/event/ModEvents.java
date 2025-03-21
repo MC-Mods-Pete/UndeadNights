@@ -4,11 +4,15 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 import net.neoforged.neoforge.event.entity.EntityLeaveLevelEvent;
 import net.neoforged.neoforge.event.entity.player.CanPlayerSleepEvent;
-import net.neoforged.neoforge.event.server.ServerStoppedEvent;
+import net.neoforged.neoforge.server.command.ConfigCommand;
 import net.petemc.undeadnights.UndeadNights;
+import net.petemc.undeadnights.command.HordeMobsCommand;
+import net.petemc.undeadnights.command.SpawnHordeCommand;
+import net.petemc.undeadnights.command.StatusCommand;
 import net.petemc.undeadnights.config.MainConfig;
 
 public class ModEvents {
@@ -51,18 +55,19 @@ public class ModEvents {
         }
 
         @SubscribeEvent
-        public static void onServerStopped(ServerStoppedEvent event) {
-            if (MainConfig.getPrintDebugMessages()) {
-                UndeadNights.LOGGER.info("{}: Server stopped, resetting spawn counter.", UndeadNights.MOD_ID);
-            }
-            UndeadNights.globalSpawnCounter = 0;
-        }
-
-        @SubscribeEvent
         public static void onPlayerTrySleep(CanPlayerSleepEvent event) {
             if (UndeadNights.serverState.getHordeNight() && MainConfig.getHordeNightsDisableSleeping()) {
                 event.setProblem(Player.BedSleepingProblem.NOT_SAFE);
             }
+        }
+
+        @SubscribeEvent
+        public static void onCommandsRegister(RegisterCommandsEvent event) {
+            new SpawnHordeCommand(event.getDispatcher());
+            new HordeMobsCommand(event.getDispatcher());
+            new StatusCommand(event.getDispatcher());
+
+            ConfigCommand.register(event.getDispatcher());
         }
     }
 }

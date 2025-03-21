@@ -2,6 +2,7 @@ package net.petemc.undeadnights;
 
 import com.mojang.logging.LogUtils;
 import net.minecraft.client.renderer.entity.EntityRenderers;
+import net.minecraft.world.item.CreativeModeTabs;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -20,6 +21,7 @@ import net.petemc.undeadnights.client.render.HordeZombieRenderer;
 import net.petemc.undeadnights.config.HordeConfig;
 import net.petemc.undeadnights.config.MainConfig;
 import net.petemc.undeadnights.entity.ModEntities;
+import net.petemc.undeadnights.item.ModItems;
 import net.petemc.undeadnights.sound.UndeadNightsSounds;
 import net.petemc.undeadnights.util.StateSaverAndLoader;
 import org.slf4j.Logger;
@@ -37,6 +39,7 @@ public class UndeadNights {
 	public UndeadNights(IEventBus modEventBus, ModContainer modContainer) {
 		UndeadNightsSounds.register(modEventBus);
 		ModEntities.register(modEventBus);
+		ModItems.register(modEventBus);
 
 		// Register the commonSetup method for modloading
 		modEventBus.addListener(this::commonSetup);
@@ -45,7 +48,7 @@ public class UndeadNights {
 		// Note that this is necessary if and only if we want *this* class (ExampleMod) to respond directly to events.
 		// Do not add this line if there are no @SubscribeEvent-annotated functions in this class, like onServerStarting() below.
 		NeoForge.EVENT_BUS.register(this);
-		//modEventBus.addListener(this::addCreative);
+		modEventBus.addListener(this::addCreative);
 		modContainer.registerConfig(ModConfig.Type.SERVER, MainConfig.SPEC_SERVER);
 		HordeConfig.loadConfig();
 	}
@@ -59,7 +62,11 @@ public class UndeadNights {
 
 	// Add the example block item to the building blocks tab
 	private void addCreative(BuildCreativeModeTabContentsEvent event) {
-
+		if (event.getTabKey() == CreativeModeTabs.SPAWN_EGGS) {
+			event.accept(ModItems.HORDE_ZOMBIE_SPAWN_EGG.get());
+			event.accept(ModItems.ELITE_ZOMBIE_SPAWN_EGG.get());
+			event.accept(ModItems.DEMOLITION_ZOMBIE_SPAWN_EGG.get());
+		}
 	}
 
 	// You can use SubscribeEvent and let the Event Bus discover methods to call
