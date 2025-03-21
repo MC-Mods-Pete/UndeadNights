@@ -28,17 +28,18 @@ public class ModServerEntityEvents {
     public static void executeLoadEntity() {
         if (UndeadNights.serverState != null) {
             if (UndeadNights.serverState.spawnedHordeMobs.contains(pEntity.getUuid())) {
-                UndeadNights.globalSpawnCounter++;
-                if (MainConfig.getPrintDebugMessages()) {
-                    UndeadNights.LOGGER.info("LOAD GlobalSpawnCount: : {} {}", UndeadNights.globalSpawnCounter, pEntity.getUuid());
+                if (UndeadNights.serverState.hordeMobsToRemove.contains(pEntity.getUuid())) {
+                    UndeadNights.serverState.hordeMobsToRemove.remove(pEntity.getUuid());
+                    pEntity.remove(Entity.RemovalReason.DISCARDED);
+                    UndeadNights.LOGGER.info("LOAD canceled, Entity marked for removal: {}", pEntity.getUuid());
+                } else {
+                    UndeadNights.globalSpawnCounter++;
+                    if (MainConfig.getPrintDebugMessages()) {
+                        UndeadNights.LOGGER.info("LOAD GlobalSpawnCount  : {} {}", UndeadNights.globalSpawnCounter, pEntity.getUuid());
+                    }
                 }
-                //pEntity.remove(Entity.RemovalReason.KILLED);
             }
         }
-        //if (pEntity instanceof HordeZombieEntity || pEntity instanceof DemolitionZombieEntity
-        //        || pEntity instanceof EliteZombieEntity) {
-        //    pEntity.remove(Entity.RemovalReason.KILLED);
-        //}
     }
 
     public static void executeUnloadEntity() {
