@@ -3,11 +3,19 @@
   "entity.undeadnights.demolition_zombie": "Demolition Zombie",
   "entity.undeadnights.elite_zombie": "Elite Zombie",
 
+  "item.undeadnights.horde_zombie_spawn_egg": "Horde Zombie Spawn Egg",
+  "item.undeadnights.elite_zombie_spawn_egg": "Elite Zombie Spawn Egg",
+  "item.undeadnights.demolition_zombie_spawn_egg": "Demolition Zombie Spawn Egg",
+
   "message.undeadnights.nights_remaining": "%s nights remaining until the next Night of the Undead!",
   "message.undeadnights.last_nights": "This is the last night before the next Night of the Undead!",
   "message.undeadnights.horde_night": "The sun is starting to set and you feel uneasy about the coming night...",
   "message.undeadnights.horde_spawned": "A horde has spawned!",
   "message.undeadnights.horde_night_over": "You feel at ease, this Night of the Undead is over...",
+  "message.undeadnights.spawn_cap_reached": "Spawning horde mobs not possible, spawncap reached.",
+  "message.undeadnights.command_spawn_horde_all": "Trying to spawn hordes for all available players",
+  "message.undeadnights.command_spawn_horde": "Trying to spawn hordes for given players",
+  "message.undeadnights.command_remove_horde_mobs": "Removing all horde mobs from this world.",
 
   "sounds.undeadnights.horde_scream": "Horde Scream",
 
