@@ -32,6 +32,7 @@
 	"mixins": [
 		"undeadnights.mixins.json"
 	],
+	"accessWidener" : "undeadnights.accesswidener",
 	"depends": {
 		"fabricloader": "${fabric_version_range}",
 		"minecraft": "${mc_version_range}",
