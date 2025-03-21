@@ -15,11 +15,6 @@ public class ModServerLifecycleEvents {
             pServer = server;
             executeServerStarted();
         });
-
-        ServerLifecycleEvents.SERVER_STOPPED.register((server) -> {
-            pServer = server;
-            executeServerStopped();
-        });
     }
 
     public static void executeServerStarted() {
@@ -36,13 +31,6 @@ public class ModServerLifecycleEvents {
                 UndeadNights.LOGGER.info("INIT HordeNight: {} SpawnZombies: {} RespawnZombies: {}", UndeadNights.serverState.getHordeNight(), UndeadNights.serverState.getSpawnZombies(), UndeadNights.serverState.getRespawnZombies());
             }
         }
-    }
-
-    public static void executeServerStopped() {
-        if (MainConfig.getPrintDebugMessages()) {
-            UndeadNights.LOGGER.info("{}: Server stopped, resetting spawn counter.", UndeadNights.MOD_ID);
-        }
-        UndeadNights.globalSpawnCounter = 0;
     }
 
     public static void registerEvents() { new ModServerLifecycleEvents(); }
