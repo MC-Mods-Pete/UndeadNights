@@ -1,15 +1,11 @@
 {
   "model": {
     "type": "minecraft:model",
-    "model": "minecraft:item/template_spawn_egg",
+    "model": "undeadnights:item/horde_zombie_spawn_egg",
     "tints": [
       {
         "type": "minecraft:constant",
-        "value": -9543745
-      },
-      {
-        "type": "minecraft:constant",
-        "value": -10987715
+        "value": 894731
       }
     ]
   }

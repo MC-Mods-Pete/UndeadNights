@@ -1,28 +1,78 @@
 package net.petemc.undeadnights.util;
 
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.registry.RegistryWrapper;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.world.PersistentState;
-import net.minecraft.world.PersistentStateManager;
-import net.minecraft.world.World;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.util.Uuids;
+import net.minecraft.world.*;
 import net.petemc.undeadnights.UndeadNights;
 import net.petemc.undeadnights.config.MainConfig;
 
-import java.util.HashSet;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 public class StateSaverAndLoader extends PersistentState {
+    private Integer daysCounter;
+    private Integer lastMaxDaysCounter;
+    private Integer tickCounter;
+    private Boolean hordeNight;
+    private Boolean spawnZombies;
+    private Boolean respawnZombies;
+    public Map<UUID, String> spawnedHordeMobs;
+    public Map<UUID, String> hordeMobsToRemove;
 
-    private int daysCounter = MainConfig.getDaysBetweenHordeNights();
-    private int lastMaxDaysCounter = MainConfig.getDaysBetweenHordeNights();
-    private int tickCounter = 60;
-    private boolean hordeNight = false;
-    private boolean spawnZombies = true;
-    private boolean respawnZombies = false;
-    public HashSet<UUID> spawnedHordeMobs = new HashSet<UUID>();
-    public HashSet<UUID> hordeMobsToRemove = new HashSet<UUID>();
+    public static final Codec<StateSaverAndLoader> CODEC = RecordCodecBuilder.create(
+            instance -> instance.group(
+                    Codec.INT.fieldOf("daysCounter").forGetter(state -> state.daysCounter),
+                    Codec.INT.fieldOf("lastMaxDaysCounter").forGetter(state -> state.lastMaxDaysCounter),
+                    Codec.INT.fieldOf("tickCounter").forGetter(state -> state.tickCounter),
+                    Codec.BOOL.fieldOf("hordeNight").forGetter(state -> state.hordeNight),
+                    Codec.BOOL.fieldOf("spawnZombies").forGetter(state -> state.spawnZombies),
+                    Codec.BOOL.fieldOf("respawnZombies").forGetter(state -> state.respawnZombies),
+                    Codec.unboundedMap(Uuids.CODEC, Codec.STRING).fieldOf("spawnedHordeMobs").forGetter(state -> state.spawnedHordeMobs),
+                    Codec.unboundedMap(Uuids.CODEC, Codec.STRING).fieldOf("hordeMobsToRemove").forGetter(state -> state.hordeMobsToRemove)
+            ).apply(instance, StateSaverAndLoader::new)
+    );
 
+    public static PersistentStateType<StateSaverAndLoader> createStateType() {
+        return new PersistentStateType<>(UndeadNights.MOD_ID + "_data", StateSaverAndLoader::new, CODEC, null);
+    }
+
+    public StateSaverAndLoader() {
+        this(
+                MainConfig.getDaysBetweenHordeNights(),
+                MainConfig.getDaysBetweenHordeNights(),
+                60,
+                false,
+                true,
+                false,
+                new HashMap<UUID, String>(),
+                new HashMap<UUID,String>()
+        );
+    }
+
+    public StateSaverAndLoader(
+            Integer daysCounter,
+            Integer lastMaxDaysCounter,
+            Integer tickCounter,
+            Boolean hordeNight,
+            Boolean spawnZombies,
+            Boolean respawnZombies,
+            Map<UUID, String> spawnedHordeMobs,
+            Map<UUID, String> hordeMobsToRemove
+        )
+    {
+        this.daysCounter = daysCounter;
+        this.lastMaxDaysCounter = lastMaxDaysCounter;
+        this.tickCounter = tickCounter;
+        this.hordeNight = hordeNight;
+        this.spawnZombies = spawnZombies;
+        this.respawnZombies = respawnZombies;
+        this.spawnedHordeMobs = new HashMap<>(spawnedHordeMobs);
+        this.hordeMobsToRemove = new HashMap<>(hordeMobsToRemove);
+        this.markDirty();
+    }
+    
     // Setter and Getter functions
     public int getDaysCounter() {
         return this.daysCounter;
@@ -76,75 +126,5 @@ public class StateSaverAndLoader extends PersistentState {
     public void setRespawnZombies(boolean val) {
         this.respawnZombies = val;
         this.markDirty();
-    }
-
-    public static StateSaverAndLoader createFromNbt(NbtCompound tag, RegistryWrapper.WrapperLookup registryLookup) {
-        StateSaverAndLoader state = new StateSaverAndLoader();
-        state.daysCounter = tag.getInt("daysCounter");
-        state.lastMaxDaysCounter = tag.getInt("lastMaxDaysCounter");
-        state.tickCounter = tag.getInt("tickCounter");
-        state.hordeNight = tag.getBoolean("hordeNight");
-        state.spawnZombies = tag.getBoolean("spawnZombies");
-        state.respawnZombies = tag.getBoolean("respawnZombies");
-        NbtCompound mobUUIDs = tag.getCompound("spawnedHordeMobs");
-        mobUUIDs.getKeys().forEach(key -> {
-            UUID hordeMobUUID = mobUUIDs.getUuid(key);
-            state.spawnedHordeMobs.add(hordeMobUUID);
-        });
-        NbtCompound removeMobUUIDs = tag.getCompound("hordeMobsToRemove");
-        removeMobUUIDs.getKeys().forEach(key -> {
-            UUID hordeMobUUID = removeMobUUIDs.getUuid(key);
-            state.hordeMobsToRemove.add(hordeMobUUID);
-        });
-        return state;
-    }
-
-    @Override
-    public NbtCompound writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
-        nbt.putInt("daysCounter", daysCounter);
-        nbt.putInt("lastMaxDaysCounter", lastMaxDaysCounter);
-        nbt.putInt("tickCounter", tickCounter);
-        nbt.putBoolean("hordeNight", hordeNight);
-        nbt.putBoolean("spawnZombies", spawnZombies);
-        nbt.putBoolean("respawnZombies", respawnZombies);
-        NbtCompound mobUUIDs = new NbtCompound();
-        spawnedHordeMobs.forEach((uuid) -> {
-            mobUUIDs.putUuid(uuid.toString(), uuid);
-        });
-        nbt.put("spawnedHordeMobs", mobUUIDs);
-        NbtCompound removeMobUUIDs = new NbtCompound();
-        hordeMobsToRemove.forEach((uuid) -> {
-            removeMobUUIDs.putUuid(uuid.toString(), uuid);
-        });
-        nbt.put("hordeMobsToRemove", removeMobUUIDs);
-        return nbt;
-    }
-
-    private static Type<StateSaverAndLoader> type = new Type<>(
-            StateSaverAndLoader::new, // If there's no 'StateSaverAndLoader' yet create one
-            StateSaverAndLoader::createFromNbt, // If there is a 'StateSaverAndLoader' NBT, parse it with 'createFromNbt'
-            null // Supposed to be an 'DataFixTypes' enum, but we can just pass null
-    );
-
-    /**
-     * This function gets the 'PersistentStateManager' and creates or returns the filled in 'StateSaveAndLoader'.
-     * It does this by calling 'StateSaveAndLoader::createFromNbt' passing it the previously saved 'NbtCompound' we wrote in 'writeNbt'.
-     */
-    public static StateSaverAndLoader getServerState(MinecraftServer server) {
-        PersistentStateManager persistentStateManager = server.getWorld(World.OVERWORLD).getPersistentStateManager();
-
-        // The first time the following 'getOrCreate' function is called, it creates a brand new 'StateSaverAndLoader' and
-        // stores it inside the 'PersistentStateManager'. The subsequent calls to 'getOrCreate' pass in the saved
-        // 'StateSaverAndLoader' NBT on disk to our function 'StateSaverAndLoader::createFromNbt'.
-        StateSaverAndLoader state = persistentStateManager.getOrCreate(type, UndeadNights.MOD_ID);
-
-        // If state is not marked dirty, when Minecraft closes, 'writeNbt' won't be called and therefore nothing will be saved.
-        // Technically it's 'cleaner' if you only mark state as dirty when there was actually a change, but the vast majority
-        // of mod writers are just going to be confused when their data isn't being saved, and so it's best just to 'markDirty' for them.
-        // Besides, it's literally just setting a bool to true, and the only time there's a 'cost' is when the file is written to disk when
-        // there were no actual change to any of the mods state (INCREDIBLY RARE).
-        state.markDirty();
-
-        return state;
     }
 }

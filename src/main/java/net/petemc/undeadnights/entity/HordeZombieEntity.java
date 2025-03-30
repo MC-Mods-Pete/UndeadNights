@@ -26,7 +26,6 @@ import java.time.LocalDate;
 import java.util.EnumSet;
 import java.util.Objects;
 
-
 public class HordeZombieEntity extends ZombieEntity {
     public HordeZombieEntity(EntityType<? extends ZombieEntity> entityType, World world) {
         super(entityType, world);
@@ -55,7 +54,7 @@ public class HordeZombieEntity extends ZombieEntity {
             int j = localDate.getMonth().getValue();
             if (j == 10 && i == 31 && random.nextFloat() < 0.25F) {
                 this.equipStack(EquipmentSlot.HEAD, new ItemStack(random.nextFloat() < 0.1F ? Blocks.JACK_O_LANTERN : Blocks.CARVED_PUMPKIN));
-                this.armorDropChances[EquipmentSlot.HEAD.getEntitySlotId()] = 0.0F;
+                this.setEquipmentDropChance(EquipmentSlot.HEAD, 0.0F);
             }
         }
         return entityData;

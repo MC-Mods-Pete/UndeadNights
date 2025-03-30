@@ -34,13 +34,13 @@ public class HordeMobsCommand {
         if (context.getSource().getEntity() instanceof ServerPlayerEntity serverPlayer) {
             serverPlayer.sendMessage(Text.translatable("message.undeadnights.command_remove_horde_mobs"));
         }
-        for (var hordeMobUUID : UndeadNights.serverState.spawnedHordeMobs.stream().toList()) {
+        for (var hordeMobUUID : UndeadNights.serverState.spawnedHordeMobs.keySet().stream().toList()) {
             count++;
             Entity entity = context.getSource().getWorld().getEntity(hordeMobUUID);
             if (entity != null) {
                 entity.discard();
             } else {
-                UndeadNights.serverState.hordeMobsToRemove.add(hordeMobUUID);
+                UndeadNights.serverState.hordeMobsToRemove.put(hordeMobUUID,hordeMobUUID.toString());
             }
         }
         if (MainConfig.getPrintDebugMessages()) {

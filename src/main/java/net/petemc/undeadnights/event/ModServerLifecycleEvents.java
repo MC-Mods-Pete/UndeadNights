@@ -19,7 +19,7 @@ public class ModServerLifecycleEvents {
 
     public static void executeServerStarted() {
         if (UndeadNights.serverState == null) {
-            UndeadNights.serverState = StateSaverAndLoader.getServerState(pServer);
+            UndeadNights.serverState = pServer.getOverworld().getPersistentStateManager().getOrCreate(StateSaverAndLoader.createStateType());
             // check if the DaysCounter in the config was changed
             if (UndeadNights.serverState.getLastMaxDaysCounter() != MainConfig.getDaysBetweenHordeNights()) {
                 UndeadNights.serverState.setDaysCounter(MainConfig.getDaysBetweenHordeNights());
