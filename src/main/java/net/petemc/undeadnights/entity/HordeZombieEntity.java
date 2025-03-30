@@ -55,7 +55,7 @@ public class HordeZombieEntity extends Zombie {
             int j = localdate.getMonth().getValue();
             if (j == 10 && i == 31 && randomsource.nextFloat() < 0.25F) {
                 this.setItemSlot(EquipmentSlot.HEAD, new ItemStack(randomsource.nextFloat() < 0.1F ? Blocks.JACK_O_LANTERN : Blocks.CARVED_PUMPKIN));
-                this.armorDropChances[EquipmentSlot.HEAD.getIndex()] = 0.0F;
+                this.setDropChance(EquipmentSlot.HEAD, 0.0F);
             }
         }
 

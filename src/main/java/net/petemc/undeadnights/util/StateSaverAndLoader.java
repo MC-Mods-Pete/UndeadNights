@@ -1,25 +1,78 @@
 package net.petemc.undeadnights.util;
 
-import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.server.MinecraftServer;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.world.level.saveddata.SavedData;
+import net.minecraft.world.level.saveddata.SavedDataType;
 import net.petemc.undeadnights.UndeadNights;
 import net.petemc.undeadnights.config.MainConfig;
-import org.jetbrains.annotations.NotNull;
 
-import java.util.HashSet;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 public class StateSaverAndLoader extends SavedData {
-    private int daysCounter = MainConfig.getDaysBetweenHordeNights();
-    private int lastMaxDaysCounter = MainConfig.getDaysBetweenHordeNights();
-    private int tickCounter = 60;
-    private boolean hordeNight = false;
-    private boolean spawnZombies = true;
-    private boolean respawnZombies = false;
-    public HashSet<UUID> spawnedHordeMobs = new HashSet<UUID>();
-    public HashSet<UUID> hordeMobsToRemove = new HashSet<UUID>();
+    private Integer daysCounter;
+    private Integer lastMaxDaysCounter;
+    private Integer tickCounter;
+    private Boolean hordeNight;
+    private Boolean spawnZombies;
+    private Boolean respawnZombies;
+    public Map<UUID, String> spawnedHordeMobs;
+    public Map<UUID, String> hordeMobsToRemove;
+
+    public static final Codec<StateSaverAndLoader> CODEC = RecordCodecBuilder.create(
+            instance -> instance.group(
+                    Codec.INT.fieldOf("daysCounter").forGetter(state -> state.daysCounter),
+                    Codec.INT.fieldOf("lastMaxDaysCounter").forGetter(state -> state.lastMaxDaysCounter),
+                    Codec.INT.fieldOf("tickCounter").forGetter(state -> state.tickCounter),
+                    Codec.BOOL.fieldOf("hordeNight").forGetter(state -> state.hordeNight),
+                    Codec.BOOL.fieldOf("spawnZombies").forGetter(state -> state.spawnZombies),
+                    Codec.BOOL.fieldOf("respawnZombies").forGetter(state -> state.respawnZombies),
+                    Codec.unboundedMap(UUIDUtil.AUTHLIB_CODEC, Codec.STRING).fieldOf("spawnedHordeMobs").forGetter(state -> state.spawnedHordeMobs),
+                    Codec.unboundedMap(UUIDUtil.AUTHLIB_CODEC, Codec.STRING).fieldOf("hordeMobsToRemove").forGetter(state -> state.hordeMobsToRemove)
+            ).apply(instance, StateSaverAndLoader::new)
+    );
+
+    public static SavedDataType<StateSaverAndLoader> createStateType() {
+        return new SavedDataType<>(UndeadNights.MOD_ID + "_data", StateSaverAndLoader::new, CODEC, null);
+    }
+
+    public StateSaverAndLoader() {
+        this(
+                MainConfig.getDaysBetweenHordeNights(),
+                MainConfig.getDaysBetweenHordeNights(),
+                60,
+                false,
+                true,
+                false,
+                new HashMap<UUID, String>(),
+                new HashMap<UUID,String>()
+        );
+    }
+
+    public StateSaverAndLoader(
+            Integer daysCounter,
+            Integer lastMaxDaysCounter,
+            Integer tickCounter,
+            Boolean hordeNight,
+            Boolean spawnZombies,
+            Boolean respawnZombies,
+            Map<UUID, String> spawnedHordeMobs,
+            Map<UUID, String> hordeMobsToRemove
+    )
+    {
+        this.daysCounter = daysCounter;
+        this.lastMaxDaysCounter = lastMaxDaysCounter;
+        this.tickCounter = tickCounter;
+        this.hordeNight = hordeNight;
+        this.spawnZombies = spawnZombies;
+        this.respawnZombies = respawnZombies;
+        this.spawnedHordeMobs = new HashMap<>(spawnedHordeMobs);
+        this.hordeMobsToRemove = new HashMap<>(hordeMobsToRemove);
+        this.setDirty();
+    }
 
     // Setter and Getter functions
     public int getDaysCounter() {
@@ -75,56 +128,4 @@ public class StateSaverAndLoader extends SavedData {
         this.respawnZombies = val;
         this.setDirty();
     }
-
-    public static StateSaverAndLoader load(CompoundTag tag, HolderLookup.Provider registries) {
-        StateSaverAndLoader state = new StateSaverAndLoader();
-        state.daysCounter = tag.getInt("daysCounter");
-        state.lastMaxDaysCounter = tag.getInt("lastMaxDaysCounter");
-        state.tickCounter = tag.getInt("tickCounter");
-        state.hordeNight = tag.getBoolean("hordeNight");
-        state.spawnZombies = tag.getBoolean("spawnZombies");
-        state.respawnZombies = tag.getBoolean("respawnZombies");
-        CompoundTag mobUUIDs = tag.getCompound("spawnedHordeMobs");
-        mobUUIDs.getAllKeys().forEach(key -> {
-            UUID hordeMobUUID = mobUUIDs.getUUID(key);
-            state.spawnedHordeMobs.add(hordeMobUUID);
-        });
-        CompoundTag removeMobUUIDs = tag.getCompound("hordeMobsToRemove");
-        removeMobUUIDs.getAllKeys().forEach(key -> {
-            UUID hordeMobUUID = removeMobUUIDs.getUUID(key);
-            state.hordeMobsToRemove.add(hordeMobUUID);
-        });
-        state.setDirty();
-        return state;
-    }
-
-    @Override
-    public @NotNull CompoundTag save(CompoundTag tag, HolderLookup.@NotNull Provider provider) {
-        tag.putInt("daysCounter", daysCounter);
-        tag.putInt("lastMaxDaysCounter", lastMaxDaysCounter);
-        tag.putInt("tickCounter", tickCounter);
-        tag.putBoolean("hordeNight", hordeNight);
-        tag.putBoolean("spawnZombies", spawnZombies);
-        tag.putBoolean("respawnZombies", respawnZombies);
-        CompoundTag mobUUIDs = new CompoundTag();
-        spawnedHordeMobs.forEach((uuid) -> {
-            mobUUIDs.putUUID(uuid.toString(), uuid);
-        });
-        tag.put("spawnedHordeMobs", mobUUIDs);
-        CompoundTag removeMobUUIDs = new CompoundTag();
-        hordeMobsToRemove.forEach((uuid) -> {
-            removeMobUUIDs.putUUID(uuid.toString(), uuid);
-        });
-        tag.put("hordeMobsToRemove", removeMobUUIDs);
-        return tag;
-    }
-
-    public static Factory<StateSaverAndLoader> factory() {
-        return new Factory<>(StateSaverAndLoader::new, StateSaverAndLoader::load, null);
-    }
-
-    public static StateSaverAndLoader getServerState(MinecraftServer server) {
-        return server.overworld().getDataStorage().computeIfAbsent(factory(), UndeadNights.MOD_ID);
-    }
-
 }

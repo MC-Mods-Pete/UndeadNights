@@ -1,15 +1,11 @@
 {
   "model": {
     "type": "minecraft:model",
-    "model": "minecraft:item/template_spawn_egg",
+    "model": "undeadnights:item/demolition_zombie_spawn_egg",
     "tints": [
       {
         "type": "minecraft:constant",
-        "value": -16765109
-      },
-      {
-        "type": "minecraft:constant",
-        "value": -16738748
+        "value": 15690005
       }
     ]
   }

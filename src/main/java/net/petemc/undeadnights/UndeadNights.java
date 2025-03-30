@@ -74,7 +74,7 @@ public class UndeadNights {
 	public void onServerStarting(ServerStartingEvent event) {
 		LOGGER.info("Initializing UndeadNights Mod");
 		if (UndeadNights.serverState == null) {
-			UndeadNights.serverState = StateSaverAndLoader.getServerState(event.getServer());
+			UndeadNights.serverState = event.getServer().overworld().getDataStorage().computeIfAbsent(StateSaverAndLoader.createStateType());
 			// check if the DaysCounter in the config was changed
 			if (UndeadNights.serverState.getLastMaxDaysCounter() != MainConfig.getDaysBetweenHordeNights()) {
 				UndeadNights.serverState.setDaysCounter(MainConfig.getDaysBetweenHordeNights());

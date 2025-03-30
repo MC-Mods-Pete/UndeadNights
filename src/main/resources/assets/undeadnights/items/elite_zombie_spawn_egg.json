@@ -1,15 +1,11 @@
 {
   "model": {
     "type": "minecraft:model",
-    "model": "minecraft:item/template_spawn_egg",
+    "model": "undeadnights:item/elite_zombie_spawn_egg",
     "tints": [
       {
         "type": "minecraft:constant",
-        "value": -10127264
-      },
-      {
-        "type": "minecraft:constant",
-        "value": -6685775
+        "value": 44543
       }
     ]
   }

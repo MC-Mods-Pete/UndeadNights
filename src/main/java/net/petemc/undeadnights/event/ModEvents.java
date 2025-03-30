@@ -22,7 +22,7 @@ public class ModEvents {
         public static void onEntityJoinWorld(EntityJoinLevelEvent event) {
             if(!event.getLevel().isClientSide()) {
                 if (UndeadNights.serverState != null) {
-                    if (UndeadNights.serverState.spawnedHordeMobs.contains(event.getEntity().getUUID())) {
+                    if (UndeadNights.serverState.spawnedHordeMobs.containsKey(event.getEntity().getUUID())) {
                         UndeadNights.globalSpawnCounter++;
                         if (MainConfig.getPrintDebugMessages()) {
                             UndeadNights.LOGGER.info("LOAD GlobalSpawnCount: : {} {} {}", UndeadNights.globalSpawnCounter, event.getEntity().getName().getString(), event.getEntity().getUUID());
@@ -37,7 +37,7 @@ public class ModEvents {
         public static void onEntityLeaveWorld(EntityLeaveLevelEvent event) {
             if(!event.getLevel().isClientSide()) {
                 if (UndeadNights.serverState != null) {
-                    if (UndeadNights.serverState.spawnedHordeMobs.contains(event.getEntity().getUUID())) {
+                    if (UndeadNights.serverState.spawnedHordeMobs.containsKey(event.getEntity().getUUID())) {
                         if (event.getEntity().getRemovalReason() != null) {
                             if ((event.getEntity().getRemovalReason() == Entity.RemovalReason.KILLED) || (event.getEntity().getRemovalReason() == Entity.RemovalReason.DISCARDED)) {
                                 UndeadNights.globalSpawnCounter--;
