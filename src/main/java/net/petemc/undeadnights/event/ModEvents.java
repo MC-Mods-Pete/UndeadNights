@@ -37,8 +37,8 @@ public class ModEvents {
         public static void onEntityJoinWorld(EntityJoinLevelEvent event) {
             if(!event.getLevel().isClientSide()) {
                 if (UndeadNights.serverState != null) {
-                    if (UndeadNights.serverState.spawnedHordeMobs.contains(event.getEntity().getUUID())) {
-                        if (UndeadNights.serverState.hordeMobsToRemove.contains(event.getEntity().getUUID())) {
+                    if (UndeadNights.serverState.spawnedHordeMobs.containsKey(event.getEntity().getUUID())) {
+                        if (UndeadNights.serverState.hordeMobsToRemove.containsKey(event.getEntity().getUUID())) {
                             UndeadNights.serverState.hordeMobsToRemove.remove(event.getEntity().getUUID());
                             event.setCanceled(true);
                             UndeadNights.LOGGER.info("LOAD canceled, Entity marked for removal: {}", event.getEntity().getUUID());
@@ -58,7 +58,7 @@ public class ModEvents {
         public static void onEntityLeaveWorld(EntityLeaveLevelEvent event) {
             if(!event.getLevel().isClientSide()) {
                 if (UndeadNights.serverState != null) {
-                    if (UndeadNights.serverState.spawnedHordeMobs.contains(event.getEntity().getUUID())) {
+                    if (UndeadNights.serverState.spawnedHordeMobs.containsKey(event.getEntity().getUUID())) {
                         if (event.getEntity().getRemovalReason() != null) {
                             if ((event.getEntity().getRemovalReason() == Entity.RemovalReason.KILLED) || (event.getEntity().getRemovalReason() == Entity.RemovalReason.DISCARDED)) {
                                 UndeadNights.globalSpawnCounter--;
