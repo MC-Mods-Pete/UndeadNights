@@ -20,7 +20,7 @@ public class ModEntities {
     private static final RegistryKey<EntityType<?>> keyDemolitionZombie = RegistryKey.of(RegistryKeys.ENTITY_TYPE, idDemolitionZombie);
     public static final EntityType<DemolitionZombieEntity> DEMOLITION_ZOMBIE = Registry.register(Registries.ENTITY_TYPE, keyDemolitionZombie,
             EntityType.Builder.create(DemolitionZombieEntity::new, SpawnGroup.MONSTER)
-                    .dimensions(0.6f, 1.95f).build(keyHordeZombie));
+                    .dimensions(0.6f, 1.95f).build(keyDemolitionZombie));
 
     private static final Identifier idEliteZombie = Identifier.of(UndeadNights.MOD_ID, "elite_zombie");
     private static final RegistryKey<EntityType<?>> keyEliteZombie = RegistryKey.of(RegistryKeys.ENTITY_TYPE, idEliteZombie);
