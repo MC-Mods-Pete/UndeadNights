@@ -3,7 +3,6 @@
 	"minVersion": "0.7",
 	"package": "net.petemc.undeadnights.mixin",
 	"compatibilityLevel": "JAVA_21",
-	"refmap": "undeadnights.mixins-refmap.json",
 	"mixins": [
 		"ServerWorldMixin",
 		"PlayerEntityMixin",
