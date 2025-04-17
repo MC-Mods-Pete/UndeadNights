@@ -7,6 +7,7 @@ import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
 import net.petemc.undeadnights.UndeadNights;
 import net.petemc.undeadnights.config.MainConfig;
+import net.petemc.undeadnights.world.spawner.UndeadSpawner;
 
 import java.util.Objects;
 
@@ -22,7 +23,9 @@ public class StatusCommand {
     private int status(CommandSourceStack source) throws CommandSyntaxException {
         String message = "DayCounter: " + UndeadNights.serverState.getDaysCounter() + " (max " + MainConfig.getDaysBetweenHordeNights() + ")\n" +
                          "HordeNight: " + UndeadNights.serverState.getHordeNight() + "\n" +
-                         "SpawnCounter: " + UndeadNights.globalSpawnCounter + " of max " + MainConfig.getHordeMobsSpawnCap();
+                         "SpawnCounter: " + UndeadNights.globalSpawnCounter + " of max " + MainConfig.getHordeMobsSpawnCap() + "\n" +
+                         "Block breaking: " + (HordeMobsCommand.hordeZombiesCanBreakBlocks ? ("enabled, tier: " + HordeMobsCommand.hordeZombiesBlockBreakingTier) : "disabled") + "\n" +
+                         "Default Horde: " + UndeadSpawner.hordeToSpawn + ((UndeadSpawner.hordeToSpawn == 0) ? " (a horde will be chosen randomly)": "") + "\n";
         Objects.requireNonNull(source.getEntity())
                 .sendSystemMessage(Component.literal(message));
 

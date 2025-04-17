@@ -25,7 +25,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.Blocks;
 import net.petemc.undeadnights.config.MainConfig;
-import net.petemc.undeadnights.entity.ai.goal.DemolitionZombieIgniteGoal;
+import net.petemc.undeadnights.entity.ai.goal.TntIgniteAndThrowGoal;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -33,7 +33,7 @@ import java.time.LocalDate;
 import java.util.Objects;
 
 public class DemolitionZombieEntity extends Zombie  {
-    private int numberTnt = 1;
+    private int numberTnt = 3;
 
     public DemolitionZombieEntity(EntityType<? extends Zombie> entityType, Level world) {
         super(entityType, world);
@@ -84,12 +84,12 @@ public class DemolitionZombieEntity extends Zombie  {
     @Override
     protected void addBehaviourGoals() {
         this.goalSelector.addGoal(1, new FloatGoal(this));
-        this.goalSelector.addGoal(2, new DemolitionZombieIgniteGoal(this));
+        this.goalSelector.addGoal(2, new TntIgniteAndThrowGoal(this));
         this.goalSelector.addGoal(3, new ZombieAttackGoal(this, 1.0, false));
         this.goalSelector.addGoal(4, new DemolitionZombieEntity.ChasePlayerGoal(this));
         this.goalSelector.addGoal(6, new MoveThroughVillageGoal(this, 1.0, true, 4, this::canBreakDoors));
         this.goalSelector.addGoal(7, new RandomStrollGoal(this, 1.0));
-        this.targetSelector.addGoal(1, new HurtByTargetGoal(this).setAlertOthers(HordeZombieEntity.class));
+        this.targetSelector.addGoal(1, new HurtByTargetGoal(this, new Class[]{HordeZombieEntity.class, EliteZombieEntity.class, DemolitionZombieEntity.class}).setAlertOthers(HordeZombieEntity.class));
         this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, false, false));
         this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, AbstractVillager.class, true));
         this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, IronGolem.class, true));

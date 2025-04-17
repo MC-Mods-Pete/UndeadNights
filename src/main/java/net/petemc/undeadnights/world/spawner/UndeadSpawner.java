@@ -34,10 +34,12 @@ import net.petemc.undeadnights.sound.UndeadNightsSounds;
 import net.petemc.undeadnights.util.StateSaverAndLoader;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
 import java.util.Objects;
 
 public class UndeadSpawner implements CustomSpawner {
     public static boolean invalidHordeMobEntry = false;
+    public static int hordeToSpawn = 1;
 
     private double x = 0;
     private double z = 0;
@@ -245,15 +247,36 @@ public class UndeadSpawner implements CustomSpawner {
             if (MainConfig.getPrintDebugMessages()) {
                 UndeadNights.LOGGER.info("Horde config variant 2 detected.");
             }
-            for (var mobSpawnData : HordeConfig.getHordeMobs()) {
+            List<HordeConfig.HordesData> hordes = HordeConfig.getHordes();
+            UndeadNights.LOGGER.info("Found horde {} with hordeId {} hordeToSpawn {}",1 , hordes.get(1).hordeId(), hordeToSpawn);
+            int hordeIdToSpawn = hordeToSpawn - 1;
+            if (hordeToSpawn == 0) {
+                hordeIdToSpawn = randomSource.nextIntBetweenInclusive(0, hordes.size()-1);
+            }
+            for (var mobSpawnData : hordes.get(hordeIdToSpawn).hordeMobs()) {
                 int mobCount = 0;
                 if (mobSpawnData.countMin() >= mobSpawnData.countMax()) {
                     mobCount = mobSpawnData.countMin();
                 } else {
                     mobCount = randomSource.nextInt(mobSpawnData.countMin(),mobSpawnData.countMax());
+                    if (MainConfig.getPrintDebugMessages()) {
+                        UndeadNights.LOGGER.info("Spawning {} {}", mobCount, mobSpawnData.mobId());
+                    }
                 }
                 for (int i = 0; i < mobCount; i++) {
-                    spawnHordeMob(level, randomSource, pos, player, mobSpawnData);
+                    boolean spawnMob = true;
+                    if (mobSpawnData.chance() != 100) {
+                        randomValue = randomSource.nextIntBetweenInclusive(1, 100);
+                        if (MainConfig.getPrintDebugMessages()) {
+                            UndeadNights.LOGGER.info("Chance value for horde config (variant 2) found, chance value: {}, randomValue: {}", mobSpawnData.chance(), randomValue);
+                        }
+                        if (!(randomValue > (100 - mobSpawnData.chance()))) {
+                            spawnMob = false;
+                        }
+                    }
+                    if (spawnMob) {
+                        spawnHordeMob(level, randomSource, pos, player, mobSpawnData);
+                    }
                     if (UndeadNights.globalSpawnCounter >= MainConfig.getHordeMobsSpawnCap()) {
                         spawnCapReached = true;
                         break;
