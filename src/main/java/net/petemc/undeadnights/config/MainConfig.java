@@ -153,8 +153,8 @@ public class MainConfig
             .define("hordeZombiesCanBreakBlocks", false);
 
     private static final ForgeConfigSpec.IntValue HORDE_ZOMBIES_BLOCK_BREAK_TIER = BUILDER_SERVER
-            .comment("Horde Zombie block break tier (0-3) | default: 2")
-            .defineInRange("hordeZombieBlockBreakTier", 2, 0, 3);
+            .comment("Horde Zombie block break tier (0-3) | default: 1")
+            .defineInRange("hordeZombieBlockBreakTier", 1, 0, 3);
 
    private static final ForgeConfigSpec.BooleanValue SPAWN_STRAY_HORDE_ZOMBIES = BUILDER_SERVER
             .comment("If true, single stray horde zombies can spawn on normal nights | default: true")

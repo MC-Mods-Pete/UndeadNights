@@ -77,7 +77,7 @@ public class HordeMobsCommand {
     private int printConfig(CommandSourceStack source) throws CommandSyntaxException {
         if (HordeConfig.getReadingConfigFailed()) {
             Objects.requireNonNull(source.getEntity())
-                    .sendSystemMessage(Component.literal("Reading the horde mob config failed!\nSpawning 15 default horde zombies instead.").withStyle(ChatFormatting.YELLOW));
+                    .sendSystemMessage(Component.literal("Reading the horde mob config failed!\nSpawning 15 default horde zombies instead.\nPlease check: https://github.com/MC-Mods-Pete/UndeadNights/wiki").withStyle(ChatFormatting.YELLOW));
             return 0;
         }
         StringBuilder message = new StringBuilder("Variant: " + HordeConfig.getConfigVariant() + "\n");
@@ -110,7 +110,8 @@ public class HordeMobsCommand {
                 .sendSystemMessage(Component.literal(message.toString()));
         if (UndeadSpawner.invalidHordeMobEntry) {
             Objects.requireNonNull(source.getEntity())
-                    .sendSystemMessage(Component.literal("A horde mob entry in the horde mob config could not be read!\nA default horde zombie will be spawned instead.").withStyle(ChatFormatting.YELLOW));
+                    .sendSystemMessage(Component.literal("A horde mob entry in the horde mob config could not be read!\nA default horde zombie will be spawned instead.\n" +
+                            "Please check: https://github.com/MC-Mods-Pete/UndeadNights/wiki").withStyle(ChatFormatting.YELLOW));
         }
         return 0;
     }

@@ -28,7 +28,7 @@ public class HordeConfig {
     private static final List<HordesData> hordes = new ArrayList<>();
     private static int numberOfHordes = 0;
     private static int defaultHorde = 1;
-    private static String dimention = "minecraft:overworld";
+    private static String dimension = "minecraft:overworld";
 
     private static final int currentConfigVersion = 1;
     private static boolean readingConfigFailed = false;
@@ -82,9 +82,9 @@ public class HordeConfig {
                 if (configVariant == 1) {
                     maxWaveSize = json.get("maxWaveSize").getAsInt();
                     try {
-                        dimention = json.get("dimention").getAsString();
+                        dimension = json.get("dimension").getAsString();
                     } catch (Exception e) {
-                        dimention = "minecraft:overworld";
+                        dimension = "minecraft:overworld";
                     }
                     String defaultMobId = json.get("defaultMobId").getAsString();
                     String defaultMobExtraInfo = json.get("extraSpawnInfo").getAsString();
@@ -106,17 +106,16 @@ public class HordeConfig {
                 } else {
                     defaultHorde = json.get("defaultHordeId").getAsInt();
                     JsonArray hordesArray = json.getAsJsonArray("hordes");
-                    UndeadNights.LOGGER.info("------------------> Found {} hordes", hordesArray.size());
                     numberOfHordes = hordesArray.size();
                     for (int j = 0; j < hordesArray.size(); j++) {
                         List<MobSpawnData> subHorde = new ArrayList<>();
                         JsonObject hordeObj = hordesArray.get(j).getAsJsonObject();
                         String hordeName = hordeObj.get("hordeName").getAsString();
-                        String dimention = null;
+                        String dimension = null;
                         try {
-                            dimention = hordeObj.get("dimention").getAsString();
+                            dimension = hordeObj.get("dimension").getAsString();
                         } catch (Exception e) {
-                            dimention = "minecraft:overworld";
+                            dimension = "minecraft:overworld";
                         }
                         JsonArray mobsArray = hordeObj.getAsJsonArray("horde"+(j+1));
                         for (int i = 0; i < mobsArray.size(); i++) {
@@ -134,7 +133,7 @@ public class HordeConfig {
                             UndeadNights.LOGGER.info("Horde mob {} with count range {}-{} was read from config.", mobId, mobCountMin, mobCountMax);
                             subHorde.add(new MobSpawnData(mobId, mobChance, mobCountMin, mobCountMax, mobExtraInfo));
                         }
-                        hordes.add(new HordesData(j+1, hordeName, dimention, subHorde));
+                        hordes.add(new HordesData(j+1, hordeName, dimension, subHorde));
                     }
                     if (hordes.isEmpty()) {
                         readingConfigFailed = true;
@@ -152,7 +151,7 @@ public class HordeConfig {
             configVariant = 1;
             maxWaveSize = 15;
             defaultHordeMob = new MobSpawnData("undeadnights:horde_zombie", 100, 0, 0, "none");
-            UndeadNights.LOGGER.info("Horde config file will be ignored, a wave of {} {} will be spawned", maxWaveSize, defaultHordeMob.mobId);
+            UndeadNights.LOGGER.info("Horde config file will be ignored, a wave of {} {} will be spawned\nPlease check: https://github.com/MC-Mods-Pete/UndeadNights/wiki", maxWaveSize, defaultHordeMob.mobId);
             hordeMobs.clear();
         }
 
@@ -195,8 +194,8 @@ public class HordeConfig {
         return defaultHordeMob;
     }
 
-    public static String getDimention() {
-        return dimention;
+    public static String getDimension() {
+        return dimension;
     }
 
     public static List<MobSpawnData> getHordeMobs() {
@@ -218,7 +217,7 @@ public class HordeConfig {
     public record MobSpawnData(String mobId, int chance, int countMin, int countMax, String extra) {
     }
 
-    public record HordesData(int hordeId, String hordeName, String dimention, List<MobSpawnData> hordeMobs) {
+    public record HordesData(int hordeId, String hordeName, String dimension, List<MobSpawnData> hordeMobs) {
     }
 
     public static boolean getReadingConfigFailed() {
