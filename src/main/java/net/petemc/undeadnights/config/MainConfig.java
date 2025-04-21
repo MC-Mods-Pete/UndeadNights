@@ -114,7 +114,7 @@ public class MainConfig
 
     private static final ForgeConfigSpec.IntValue HORDE_MOBS_SPAWN_CAP = BUILDER_SERVER
             .comment("Maximum amount of horde mobs that can be loaded in the world at the same time | default: 80")
-            .defineInRange("hordeMobsSpawnCap", 80, 1, 256);
+            .defineInRange("hordeMobsSpawnCap", 80, 1, 2048);
 
     private static final ForgeConfigSpec.BooleanValue SPAWN_ADDITIONAL_WAVES = BUILDER_SERVER
             .comment("If true, additional waves can spawn in a horde night | default: true")
