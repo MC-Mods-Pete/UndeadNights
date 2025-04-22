@@ -118,7 +118,6 @@ public class HordeZombieEntity extends Zombie {
 
     @Override
     public void setCanBreakDoors(boolean val) {
-
     }
 
     public boolean isBreakingBlock() {
