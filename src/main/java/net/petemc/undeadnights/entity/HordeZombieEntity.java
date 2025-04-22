@@ -5,11 +5,13 @@ import net.minecraft.entity.*;
 import net.minecraft.entity.ai.goal.*;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.attribute.EntityAttributes;
+import net.minecraft.entity.data.DataTracker;
+import net.minecraft.entity.data.TrackedData;
+import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.entity.mob.HostileEntity;
 import net.minecraft.entity.mob.ZombieEntity;
 import net.minecraft.entity.passive.IronGolemEntity;
 import net.minecraft.entity.passive.MerchantEntity;
-import net.minecraft.entity.passive.TurtleEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -19,6 +21,7 @@ import net.minecraft.network.packet.s2c.play.EntitySpawnS2CPacket;
 import net.minecraft.util.math.random.Random;
 import net.minecraft.world.*;
 import net.petemc.undeadnights.config.MainConfig;
+import net.petemc.undeadnights.entity.ai.goal.BreakBlockGoal;
 import org.jetbrains.annotations.Nullable;
 
 import java.time.LocalDate;
@@ -27,6 +30,8 @@ import java.util.Objects;
 
 
 public class HordeZombieEntity extends ZombieEntity {
+    private static final TrackedData<Byte> DATA_FLAGS_ID = DataTracker.registerData(HordeZombieEntity.class, TrackedDataHandlerRegistry.BYTE);
+
     public HordeZombieEntity(EntityType<? extends ZombieEntity> entityType, World world) {
         super(entityType, world);
     }
@@ -66,7 +71,7 @@ public class HordeZombieEntity extends ZombieEntity {
         return HostileEntity.createHostileAttributes()
                 .add(EntityAttributes.GENERIC_MAX_HEALTH, 40.0)       // default 20.0
                 .add(EntityAttributes.GENERIC_FOLLOW_RANGE, 128.0)    // default 35.0
-                .add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 0.30)  // default 0.23000000417232513
+                .add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 0.30)   // default 0.23000000417232513
                 .add(EntityAttributes.GENERIC_ATTACK_DAMAGE, 5.0)     // default 3.0
                 .add(EntityAttributes.GENERIC_ARMOR, 4.0)             // default 2.0
                 .add(EntityAttributes.ZOMBIE_SPAWN_REINFORCEMENTS, 0.0);
@@ -75,14 +80,21 @@ public class HordeZombieEntity extends ZombieEntity {
     @Override
     protected void initCustomGoals() {
         this.goalSelector.add(1, new SwimGoal(this));
+        this.goalSelector.add(1, new BreakBlockGoal(this));
         this.goalSelector.add(2, new ZombieAttackGoal(this, 1.0, false));
         this.goalSelector.add(4, new HordeZombieEntity.ChasePlayerGoal(this));
         this.goalSelector.add(6, new MoveThroughVillageGoal(this, 1.0, true, 4, this::canBreakDoors));
         this.goalSelector.add(7, new WanderAroundFarGoal(this, 1.0));
-        this.targetSelector.add(1, new RevengeGoal(this).setGroupRevenge(HordeZombieEntity.class));
+        this.targetSelector.add(1, new RevengeGoal(this, new Class[]{HordeZombieEntity.class, EliteZombieEntity.class, DemolitionZombieEntity.class}).setGroupRevenge(HordeZombieEntity.class));
         this.targetSelector.add(2, new ActiveTargetGoal<>(this, PlayerEntity.class, false, false));
         this.targetSelector.add(3, new ActiveTargetGoal<>(this, MerchantEntity.class, true));
         this.targetSelector.add(3, new ActiveTargetGoal<>(this, IronGolemEntity.class, true));
+    }
+
+    @Override
+    protected void initDataTracker() {
+        super.initDataTracker();
+        this.dataTracker.startTracking(DATA_FLAGS_ID, (byte)0);
     }
 
     @Override
@@ -154,7 +166,26 @@ public class HordeZombieEntity extends ZombieEntity {
     @Override
     public boolean canBreakDoors()
     {
-        return true;
+        return false;
+    }
+
+    @Override
+    public void setCanBreakDoors(boolean val) {
+    }
+
+    public boolean isBreakingBlock() {
+        return (this.dataTracker.get(DATA_FLAGS_ID) & 1) != 0;
+    }
+
+    public void setBreakingBlock(boolean pClimbing) {
+        byte b0 = this.dataTracker.get(DATA_FLAGS_ID);
+        if (pClimbing) {
+            b0 = (byte)(b0 | 1);
+        } else {
+            b0 = (byte)(b0 & -2);
+        }
+
+        this.dataTracker.set(DATA_FLAGS_ID, b0);
     }
 
     @Override

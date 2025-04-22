@@ -20,4 +20,12 @@ public class ModEntities {
             Identifier.of(UndeadNights.MOD_ID, "elite_zombie"),
             EntityType.Builder.create(EliteZombieEntity::new, SpawnGroup.MONSTER)
                     .setDimensions(0.6f, 1.95f).build(Identifier.of(UndeadNights.MOD_ID, "elite_zombie").toString()));
+    public static final EntityType<DemolitionZombieProjectileEntity> TNT_PROJECTILE = Registry.register(Registries.ENTITY_TYPE,
+            Identifier.of(UndeadNights.MOD_ID, "tnt_projectile"),
+            EntityType.Builder.<DemolitionZombieProjectileEntity>create(DemolitionZombieProjectileEntity::new, SpawnGroup.MISC)
+                    //.setShouldReceiveVelocityUpdates(true)
+                    .maxTrackingRange(64)
+                    .trackingTickInterval(1)
+                    .setDimensions(0.5f, 0.5f)
+                    .build(Identifier.of(UndeadNights.MOD_ID, "tnt_projectile").toString()));
 }
