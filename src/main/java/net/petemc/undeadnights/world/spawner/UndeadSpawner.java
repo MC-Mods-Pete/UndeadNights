@@ -247,7 +247,6 @@ public class UndeadSpawner implements Spawner {
                 UndeadNights.LOGGER.info("Horde config variant 2 detected.");
             }
             List<HordeConfig.HordesData> hordes = HordeConfig.getHordes();
-            UndeadNights.LOGGER.info("Found horde {} with hordeId {} hordeToSpawn {}",1 , hordes.get(1).hordeId(), hordeToSpawn);
             int hordeIdToSpawn = hordeToSpawn - 1;
             if (hordeToSpawn == 0) {
                 hordeIdToSpawn = randomSource.nextBetween(0, hordes.size()-1);

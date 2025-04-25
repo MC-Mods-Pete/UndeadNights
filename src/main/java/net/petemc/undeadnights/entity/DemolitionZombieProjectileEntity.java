@@ -36,11 +36,11 @@ public class DemolitionZombieProjectileEntity extends PersistentProjectileEntity
 
     @Override
     protected @NotNull ItemStack asItemStack() {
-        return new ItemStack(Items.SLIME_BALL);
+        return new ItemStack(Items.TNT);
     }
 
     @Override
     public @NotNull ItemStack getStack() {
-        return new ItemStack(Items.SLIME_BALL);
+        return new ItemStack(Items.TNT);
     }
 }
