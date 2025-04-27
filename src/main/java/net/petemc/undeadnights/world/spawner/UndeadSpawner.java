@@ -9,8 +9,10 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.SpawnReason;
 import net.minecraft.entity.ai.goal.ActiveTargetGoal;
 import net.minecraft.entity.attribute.EntityAttributes;
+import net.minecraft.entity.mob.GhastEntity;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.tag.FluidTags;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -107,8 +109,20 @@ public class UndeadSpawner implements Spawner {
         } else {
             y = world.getTopY(Heightmap.Type.MOTION_BLOCKING_NO_LEAVES, pos.getX() + deltaX, pos.getZ() + deltaZ);
         }
-        mob.setPos(pos.getX() + deltaX, y, pos.getZ() + deltaZ);
+        if (mobSpawnData.mobId().equals("minecraft:ghast")) {
+            y = world.getTopY(Heightmap.Type.MOTION_BLOCKING, pos.getX() + deltaX, pos.getZ() + deltaZ);
+            NbtCompound compoundtag = new NbtCompound();
+            compoundtag.putString("id", "minecraft:ghast");
+            int finalY = y + 20;
+            mob = (GhastEntity) EntityType.loadEntityWithPassengers(compoundtag, world, entityx -> {
+                entityx.refreshPositionAndAngles(pos.getX(), finalY, pos.getZ(), entityx.getYaw(), entityx.getPitch());
+                return entityx;
+            });
+        } else {
+            mob.setPos(pos.getX() + deltaX, y, pos.getZ() + deltaZ);
+        }
         if (MainConfig.getPersistentMobs()) {
+            assert mob != null;
             mob.setPersistent();
         }
         if (mobSpawnData.mobId().equals("undeadnights:demolition_zombie")) {
