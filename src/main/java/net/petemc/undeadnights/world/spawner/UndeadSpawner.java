@@ -2,6 +2,7 @@ package net.petemc.undeadnights.world.spawner;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -13,6 +14,7 @@ import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
+import net.minecraft.world.entity.monster.Ghast;
 import net.minecraft.world.entity.monster.Zombie;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.CustomSpawner;
@@ -108,8 +110,22 @@ public class UndeadSpawner implements CustomSpawner {
         } else {
             y = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, pos.getX() + deltaX, pos.getZ() + deltaZ);
         }
-        mob.setPos(pos.getX() + deltaX, y, pos.getZ() + deltaZ);
+
+        if (mobSpawnData.mobId().equals("minecraft:ghast")) {
+            y = level.getHeight(Heightmap.Types.MOTION_BLOCKING, pos.getX() + deltaX, pos.getZ() + deltaZ);
+            CompoundTag compoundtag = new CompoundTag();
+            compoundtag.putString("id", "minecraft:ghast");
+            int finalY = y + 20;
+            mob = (Ghast) EntityType.loadEntityRecursive(compoundtag, level, entityx -> {
+                entityx.moveTo(pos.getX(), finalY, pos.getZ(), entityx.getYRot(), entityx.getXRot());
+                return entityx;
+            });
+        } else {
+            mob.setPos(pos.getX() + deltaX, y, pos.getZ() + deltaZ);
+        }
+
         if (MainConfig.getPersistentMobs()) {
+            assert mob != null;
             mob.setPersistenceRequired();
         }
         if (mobSpawnData.mobId().equals("undeadnights:demolition_zombie")) {

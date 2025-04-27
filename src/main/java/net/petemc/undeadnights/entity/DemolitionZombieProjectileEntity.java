@@ -19,12 +19,12 @@ public class DemolitionZombieProjectileEntity extends AbstractArrow implements I
         super(type, world);
     }
 
-    public DemolitionZombieProjectileEntity(LivingEntity entity, Level world) {
-        super(ModEntities.TNT_PROJECTILE.get(), entity, world);
+    public DemolitionZombieProjectileEntity(LivingEntity entity, Level level) {
+        super(ModEntities.TNT_PROJECTILE.get(), entity, level);
     }
 
-    public DemolitionZombieProjectileEntity(double x, double y, double z, Level world) {
-        super(ModEntities.TNT_PROJECTILE.get(), x, y, z, world);
+    public DemolitionZombieProjectileEntity(double x, double y, double z, Level level) {
+        super(ModEntities.TNT_PROJECTILE.get(), x, y, z, level);
     }
 
     protected @NotNull SoundEvent getDefaultHitGroundSoundEvent() {
@@ -38,12 +38,12 @@ public class DemolitionZombieProjectileEntity extends AbstractArrow implements I
 
     @Override
     protected @NotNull ItemStack getPickupItem() {
-        return new ItemStack(Items.SLIME_BALL);
+        return new ItemStack(Items.TNT);
     }
 
     @OnlyIn(Dist.CLIENT)
     @Override
     public @NotNull ItemStack getItem() {
-        return new ItemStack(Items.SLIME_BALL);
+        return new ItemStack(Items.TNT);
     }
 }
