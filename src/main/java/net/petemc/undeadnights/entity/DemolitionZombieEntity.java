@@ -24,7 +24,6 @@ import net.minecraft.world.LocalDifficulty;
 import net.minecraft.world.ServerWorldAccess;
 import net.minecraft.world.World;
 import net.petemc.undeadnights.config.MainConfig;
-import net.petemc.undeadnights.entity.ai.goal.DemolitionZombieIgniteGoal;
 import net.petemc.undeadnights.entity.ai.goal.TntIgniteAndThrowGoal;
 import org.jetbrains.annotations.Nullable;
 

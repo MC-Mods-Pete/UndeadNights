@@ -1,18 +1,20 @@
 package net.petemc.undeadnights.world.spawner;
 
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.LeavesBlock;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.SpawnReason;
 import net.minecraft.entity.ai.goal.ActiveTargetGoal;
 import net.minecraft.entity.attribute.EntityAttributes;
-import net.minecraft.entity.mob.GhastEntity;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.StringNbtReader;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.tag.FluidTags;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -86,46 +88,52 @@ public class UndeadSpawner implements Spawner {
         return new BlockPos(pos.getX() + (int) _x, world.getTopY(Heightmap.Type.WORLD_SURFACE, pos.getX() + (int) _x, pos.getZ() + (int) _z), pos.getZ() + (int) _z);
     }
 
-    
+
     private void spawnHordeMob(ServerWorld world, Random randomSource, BlockPos pos, PlayerEntity player, HordeConfig.MobSpawnData mobSpawnData) {
-        EntityType<?> mobType = Registries.ENTITY_TYPE.get(new Identifier(mobSpawnData.mobId()));
-        if (!mobSpawnData.mobId().contains(mobType.getUntranslatedName())) {
+        EntityType<?> entityType = Registries.ENTITY_TYPE.get(new Identifier(mobSpawnData.mobId()));
+        if (!mobSpawnData.mobId().contains(entityType.getUntranslatedName())) {
             invalidHordeMobEntry = true;
             UndeadNights.LOGGER.warn("Reading entry {} from the config file failed! Spawning default horde zombie instead.", mobSpawnData.mobId());
-            mobType = Registries.ENTITY_TYPE.get(new Identifier("undeadnights:horde_zombie"));
+            //entityType = Registries.ENTITY_TYPE.get(new Identifier("undeadnights:horde_zombie"));
         }
-        MobEntity mob = (MobEntity) mobType.create(world);
         int deltaX = randomSource.nextInt(8);
         int deltaZ = randomSource.nextInt(8);
-        assert mob != null;
         BlockPos.Mutable mutable = new BlockPos.Mutable(pos.getX(), pos.getY() - 1, pos.getZ());
         BlockState blockState = world.getBlockState(mutable);
         int y = 0;
         if (blockState.getFluidState().isIn(FluidTags.WATER)) {
             y = world.getTopY(Heightmap.Type.WORLD_SURFACE, pos.getX() + deltaX, pos.getZ() + deltaZ);
         }
-        if ((MainConfig.getHordeWavesCanSpawnOnTrees())) {
+        if (MainConfig.getHordeWavesCanSpawnOnTrees()) {
             y = world.getTopY(Heightmap.Type.MOTION_BLOCKING, pos.getX() + deltaX, pos.getZ() + deltaZ);
         } else {
             y = world.getTopY(Heightmap.Type.MOTION_BLOCKING_NO_LEAVES, pos.getX() + deltaX, pos.getZ() + deltaZ);
         }
         if (mobSpawnData.mobId().equals("minecraft:ghast")) {
-            y = world.getTopY(Heightmap.Type.MOTION_BLOCKING, pos.getX() + deltaX, pos.getZ() + deltaZ);
-            NbtCompound compoundtag = new NbtCompound();
-            compoundtag.putString("id", "minecraft:ghast");
-            int finalY = y + 20;
-            mob = (GhastEntity) EntityType.loadEntityWithPassengers(compoundtag, world, entityx -> {
-                entityx.refreshPositionAndAngles(pos.getX(), finalY, pos.getZ(), entityx.getYaw(), entityx.getPitch());
-                return entityx;
-            });
+            y = world.getTopY(Heightmap.Type.MOTION_BLOCKING, pos.getX() + deltaX, pos.getZ() + deltaZ) + 20;
+        }
+
+        NbtCompound nbtCompound = new NbtCompound();
+        if (!Objects.equals(mobSpawnData.nbt(), "")) {
+            try {
+                nbtCompound = StringNbtReader.parse(mobSpawnData.nbt());
+            } catch (CommandSyntaxException e) {
+                UndeadNights.LOGGER.error("Parsing NBT-tags for {} failed!", mobSpawnData.mobId());
+            }
+        }
+        if (!invalidHordeMobEntry) {
+            nbtCompound.putString("id", mobSpawnData.mobId());
         } else {
-            mob.setPos(pos.getX() + deltaX, y, pos.getZ() + deltaZ);
+            nbtCompound.putString("id", "undeadnights:horde_zombie");
         }
-        if (MainConfig.getPersistentMobs()) {
-            assert mob != null;
-            mob.setPersistent();
-        }
-        if (mobSpawnData.mobId().equals("undeadnights:demolition_zombie")) {
+
+        int finalY = y;
+        Entity entity = EntityType.loadEntityWithPassengers(nbtCompound, world, entityx -> {
+            entityx.refreshPositionAndAngles(pos.getX() + deltaX, finalY, pos.getZ() + deltaZ, entityx.getYaw(), entityx.getPitch());
+            return entityx;
+        });
+
+        if (entity instanceof DemolitionZombieEntity demolitionZombie) {
             String str = mobSpawnData.extra();
             String[] strA = str.split(":");
             if (strA[0].equals("tnt")) {
@@ -134,7 +142,6 @@ public class UndeadSpawner implements Spawner {
                     if (numberTnt > 64) {
                         numberTnt = 64;
                     }
-                    DemolitionZombieEntity demolitionZombie = (DemolitionZombieEntity) mob;
                     demolitionZombie.setNumberTnt(numberTnt);
                 } catch (Exception e) {
                     UndeadNights.LOGGER.warn("extraSpawnInfo for {} has non valid value, using default TNT stack size!", mobSpawnData.mobId());
@@ -145,16 +152,20 @@ public class UndeadSpawner implements Spawner {
         }
         LocalDifficulty localDifficulty = world.getLocalDifficulty(player.getBlockPos());
         try {
-            mob.initialize(world, localDifficulty, SpawnReason.NATURAL, null, null);
-            mob.setTarget(player);
-            UndeadNights.serverState.spawnedHordeMobs.add(mob.getUuid());
-            if ((!mobSpawnData.mobId().equals("undeadnights:horde_zombie")) &&
-                    (!mobSpawnData.mobId().equals("undeadnights:elite_zombie")) &&
-                    (!mobSpawnData.mobId().equals("undeadnights:demolition_zombie"))) {
-                Objects.requireNonNull(mob.getAttributeInstance(EntityAttributes.GENERIC_FOLLOW_RANGE)).setBaseValue(128.0f);
-                mob.targetSelector.add(1, new ActiveTargetGoal<>(mob, PlayerEntity.class, false, false));
+            if (entity instanceof MobEntity mob) {
+                mob.initialize(world, localDifficulty, SpawnReason.NATURAL, null, null);
+                mob.setTarget(player);
+
+                if ((!mobSpawnData.mobId().equals("undeadnights:horde_zombie")) &&
+                        (!mobSpawnData.mobId().equals("undeadnights:elite_zombie")) &&
+                        (!mobSpawnData.mobId().equals("undeadnights:demolition_zombie"))) {
+                    Objects.requireNonNull(mob.getAttributeInstance(EntityAttributes.GENERIC_FOLLOW_RANGE)).setBaseValue(128.0f);
+                    mob.targetSelector.add(1, new ActiveTargetGoal<>(mob, PlayerEntity.class, false, false));
+                }
             }
-            world.spawnEntity(mob);
+            assert entity != null;
+            UndeadNights.serverState.spawnedHordeMobs.add(entity.getUuid());
+            world.spawnNewEntityAndPassengers(entity);
         } catch (Exception e) {
             invalidHordeMobEntry = true;
             UndeadNights.LOGGER.warn("Reading entry {} from the config file failed! Spawning default horde zombie instead.", mobSpawnData.mobId());
@@ -419,7 +430,7 @@ public class UndeadSpawner implements Spawner {
                         if (!checkSpawnLocation(world, pos.getX(), pos.getY() - 1, pos.getZ())) {
                             return 0;
                         } else {
-                            spawnHordeMob(world,randomSource,pos,player,new HordeConfig.MobSpawnData("undeadnights:horde_zombie",100, 0, 0, "none"));
+                            spawnHordeMob(world,randomSource,pos,player,new HordeConfig.MobSpawnData("undeadnights:horde_zombie",100, 0, 0, "none", ""));
                             if (MainConfig.getPrintDebugMessages()) {
                                 UndeadNights.LOGGER.info("A stray horde zombie spawned!");
                             }
