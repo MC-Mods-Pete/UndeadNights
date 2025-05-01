@@ -103,5 +103,5 @@
       "rolls": 1.0
     }
   ],
-  "random_sequence": "minecraft:entities/demolition_zombie"
+  "random_sequence": "undeadnights:entities/demolition_zombie"
 }

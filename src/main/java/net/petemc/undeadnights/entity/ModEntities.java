@@ -22,6 +22,14 @@ public class ModEntities {
     public static final Supplier<EntityType<EliteZombieEntity>> ELITE_ZOMBIE =
             ENTITY_TYPES.register("elite_zombie", () -> EntityType.Builder.of(EliteZombieEntity::new, MobCategory.CREATURE)
                     .sized(0.6f, 1.95f).build("elite_zombie"));
+    public static final Supplier<EntityType<DemolitionZombieProjectileEntity>> TNT_PROJECTILE =
+            ENTITY_TYPES.register("tnt_projectile", () ->
+                    EntityType.Builder.<DemolitionZombieProjectileEntity>of(DemolitionZombieProjectileEntity::new, MobCategory.MISC)
+                            .setShouldReceiveVelocityUpdates(true)
+                            .setTrackingRange(64)
+                            .setUpdateInterval(1)
+                            .sized(0.5F, 0.5F)
+                            .build("tnt_projectile"));
 
     public static void register(IEventBus eventBus) {
         ENTITY_TYPES.register(eventBus);
