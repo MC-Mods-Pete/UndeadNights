@@ -1,7 +1,6 @@
 package net.petemc.undeadnights.entity;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Difficulty;
@@ -22,12 +21,11 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.Blocks;
 import net.petemc.undeadnights.config.MainConfig;
-import net.petemc.undeadnights.entity.ai.goal.DemolitionZombieIgniteGoal;
+import net.petemc.undeadnights.entity.ai.goal.TntIgniteAndThrowGoal;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -35,7 +33,7 @@ import java.time.LocalDate;
 import java.util.Objects;
 
 public class DemolitionZombieEntity extends Zombie  {
-    private int numberTnt = 1;
+    private int numberTnt = 3;
 
     public DemolitionZombieEntity(EntityType<? extends Zombie> entityType, Level world) {
         super(entityType, world);
@@ -49,7 +47,7 @@ public class DemolitionZombieEntity extends Zombie  {
         float f = difficulty.getSpecialMultiplier();
         this.setCanPickUpLoot(randomsource.nextFloat() < 0.55F * f);
         if (spawnGroupData == null) {
-            spawnGroupData = new Zombie.ZombieGroupData(false, false);
+            spawnGroupData = new ZombieGroupData(false, false);
         }
 
         if (spawnGroupData instanceof ZombieGroupData) {
@@ -75,25 +73,25 @@ public class DemolitionZombieEntity extends Zombie  {
 
     public static AttributeSupplier.@NotNull Builder createAttributes() {
         return Monster.createMonsterAttributes()
-                .add(Attributes.MAX_HEALTH, 40.0)          // default 20.F
-                .add(Attributes.FOLLOW_RANGE, 128.0)       // default 35.0D
-                .add(Attributes.MOVEMENT_SPEED, 0.30)      // default 0.23F
-                .add(Attributes.ATTACK_DAMAGE, 5.0)        // default 3.0
-                .add(Attributes.ARMOR, 4.0)                // default 2.0
-                .add(Attributes.SPAWN_REINFORCEMENTS_CHANCE, 0.0);
+                .add(Attributes.MAX_HEALTH, 40.0D)          // default 20.F
+                .add(Attributes.FOLLOW_RANGE, 128.0D)       // default 35.0D
+                .add(Attributes.MOVEMENT_SPEED, 0.30D)      // default 0.23F
+                .add(Attributes.ATTACK_DAMAGE, 5.0D)        // default 3.0
+                .add(Attributes.ARMOR, 4.0D)                // default 2.0
+                .add(Attributes.SPAWN_REINFORCEMENTS_CHANCE, 0.0D);
     }
 
     @Override
     protected void addBehaviourGoals() {
         this.goalSelector.addGoal(1, new FloatGoal(this));
-        this.goalSelector.addGoal(2, new DemolitionZombieIgniteGoal(this));
+        this.goalSelector.addGoal(2, new TntIgniteAndThrowGoal(this));
         this.goalSelector.addGoal(3, new ZombieAttackGoal(this, 1.0, false));
         this.goalSelector.addGoal(4, new ChasePlayerGoal(this));
         this.goalSelector.addGoal(6, new MoveThroughVillageGoal(this, 1.0, true, 4, this::canBreakDoors));
         this.goalSelector.addGoal(7, new RandomStrollGoal(this, 1.0));
-        this.targetSelector.addGoal(1, new HurtByTargetGoal(this).setAlertOthers(HordeZombieEntity.class));
+        this.targetSelector.addGoal(1, new HurtByTargetGoal(this, new Class[]{HordeZombieEntity.class, EliteZombieEntity.class, DemolitionZombieEntity.class}).setAlertOthers(HordeZombieEntity.class));
         this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, false, false));
-        this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, AbstractVillager.class, false));
+        this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, AbstractVillager.class, true));
         this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, IronGolem.class, true));
     }
 
