@@ -17,13 +17,24 @@ public class ModEntities {
 
     public static final Supplier<EntityType<HordeZombieEntity>> HORDE_ZOMBIE =
             ENTITY_TYPES.register("horde_zombie", () -> EntityType.Builder.of(HordeZombieEntity::new, MobCategory.CREATURE)
-                    .sized(0.6f, 1.95f).build(ResourceKey.create(Registries.ENTITY_TYPE, ResourceLocation.fromNamespaceAndPath(UndeadNights.MOD_ID, "horde_zombie"))));
+                    .sized(0.6f, 1.95f)
+                    .build(ResourceKey.create(Registries.ENTITY_TYPE, ResourceLocation.fromNamespaceAndPath(UndeadNights.MOD_ID, "horde_zombie"))));
     public static final Supplier<EntityType<DemolitionZombieEntity>> DEMOLITION_ZOMBIE =
             ENTITY_TYPES.register("demolition_zombie", () -> EntityType.Builder.of(DemolitionZombieEntity::new, MobCategory.CREATURE)
-                    .sized(0.6f, 1.95f).build(ResourceKey.create(Registries.ENTITY_TYPE, ResourceLocation.fromNamespaceAndPath(UndeadNights.MOD_ID,"demolition_zombie"))));
+                    .sized(0.6f, 1.95f)
+                    .build(ResourceKey.create(Registries.ENTITY_TYPE, ResourceLocation.fromNamespaceAndPath(UndeadNights.MOD_ID,"demolition_zombie"))));
     public static final Supplier<EntityType<EliteZombieEntity>> ELITE_ZOMBIE =
             ENTITY_TYPES.register("elite_zombie", () -> EntityType.Builder.of(EliteZombieEntity::new, MobCategory.CREATURE)
-                    .sized(0.6f, 1.95f).build(ResourceKey.create(Registries.ENTITY_TYPE, ResourceLocation.fromNamespaceAndPath(UndeadNights.MOD_ID,"elite_zombie"))));
+                    .sized(0.6f, 1.95f)
+                    .build(ResourceKey.create(Registries.ENTITY_TYPE, ResourceLocation.fromNamespaceAndPath(UndeadNights.MOD_ID,"elite_zombie"))));
+    public static final Supplier<EntityType<DemolitionZombieProjectileEntity>> TNT_PROJECTILE =
+            ENTITY_TYPES.register("tnt_projectile", () ->
+                    EntityType.Builder.<DemolitionZombieProjectileEntity>of(DemolitionZombieProjectileEntity::new, MobCategory.MISC)
+                            .setShouldReceiveVelocityUpdates(true)
+                            .setTrackingRange(64)
+                            .setUpdateInterval(1)
+                            .sized(0.5F, 0.5F)
+                            .build(ResourceKey.create(Registries.ENTITY_TYPE, ResourceLocation.fromNamespaceAndPath(UndeadNights.MOD_ID,"tnt_projectile"))));
 
     public static void register(IEventBus eventBus) {
         ENTITY_TYPES.register(eventBus);
