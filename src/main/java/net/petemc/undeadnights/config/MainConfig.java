@@ -78,6 +78,14 @@ public class MainConfig implements ConfigData
         return INSTANCE.hordeZombiesBurnInDaylight;
     }
 
+    public static boolean getHordeZombiesCanBreakBlocks() {
+        return INSTANCE.hordeZombiesCanBreakBlocks;
+    }
+
+    public static int getHordeZombiesBlockBreakTier() {
+        return INSTANCE.hordeZombiesBlockBreakTier;
+    }
+
     public static boolean getSpawnStrayHordeZombies() {
         return INSTANCE.spawnStrayHordeZombies;
     }
@@ -145,6 +153,14 @@ public class MainConfig implements ConfigData
     @ConfigEntry.Gui.Tooltip()
     @Comment("If true, the horde zombies will burn in daylight (only those added by this mod) | default: false")
     private boolean hordeZombiesBurnInDaylight = false;
+
+    @ConfigEntry.Gui.Tooltip()
+    @Comment("If true, Horde Zombies can break blocks | default: false")
+    private boolean hordeZombiesCanBreakBlocks = false;
+
+    @ConfigEntry.Gui.Tooltip()
+    @Comment("Horde Zombie block break tier (0-3) | default: 1")
+    private int hordeZombiesBlockBreakTier = 1;
 
     @ConfigEntry.Gui.Tooltip()
     @Comment("If true, single stray horde zombies can spawn on normal nights | default: true")

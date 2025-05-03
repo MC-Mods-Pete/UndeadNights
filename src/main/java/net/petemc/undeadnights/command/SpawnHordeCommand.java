@@ -14,7 +14,6 @@ import net.petemc.undeadnights.UndeadNights;
 import net.petemc.undeadnights.config.MainConfig;
 
 import java.util.Collection;
-import java.util.Objects;
 
 public class SpawnHordeCommand {
     public static boolean spawnHorde = false;
@@ -22,9 +21,11 @@ public class SpawnHordeCommand {
 
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher, CommandRegistryAccess commandRegistryAccess, CommandManager.RegistrationEnvironment registrationEnvironment) {
         dispatcher.register(CommandManager.literal("undeadnights")
+                .requires(source -> source.hasPermissionLevel(2))
                 .then(CommandManager.literal("spawn_horde")
                 .executes(SpawnHordeCommand::spawnHorde)));
         dispatcher.register(CommandManager.literal("undeadnights")
+                .requires(source -> source.hasPermissionLevel(2))
                 .then(CommandManager.literal("spawn_horde")
                 .then(CommandManager.argument("targets", EntityArgumentType.entities())
                 .executes((command) -> {

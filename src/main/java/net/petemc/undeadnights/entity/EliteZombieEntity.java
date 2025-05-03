@@ -5,6 +5,9 @@ import net.minecraft.entity.*;
 import net.minecraft.entity.ai.goal.*;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.attribute.EntityAttributes;
+import net.minecraft.entity.data.DataTracker;
+import net.minecraft.entity.data.TrackedData;
+import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.entity.mob.HostileEntity;
 import net.minecraft.entity.mob.ZombieEntity;
 import net.minecraft.entity.passive.IronGolemEntity;
@@ -20,13 +23,17 @@ import net.minecraft.world.LocalDifficulty;
 import net.minecraft.world.ServerWorldAccess;
 import net.minecraft.world.World;
 import net.petemc.undeadnights.config.MainConfig;
+import net.petemc.undeadnights.entity.ai.goal.BreakBlockGoal;
 import org.jetbrains.annotations.Nullable;
 
 import java.time.LocalDate;
 import java.util.EnumSet;
 import java.util.Objects;
 
+
 public class EliteZombieEntity extends ZombieEntity {
+    private static final TrackedData<Byte> DATA_FLAGS_ID = DataTracker.registerData(EliteZombieEntity.class, TrackedDataHandlerRegistry.BYTE);
+
     public EliteZombieEntity(EntityType<? extends ZombieEntity> entityType, World world) {
         super(entityType, world);
     }
@@ -73,14 +80,21 @@ public class EliteZombieEntity extends ZombieEntity {
     @Override
     protected void initCustomGoals() {
         this.goalSelector.add(1, new SwimGoal(this));
+        this.goalSelector.add(1, new BreakBlockGoal(this));
         this.goalSelector.add(2, new ZombieAttackGoal(this, 1.0, false));
         this.goalSelector.add(4, new ChasePlayerGoal(this));
         this.goalSelector.add(6, new MoveThroughVillageGoal(this, 1.0, true, 4, this::canBreakDoors));
         this.goalSelector.add(7, new WanderAroundFarGoal(this, 1.0));
-        this.targetSelector.add(1, new RevengeGoal(this).setGroupRevenge(HordeZombieEntity.class));
+        this.targetSelector.add(1, new RevengeGoal(this, new Class[]{HordeZombieEntity.class, EliteZombieEntity.class, DemolitionZombieEntity.class}).setGroupRevenge(HordeZombieEntity.class));
         this.targetSelector.add(2, new ActiveTargetGoal<>(this, PlayerEntity.class, false, false));
         this.targetSelector.add(3, new ActiveTargetGoal<>(this, MerchantEntity.class, true));
         this.targetSelector.add(3, new ActiveTargetGoal<>(this, IronGolemEntity.class, true));
+    }
+
+    @Override
+    protected void initDataTracker(DataTracker.Builder builder) {
+        super.initDataTracker(builder);
+        builder.add(DATA_FLAGS_ID, (byte)0);
     }
 
     @Override
@@ -121,7 +135,26 @@ public class EliteZombieEntity extends ZombieEntity {
     @Override
     public boolean canBreakDoors()
     {
-        return true;
+        return false;
+    }
+
+    @Override
+    public void setCanBreakDoors(boolean val) {
+    }
+
+    public boolean isBreakingBlock() {
+        return (this.dataTracker.get(DATA_FLAGS_ID) & 1) != 0;
+    }
+
+    public void setBreakingBlock(boolean pClimbing) {
+        byte b0 = this.dataTracker.get(DATA_FLAGS_ID);
+        if (pClimbing) {
+            b0 = (byte)(b0 | 1);
+        } else {
+            b0 = (byte)(b0 & -2);
+        }
+
+        this.dataTracker.set(DATA_FLAGS_ID, b0);
     }
 
     @Override
