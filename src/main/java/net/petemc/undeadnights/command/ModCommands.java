@@ -8,5 +8,6 @@ public class ModCommands {
         CommandRegistrationCallback.EVENT.register(SpawnHordeCommand::register);
         CommandRegistrationCallback.EVENT.register(HordeMobsCommand::register);
         CommandRegistrationCallback.EVENT.register(StatusCommand::register);
+        CommandRegistrationCallback.EVENT.register(SetDefaultHordeCommand::register);
     }
 }
