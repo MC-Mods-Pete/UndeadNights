@@ -16,6 +16,7 @@ import java.util.Objects;
 public class SetDefaultHordeCommand {
     public SetDefaultHordeCommand(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(Commands.literal("undeadnights")
+                .requires(source -> source.hasPermission(2))
                 .then(Commands.literal("default_horde")
                 .then(Commands.argument("hordeId", IntegerArgumentType.integer(0))
                 .executes((command) -> {
