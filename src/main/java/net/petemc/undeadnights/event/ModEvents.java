@@ -11,6 +11,7 @@ import net.neoforged.neoforge.event.entity.player.CanPlayerSleepEvent;
 import net.neoforged.neoforge.server.command.ConfigCommand;
 import net.petemc.undeadnights.UndeadNights;
 import net.petemc.undeadnights.command.HordeMobsCommand;
+import net.petemc.undeadnights.command.SetDefaultHordeCommand;
 import net.petemc.undeadnights.command.SpawnHordeCommand;
 import net.petemc.undeadnights.command.StatusCommand;
 import net.petemc.undeadnights.config.MainConfig;
@@ -66,6 +67,7 @@ public class ModEvents {
             new SpawnHordeCommand(event.getDispatcher());
             new HordeMobsCommand(event.getDispatcher());
             new StatusCommand(event.getDispatcher());
+            new SetDefaultHordeCommand(event.getDispatcher());
 
             ConfigCommand.register(event.getDispatcher());
         }
