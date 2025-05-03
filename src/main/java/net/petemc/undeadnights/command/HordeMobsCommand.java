@@ -21,18 +21,21 @@ public class HordeMobsCommand {
 
     public HordeMobsCommand(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(Commands.literal("undeadnights")
+                .requires(source -> source.hasPermission(2))
                 .then(Commands.literal("horde_mobs")
                 .then(Commands.literal("remove_all")
                 .executes((command) -> {
                     return removeMobs(command.getSource());
         }))));
         dispatcher.register(Commands.literal("undeadnights")
+                .requires(source -> source.hasPermission(2))
                 .then(Commands.literal("horde_mobs")
                 .then(Commands.literal("print_config")
                 .executes((command) -> {
                     return printConfig(command.getSource());
         }))));
         dispatcher.register(Commands.literal("undeadnights")
+                .requires(source -> source.hasPermission(2))
                 .then(Commands.literal("horde_mobs")
                 .then(Commands.literal("block_breaking")
                 .then(Commands.literal("enable")
@@ -40,6 +43,7 @@ public class HordeMobsCommand {
                     return blockBreaking(command.getSource(), true, 0);
         })))));
         dispatcher.register(Commands.literal("undeadnights")
+                .requires(source -> source.hasPermission(2))
                 .then(Commands.literal("horde_mobs")
                 .then(Commands.literal("block_breaking")
                 .then(Commands.literal("disable")
@@ -47,6 +51,7 @@ public class HordeMobsCommand {
                     return blockBreaking(command.getSource(), false, 0);
         })))));
         dispatcher.register(Commands.literal("undeadnights")
+                .requires(source -> source.hasPermission(2))
                 .then(Commands.literal("horde_mobs")
                 .then(Commands.literal("block_breaking")
                 .then(Commands.literal("set_tier")

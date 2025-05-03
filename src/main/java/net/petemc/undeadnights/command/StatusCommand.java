@@ -16,6 +16,7 @@ import java.util.Objects;
 public class StatusCommand {
     public StatusCommand(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(Commands.literal("undeadnights")
+                .requires(source -> source.hasPermission(2))
                 .then(Commands.literal("status")
                 .executes((command) -> {
                     return status(command.getSource());
