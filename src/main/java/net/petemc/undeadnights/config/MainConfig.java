@@ -69,6 +69,14 @@ public class MainConfig
         return hordeZombiesBurnInDaylight;
     }
 
+    public static boolean getHordeZombiesCanBreakBlocks() {
+        return hordeZombiesCanBreakBlocks;
+    }
+
+    public static int getHordeZombiesBlockBreakTier() {
+        return hordeZombiesBlockBreakTier;
+    }
+
     public static boolean getSpawnStrayHordeZombies() {
         return spawnStrayHordeZombies;
     }
@@ -106,7 +114,7 @@ public class MainConfig
 
     private static final ForgeConfigSpec.IntValue HORDE_MOBS_SPAWN_CAP = BUILDER_SERVER
             .comment("Maximum amount of horde mobs that can be loaded in the world at the same time | default: 80")
-            .defineInRange("hordeMobsSpawnCap", 80, 1, 256);
+            .defineInRange("hordeMobsSpawnCap", 80, 1, 2048);
 
     private static final ForgeConfigSpec.BooleanValue SPAWN_ADDITIONAL_WAVES = BUILDER_SERVER
             .comment("If true, additional waves can spawn in a horde night | default: true")
@@ -140,6 +148,14 @@ public class MainConfig
             .comment("If true, the horde zombies (only those added by this mod) will burn in daylight | default: false")
             .define("hordeZombiesBurnInDaylight", false);
 
+   private static final ForgeConfigSpec.BooleanValue HORDE_ZOMBIES_CAN_BREAK_BLOCKS = BUILDER_SERVER
+            .comment("If true, Horde Zombies can break blocks | default: false")
+            .define("hordeZombiesCanBreakBlocks", false);
+
+    private static final ForgeConfigSpec.IntValue HORDE_ZOMBIES_BLOCK_BREAK_TIER = BUILDER_SERVER
+            .comment("Horde Zombie block break tier (0-3) | default: 1")
+            .defineInRange("hordeZombieBlockBreakTier", 1, 0, 3);
+
    private static final ForgeConfigSpec.BooleanValue SPAWN_STRAY_HORDE_ZOMBIES = BUILDER_SERVER
             .comment("If true, single stray horde zombies can spawn on normal nights | default: true")
             .define("spawnStrayHordeZombies", true);
@@ -171,6 +187,8 @@ public class MainConfig
     private static boolean hordeNightsDisableSleeping = true;
     private static boolean persistentMobs = false;
     private static boolean hordeZombiesBurnInDaylight = false;
+    private static boolean hordeZombiesCanBreakBlocks = false;
+    private static int hordeZombiesBlockBreakTier = 2;
     private static boolean spawnStrayHordeZombies = true;
     private static boolean printDebugMessages = false;
 
@@ -194,6 +212,8 @@ public class MainConfig
             hordeNightsDisableSleeping = HORDE_NIGHTS_DISABLE_SLEEPING.get();
 	        persistentMobs = PERSISTENT_MOBS.get();
             hordeZombiesBurnInDaylight = HORDE_ZOMBIES_BURN_IN_DAYLIGHT.get();
+            hordeZombiesCanBreakBlocks = HORDE_ZOMBIES_CAN_BREAK_BLOCKS.get();
+            hordeZombiesBlockBreakTier = HORDE_ZOMBIES_BLOCK_BREAK_TIER.get();
             spawnStrayHordeZombies = SPAWN_STRAY_HORDE_ZOMBIES.get();
             printDebugMessages = PRINT_DEBUG_MESSAGES.get();
         }

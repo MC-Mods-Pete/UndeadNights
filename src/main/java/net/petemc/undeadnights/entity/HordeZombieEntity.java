@@ -1,5 +1,8 @@
 package net.petemc.undeadnights.entity;
 
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.DifficultyInstance;
@@ -21,6 +24,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.Blocks;
 import net.petemc.undeadnights.config.MainConfig;
+import net.petemc.undeadnights.entity.ai.goal.BreakBlockGoal;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -28,6 +32,8 @@ import java.time.LocalDate;
 import java.util.Objects;
 
 public class HordeZombieEntity extends Zombie {
+    private static final EntityDataAccessor<Byte> DATA_FLAGS_ID = SynchedEntityData.defineId(HordeZombieEntity.class, EntityDataSerializers.BYTE);
+
     public HordeZombieEntity(EntityType<? extends Zombie> entityType, Level level) {
         super(entityType, level);
     }
@@ -43,7 +49,7 @@ public class HordeZombieEntity extends Zombie {
             spawnGroupData = new ZombieGroupData(false, false);
         }
 
-        if (spawnGroupData instanceof ZombieGroupData zombie$zombiegroupdata) {
+        if (spawnGroupData instanceof ZombieGroupData) {
             this.setCanBreakDoors(true);
             this.populateDefaultEquipmentSlots(randomsource, difficulty);
             this.populateDefaultEquipmentEnchantments(level, randomsource, difficulty);
@@ -66,25 +72,31 @@ public class HordeZombieEntity extends Zombie {
 
         public static AttributeSupplier.@NotNull Builder createAttributes() {
             return Monster.createMonsterAttributes()
-                    .add(Attributes.MAX_HEALTH, 40.0)          // default 20.F
-                    .add(Attributes.FOLLOW_RANGE, 128.0)       // default 35.0D
-                    .add(Attributes.MOVEMENT_SPEED, 0.30)      // default 0.23F
-                    .add(Attributes.ATTACK_DAMAGE, 5.0)        // default 3.0
-                    .add(Attributes.ARMOR, 4.0)                // default 2.0
-                    .add(Attributes.SPAWN_REINFORCEMENTS_CHANCE, 0.0);
+                    .add(Attributes.MAX_HEALTH, 40.0D)          // default 20.F
+                    .add(Attributes.FOLLOW_RANGE, 128.0D)       // default 35.0D
+                    .add(Attributes.MOVEMENT_SPEED, 0.30D)      // default 0.23F
+                    .add(Attributes.ATTACK_DAMAGE, 5.0D)        // default 3.0
+                    .add(Attributes.ARMOR, 4.0D)                // default 2.0
+                    .add(Attributes.SPAWN_REINFORCEMENTS_CHANCE, 0.0D);
         }
 
     @Override
     protected void addBehaviourGoals() {
         this.goalSelector.addGoal(1, new FloatGoal(this));
+        this.goalSelector.addGoal(1, new BreakBlockGoal(this));
         this.goalSelector.addGoal(2, new ZombieAttackGoal(this, 1.0, false));
         this.goalSelector.addGoal(4, new ChasePlayerGoal(this));
         this.goalSelector.addGoal(6, new MoveThroughVillageGoal(this, 1.0, true, 4, this::canBreakDoors));
         this.goalSelector.addGoal(7, new RandomStrollGoal(this, 1.0));
-        this.targetSelector.addGoal(1, new HurtByTargetGoal(this).setAlertOthers(HordeZombieEntity.class));
+        this.targetSelector.addGoal(1, new HurtByTargetGoal(this, new Class[]{HordeZombieEntity.class, EliteZombieEntity.class, DemolitionZombieEntity.class}).setAlertOthers(HordeZombieEntity.class));
         this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, false));
         this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, AbstractVillager.class, true));
         this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, IronGolem.class, true));
+    }
+
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(DATA_FLAGS_ID, (byte)0);
     }
 
     @Override
@@ -98,9 +110,27 @@ public class HordeZombieEntity extends Zombie {
     }
 
     @Override
-    public boolean canBreakDoors()
-    {
-        return true;
+    public boolean canBreakDoors() {
+        return false;
+    }
+
+    @Override
+    public void setCanBreakDoors(boolean val) {
+    }
+
+    public boolean isBreakingBlock() {
+        return (this.entityData.get(DATA_FLAGS_ID) & 1) != 0;
+    }
+
+    public void setBreakingBlock(boolean pClimbing) {
+        byte b0 = this.entityData.get(DATA_FLAGS_ID);
+        if (pClimbing) {
+            b0 = (byte)(b0 | 1);
+        } else {
+            b0 = (byte)(b0 & -2);
+        }
+
+        this.entityData.set(DATA_FLAGS_ID, b0);
     }
 
     @Override
