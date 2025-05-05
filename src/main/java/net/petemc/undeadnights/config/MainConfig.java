@@ -77,6 +77,10 @@ public class MainConfig
         return hordeZombiesBlockBreakTier;
     }
 
+    public static boolean getSecurityCraftCompatibility() {
+        return securityCraftCompatibility;
+    }
+
     public static boolean getSpawnStrayHordeZombies() {
         return spawnStrayHordeZombies;
     }
@@ -156,6 +160,10 @@ public class MainConfig
             .comment("Horde Zombie block break tier (0-3) | default: 1")
             .defineInRange("hordeZombieBlockBreakTier", 1, 0, 3);
 
+    private static final ForgeConfigSpec.BooleanValue SECURITY_CRAFT_COMPATIBILITY = BUILDER_SERVER
+            .comment("If true, Horde Zombies are not able to break reinforced blocks from the Security Craft mod | default: false")
+            .define("securityCraftCompatibility", false);
+
    private static final ForgeConfigSpec.BooleanValue SPAWN_STRAY_HORDE_ZOMBIES = BUILDER_SERVER
             .comment("If true, single stray horde zombies can spawn on normal nights | default: true")
             .define("spawnStrayHordeZombies", true);
@@ -189,6 +197,7 @@ public class MainConfig
     private static boolean hordeZombiesBurnInDaylight = false;
     private static boolean hordeZombiesCanBreakBlocks = false;
     private static int hordeZombiesBlockBreakTier = 2;
+    private static boolean securityCraftCompatibility = false;
     private static boolean spawnStrayHordeZombies = true;
     private static boolean printDebugMessages = false;
 
@@ -214,6 +223,7 @@ public class MainConfig
             hordeZombiesBurnInDaylight = HORDE_ZOMBIES_BURN_IN_DAYLIGHT.get();
             hordeZombiesCanBreakBlocks = HORDE_ZOMBIES_CAN_BREAK_BLOCKS.get();
             hordeZombiesBlockBreakTier = HORDE_ZOMBIES_BLOCK_BREAK_TIER.get();
+            securityCraftCompatibility = SECURITY_CRAFT_COMPATIBILITY.get();
             spawnStrayHordeZombies = SPAWN_STRAY_HORDE_ZOMBIES.get();
             printDebugMessages = PRINT_DEBUG_MESSAGES.get();
         }
