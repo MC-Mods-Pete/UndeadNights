@@ -75,5 +75,5 @@
       "rolls": 1.0
     }
   ],
-  "random_sequence": "minecraft:entities/horde_zombie"
+  "random_sequence": "undeadnights:entities/horde_zombie"
 }

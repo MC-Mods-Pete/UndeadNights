@@ -20,9 +20,11 @@ public class SpawnHordeCommand {
 
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher, boolean var) {
         dispatcher.register(CommandManager.literal("undeadnights")
+                .requires(source -> source.hasPermissionLevel(2))
                 .then(CommandManager.literal("spawn_horde")
                 .executes(SpawnHordeCommand::spawnHorde)));
         dispatcher.register(CommandManager.literal("undeadnights")
+                .requires(source -> source.hasPermissionLevel(2))
                 .then(CommandManager.literal("spawn_horde")
                 .then(CommandManager.argument("targets", EntityArgumentType.entities())
                 .executes((command) -> {
