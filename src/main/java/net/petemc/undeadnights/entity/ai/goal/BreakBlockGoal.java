@@ -136,7 +136,7 @@ public class BreakBlockGoal extends Goal {
         float destroyTime = world.getBlockState(targetBlock).getBlock().defaultDestroyTime();
         scaledTargetDestroyTime = destroyTime * 2;
         if (MainConfig.getPrintDebugMessages()) {
-            UndeadNights.LOGGER.info("Block {} time {} stage {}", world.getBlockState(targetBlock).getBlock(), world.getBlockState(targetBlock).getBlock().defaultDestroyTime(), MainConfig.getHordeZombiesBlockBreakTier());
+            UndeadNights.LOGGER.info("Block: {} destroyTime: {} Stage: {}", world.getBlockState(targetBlock).getBlock(), world.getBlockState(targetBlock).getBlock().defaultDestroyTime(), MainConfig.getHordeZombiesBlockBreakTier());
         }
 
         if (block instanceof DoorBlock) {
@@ -144,6 +144,11 @@ public class BreakBlockGoal extends Goal {
                 ratio = 10 / scaledTargetDestroyTime;
                 return true;
             }
+        }
+
+        String blockName = world.getBlockState(targetBlock).getBlock().toString();
+        if (blockName.contains("securitycraft") && blockName.contains("reinforced") && MainConfig.getSecurityCraftCompatibility()) {
+            return false;
         }
 
         if (scaledTargetDestroyTime < 0) {
