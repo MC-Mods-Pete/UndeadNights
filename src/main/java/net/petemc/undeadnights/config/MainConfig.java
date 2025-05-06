@@ -77,6 +77,10 @@ public class MainConfig
         return hordeZombiesBlockBreakTier;
     }
 
+    public static boolean getSecurityCraftCompatibility() {
+        return securityCraftCompatibility;
+    }
+
     public static boolean getSpawnStrayHordeZombies() {
         return spawnStrayHordeZombies;
     }
@@ -114,7 +118,7 @@ public class MainConfig
 
     private static final ModConfigSpec.IntValue HORDE_MOBS_SPAWN_CAP = BUILDER_SERVER
             .comment("Maximum amount of horde mobs that can be loaded in the world at the same time | default: 80")
-            .defineInRange("hordeMobsSpawnCap", 80, 1, 256);
+            .defineInRange("hordeMobsSpawnCap", 80, 1, 2048);
 
     private static final ModConfigSpec.BooleanValue SPAWN_ADDITIONAL_WAVES = BUILDER_SERVER
             .comment("If true, additional waves can spawn in a horde night | default: true")
@@ -125,7 +129,7 @@ public class MainConfig
             .defineInRange("cooldownBetweenWaves", 45, 1, Integer.MAX_VALUE);
 
     private static final ModConfigSpec.IntValue CHANCE_FOR_ADDITIONAL_WAVES = BUILDER_SERVER
-            .comment("Chance in % for another zombie wave (checked after every wave cooldown) | default: 7")
+            .comment("Chance in % for another horde wave (checked after every wave cooldown) | default: 7")
             .defineInRange("chanceForAdditionalWaves", 7, 1, 100);
 
     private static final ModConfigSpec.BooleanValue HORDE_WAVES_CAN_SPAWN_IN_WATER = BUILDER_SERVER
@@ -141,20 +145,24 @@ public class MainConfig
             .define("hordeNightsDisableSleeping", true);
 
     private static final ModConfigSpec.BooleanValue PERSISTENT_MOBS = BUILDER_SERVER
-            .comment("If true, the horde zombies will be persistent and not despawn | default: false")
+            .comment("If true, the horde mobs will be persistent and not despawn | default: false")
             .define("persistentMobs", false);
 
    private static final ModConfigSpec.BooleanValue HORDE_ZOMBIES_BURN_IN_DAYLIGHT = BUILDER_SERVER
             .comment("If true, the horde zombies (only those added by this mod) will burn in daylight | default: false")
             .define("hordeZombiesBurnInDaylight", false);
 
-    private static final ModConfigSpec.BooleanValue HORDE_ZOMBIES_CAN_BREAK_BLOCKS = BUILDER_SERVER
+   private static final ModConfigSpec.BooleanValue HORDE_ZOMBIES_CAN_BREAK_BLOCKS = BUILDER_SERVER
             .comment("If true, Horde Zombies can break blocks | default: false")
             .define("hordeZombiesCanBreakBlocks", false);
 
-    private static final ModConfigSpec.IntValue HORDE_ZOMBIES_BLOCK_BREAK_TIER = BUILDER_SERVER
+   private static final ModConfigSpec.IntValue HORDE_ZOMBIES_BLOCK_BREAK_TIER = BUILDER_SERVER
             .comment("Horde Zombie block break tier (0-3) | default: 1")
             .defineInRange("hordeZombieBlockBreakTier", 1, 0, 3);
+
+   private static final ModConfigSpec.BooleanValue SECURITY_CRAFT_COMPATIBILITY = BUILDER_SERVER
+            .comment("If true, Horde Zombies are not able to break break reinforced blocks from the Security Craft mod | default: false")
+            .define("securityCraftCompatibility", false);
 
    private static final ModConfigSpec.BooleanValue SPAWN_STRAY_HORDE_ZOMBIES = BUILDER_SERVER
             .comment("If true, single stray horde zombies can spawn on normal nights | default: true")
@@ -189,6 +197,7 @@ public class MainConfig
     private static boolean hordeZombiesBurnInDaylight = false;
     private static boolean hordeZombiesCanBreakBlocks = false;
     private static int hordeZombiesBlockBreakTier = 2;
+    private static boolean securityCraftCompatibility = false;
     private static boolean spawnStrayHordeZombies = true;
     private static boolean printDebugMessages = false;
 
@@ -214,6 +223,7 @@ public class MainConfig
             hordeZombiesBurnInDaylight = HORDE_ZOMBIES_BURN_IN_DAYLIGHT.get();
             hordeZombiesCanBreakBlocks = HORDE_ZOMBIES_CAN_BREAK_BLOCKS.get();
             hordeZombiesBlockBreakTier = HORDE_ZOMBIES_BLOCK_BREAK_TIER.get();
+            securityCraftCompatibility = SECURITY_CRAFT_COMPATIBILITY.get();
             spawnStrayHordeZombies = SPAWN_STRAY_HORDE_ZOMBIES.get();
             printDebugMessages = PRINT_DEBUG_MESSAGES.get();
         }
