@@ -34,6 +34,7 @@ public class ModServerLifecycleEvents {
                 UndeadNights.LOGGER.info("INIT HordeNight: {} SpawnZombies: {} RespawnZombies: {}", UndeadNights.serverState.getHordeNight(), UndeadNights.serverState.getSpawnZombies(), UndeadNights.serverState.getRespawnZombies());
             }
             UndeadSpawner.hordeToSpawn = HordeConfig.getDefaultHorde();
+            UndeadSpawner.prevNormalizedTimeOfDay = pServer.getOverworld().getTimeOfDay() - 1;
             HordeMobsCommand.hordeZombiesCanBreakBlocks = MainConfig.getHordeZombiesCanBreakBlocks();
             HordeMobsCommand.hordeZombiesBlockBreakingTier = MainConfig.getHordeZombiesBlockBreakTier();
         }

@@ -44,6 +44,7 @@ import java.util.Objects;
 public class UndeadSpawner implements SpecialSpawner {
     public static boolean invalidHordeMobEntry = false;
     public static int hordeToSpawn = 1;
+    public static long prevNormalizedTimeOfDay = 0;
 
     private double x = 0;
     private double z = 0;
@@ -344,8 +345,19 @@ public class UndeadSpawner implements SpecialSpawner {
             return;
         }
 
+        // Check if the SaveState is already initialized
+        if (UndeadNights.serverState == null) {
+            return;
+        }
+
         // calculate normalized time of day and set "Is It Night" flag
         long normalizedTimeOfDay = world.getTimeOfDay() - ((world.getTimeOfDay() / 24000L) * 24000);
+        if (prevNormalizedTimeOfDay == normalizedTimeOfDay) {
+            return;
+        }
+        boolean nightIsStarting = ((prevNormalizedTimeOfDay < 12000L) && (normalizedTimeOfDay >= 12000L));
+        prevNormalizedTimeOfDay = normalizedTimeOfDay;
+
         boolean itIsNight = normalizedTimeOfDay >= 12000 && normalizedTimeOfDay < 22500;
 
         final Random randomSource = world.random;
@@ -398,7 +410,6 @@ public class UndeadSpawner implements SpecialSpawner {
             }
 
             // if a new night just started count down the days
-            boolean nightIsStarting = (((world.getTimeOfDay() % 12000L) == 0) && ((world.getTimeOfDay() % 24000L) != 0));
             if ((nightIsStarting) && (UndeadNights.serverState.getDaysCounter() >= 1)) {
                 UndeadNights.serverState.setDaysCounter(UndeadNights.serverState.getDaysCounter() - 1);
                 if ((UndeadNights.serverState.getDaysCounter() > 0) && (MainConfig.getSendHordeNightsCountdownMessage())) {
