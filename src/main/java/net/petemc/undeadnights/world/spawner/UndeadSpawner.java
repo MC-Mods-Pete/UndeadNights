@@ -33,7 +33,6 @@ import net.petemc.undeadnights.entity.DemolitionZombieEntity;
 import net.petemc.undeadnights.entity.HordeZombieEntity;
 import net.petemc.undeadnights.entity.ModEntities;
 import net.petemc.undeadnights.sound.UndeadNightsSounds;
-import net.petemc.undeadnights.util.StateSaverAndLoader;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -42,6 +41,7 @@ import java.util.Objects;
 public class UndeadSpawner implements CustomSpawner {
     public static boolean invalidHordeMobEntry = false;
     public static int hordeToSpawn = 1;
+    public static long prevNormalizedTimeOfDay = 0;
 
     private double x = 0;
     private double z = 0;
@@ -344,23 +344,19 @@ public class UndeadSpawner implements CustomSpawner {
             return 0;
         }
 
-        // Initialize everything
+        // Check if the SaveState is already initialized
         if (UndeadNights.serverState == null) {
-            UndeadNights.serverState = StateSaverAndLoader.getServerState(level.getServer());
-            // check if the DaysCounter in the config was changed
-            if (UndeadNights.serverState.getLastMaxDaysCounter() != MainConfig.getDaysBetweenHordeNights()) {
-                UndeadNights.serverState.setDaysCounter(MainConfig.getDaysBetweenHordeNights());
-                UndeadNights.serverState.setLastMaxDaysCounter(MainConfig.getDaysBetweenHordeNights());
-            }
-
-            if (MainConfig.getPrintDebugMessages()) {
-                UndeadNights.LOGGER.info("INIT DaysCounter: {} LastMaxDaysCounter: {}", UndeadNights.serverState.getDaysCounter(), UndeadNights.serverState.getLastMaxDaysCounter());
-                UndeadNights.LOGGER.info("INIT HordeNight: {} SpawnZombies: {} RespawnZombies: {}", UndeadNights.serverState.getHordeNight(), UndeadNights.serverState.getSpawnZombies(), UndeadNights.serverState.getRespawnZombies());
-            }
+            return 0;
         }
 
         // calculate normalized time of day and set "Is It Night" flag
         long normalizedTimeOfDay = level.getDayTime() - ((level.getDayTime() / 24000L) * 24000);
+        if (prevNormalizedTimeOfDay == normalizedTimeOfDay) {
+            return 0;
+        }
+        boolean nightIsStarting = ((prevNormalizedTimeOfDay < 12000L) && (normalizedTimeOfDay >= 12000L));
+        prevNormalizedTimeOfDay = normalizedTimeOfDay;
+
         boolean itIsNight = normalizedTimeOfDay >= 12000 && normalizedTimeOfDay < 22500;
 
         final RandomSource randomSource = level.random;
@@ -413,7 +409,6 @@ public class UndeadSpawner implements CustomSpawner {
             }
 
             // if a new night just started count down the days
-            boolean nightIsStarting = (((level.getDayTime() % 12000L) == 0) && ((level.getDayTime() % 24000L) != 0));
             if ((nightIsStarting) && (UndeadNights.serverState.getDaysCounter() >= 1)) {
                 UndeadNights.serverState.setDaysCounter(UndeadNights.serverState.getDaysCounter() - 1);
                 if ((UndeadNights.serverState.getDaysCounter() > 0) && (MainConfig.getSendHordeNightsCountdownMessage())) {
