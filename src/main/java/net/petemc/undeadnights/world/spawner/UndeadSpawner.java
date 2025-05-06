@@ -114,7 +114,7 @@ public class UndeadSpawner implements CustomSpawner {
         CompoundTag nbtCompound = new CompoundTag();
         if (!Objects.equals(mobSpawnData.nbt(), "")) {
             try {
-                nbtCompound = TagParser.m_387972_(mobSpawnData.nbt());
+                nbtCompound = TagParser.parseCompoundFully(mobSpawnData.nbt());
             } catch (CommandSyntaxException e) {
                 UndeadNights.LOGGER.error("Parsing NBT-tags for {} failed!", mobSpawnData.mobId());
             }
@@ -127,7 +127,7 @@ public class UndeadSpawner implements CustomSpawner {
 
         int finalY = y;
         Entity entity = EntityType.loadEntityRecursive(nbtCompound, level, EntitySpawnReason.COMMAND, entityx -> {
-            entityx.moveTo(pos.getX() + deltaX, finalY, pos.getZ() + deltaZ, entityx.getYRot(), entityx.getXRot());
+            entityx.snapTo(pos.getX() + deltaX, finalY, pos.getZ() + deltaZ, entityx.getYRot(), entityx.getXRot());
             return entityx;
         });
 
