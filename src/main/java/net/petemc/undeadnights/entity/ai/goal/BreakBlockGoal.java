@@ -146,6 +146,11 @@ public class BreakBlockGoal extends Goal {
             }
         }
 
+        String blockName = world.getBlockState(targetBlock).getBlock().toString();
+        if (blockName.contains("securitycraft") && blockName.contains("reinforced") && MainConfig.getSecurityCraftCompatibility()) {
+            return false;
+        }
+
         if (scaledTargetDestroyTime < 0) {
             return false;
         }
