@@ -23,7 +23,7 @@ import net.minecraft.world.LocalDifficulty;
 import net.minecraft.world.ServerWorldAccess;
 import net.minecraft.world.World;
 import net.petemc.undeadnights.config.MainConfig;
-import net.petemc.undeadnights.entity.ai.goal.DemolitionZombieIgniteGoal;
+import net.petemc.undeadnights.entity.ai.goal.TntIgniteAndThrowGoal;
 import org.jetbrains.annotations.Nullable;
 
 import java.time.LocalDate;
@@ -31,7 +31,7 @@ import java.util.EnumSet;
 import java.util.Objects;
 
 public class DemolitionZombieEntity extends ZombieEntity {
-    private int numberTnt = 1;
+    private int numberTnt = 3;
 
     public DemolitionZombieEntity(EntityType<? extends ZombieEntity> entityType, World world) {
         super(entityType, world);
@@ -41,7 +41,7 @@ public class DemolitionZombieEntity extends ZombieEntity {
         return HostileEntity.createHostileAttributes()
                 .add(EntityAttributes.GENERIC_MAX_HEALTH, 40.0)       // default 20.0
                 .add(EntityAttributes.GENERIC_FOLLOW_RANGE, 128.0)    // default 35.0
-                .add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 0.30)   // default 0.23000000417232513
+                .add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 0.30)  // default 0.23000000417232513
                 .add(EntityAttributes.GENERIC_ATTACK_DAMAGE, 5.0)     // default 3.0
                 .add(EntityAttributes.GENERIC_ARMOR, 4.0)             // default 2.0
                 .add(EntityAttributes.ZOMBIE_SPAWN_REINFORCEMENTS, 0.0);
@@ -50,12 +50,12 @@ public class DemolitionZombieEntity extends ZombieEntity {
     @Override
     protected void initCustomGoals() {
         this.goalSelector.add(1, new SwimGoal(this));
-        this.goalSelector.add(2, new DemolitionZombieIgniteGoal(this));
+        this.goalSelector.add(2, new TntIgniteAndThrowGoal(this));
         this.goalSelector.add(3, new ZombieAttackGoal(this, 1.0, false));
         this.goalSelector.add(4, new ChasePlayerGoal(this));
         this.goalSelector.add(6, new MoveThroughVillageGoal(this, 1.0, true, 4, this::canBreakDoors));
         this.goalSelector.add(7, new WanderAroundFarGoal(this, 1.0));
-        this.targetSelector.add(1, new RevengeGoal(this).setGroupRevenge(HordeZombieEntity.class));
+        this.targetSelector.add(1, new RevengeGoal(this, new Class[]{HordeZombieEntity.class, EliteZombieEntity.class, DemolitionZombieEntity.class}).setGroupRevenge(HordeZombieEntity.class));
         this.targetSelector.add(2, new ActiveTargetGoal<>(this, PlayerEntity.class, false, false));
         this.targetSelector.add(3, new ActiveTargetGoal<>(this, MerchantEntity.class, true));
         this.targetSelector.add(3, new ActiveTargetGoal<>(this, IronGolemEntity.class, true));
