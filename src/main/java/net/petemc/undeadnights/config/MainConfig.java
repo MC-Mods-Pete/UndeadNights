@@ -25,6 +25,8 @@ public class MainConfig
         return sendHordeNightsCountdownMessage;
     }
 
+    public static boolean getHordeSpawnedMessageAndSound() { return hordeSpawnedMessageAndSound; }
+
     public static int getDistanceMin() {
         return distanceMin;
     }
@@ -57,6 +59,14 @@ public class MainConfig
         return hordeWavesCanSpawnOnTrees;
     }
 
+    public static boolean getBlockLightLevelsInfluenceMonsterSpawns() {
+        return blockLightLevelsInfluenceMonsterSpawns;
+    }
+
+    public static int getMaxBlockLightLevelForMonsterSpawns() {
+        return maxBlockLightLevelForMonsterSpawns;
+    }
+
     public static boolean getHordeNightsDisableSleeping() {
         return hordeNightsDisableSleeping;
     }
@@ -76,6 +86,8 @@ public class MainConfig
     public static int getHordeZombiesBlockBreakTier() {
         return hordeZombiesBlockBreakTier;
     }
+
+    public static double getHordeZombieWaterMovementEfficiency() { return hordeZombieWaterMovementEfficiency; }
 
     public static boolean getSecurityCraftCompatibility() {
         return securityCraftCompatibility;
@@ -107,6 +119,10 @@ public class MainConfig
     private static final ModConfigSpec.BooleanValue SEND_HORDE_NIGHTS_COUNTDOWN_MESSAGE = BUILDER_SERVER
             .comment("If true, each night a message will be sent to the player with how many nights are left before the next Horde Night | default: false")
             .define("sendHordeNightsCountdownMessage", false);
+
+    private static final ModConfigSpec.BooleanValue HORDE_SPAWNED_MESSAGE_AND_SOUND = BUILDER_SERVER
+            .comment("If true, the horde has spawned message and the horde sound are enabled | default: true")
+            .define("hordeSpawnedMessageAndSound", true);
 
     private static final ModConfigSpec.IntValue DISTANCE_MIN = BUILDER_SERVER
             .comment("Minimum distance a horde will spawn away from the player | default: 70")
@@ -140,6 +156,14 @@ public class MainConfig
             .comment("If true, horde waves can spawn on trees | default: false")
             .define("hordeWavesCanSpawnOnTrees", false);
 
+    private static final ModConfigSpec.BooleanValue BLOCK_LIGHT_LEVELS_INFLUENCE_MONSTER_SPAWNS = BUILDER_SERVER
+            .comment("If true, the light level of the block position can prevent horde mobs from spawning | default: false")
+            .define("blockLightLevelsInfluenceMonsterSpawns", false);
+
+    private static final ModConfigSpec.IntValue MAX_BLOCK_LIGHT_LEVEL_FOR_MONSTER_SPAWNS = BUILDER_SERVER
+            .comment("Maximum block light level so a monster can spawn | default: 0")
+            .defineInRange("maxBlockLightLevelForMonsterSpawns", 0, 0, 256);
+
     private static final ModConfigSpec.BooleanValue HORDE_NIGHTS_DISABLE_SLEEPING = BUILDER_SERVER
             .comment("If true, Players can't sleep through horde nights | default: true")
             .define("hordeNightsDisableSleeping", true);
@@ -159,6 +183,10 @@ public class MainConfig
     private static final ModConfigSpec.IntValue HORDE_ZOMBIES_BLOCK_BREAK_TIER = BUILDER_SERVER
             .comment("Horde Zombie block break tier (0-3) | default: 1")
             .defineInRange("hordeZombieBlockBreakTier", 1, 0, 3);
+
+    private static final ModConfigSpec.DoubleValue HORDE_ZOMBIES_WATER_MOVEMENT_EFFICIENCY = BUILDER_SERVER
+            .comment("Horde Zombie water movement efficiency | default: 0.5D")
+            .defineInRange("hordeZombieWaterMovementEfficiency", 0.5D, 0.0D, 1.0D);
 
     private static final ModConfigSpec.BooleanValue SECURITY_CRAFT_COMPATIBILITY = BUILDER_SERVER
             .comment("If true, Horde Zombies are not able to break reinforced blocks from the Security Craft mod | default: false")
@@ -184,19 +212,23 @@ public class MainConfig
     private static int daysBetweenHordeNights = 5;
     private static int chanceForHordeNight = 100;
     private static boolean sendHordeNightsCountdownMessage = false;
+    private static boolean hordeSpawnedMessageAndSound = true;
     private static int distanceMin = 70;
     private static int distanceMax = 75;
     private static int hordeMobsSpawnCap = 80;
     private static boolean spawnAdditionalWaves = true;
     private static int cooldownBetweenWaves = 45;
     private static int chanceForAdditionalWaves = 7;
-    private static boolean hordeWavesCanSpawnInWater =false;
+    private static boolean hordeWavesCanSpawnInWater = false;
     private static boolean hordeWavesCanSpawnOnTrees = false;
+    private static boolean blockLightLevelsInfluenceMonsterSpawns = false;
+    private static int maxBlockLightLevelForMonsterSpawns = 0;
     private static boolean hordeNightsDisableSleeping = true;
     private static boolean persistentMobs = false;
     private static boolean hordeZombiesBurnInDaylight = false;
     private static boolean hordeZombiesCanBreakBlocks = false;
     private static int hordeZombiesBlockBreakTier = 2;
+    private static double hordeZombieWaterMovementEfficiency = 0.5D;
     private static boolean securityCraftCompatibility = false;
     private static boolean spawnStrayHordeZombies = true;
     private static boolean printDebugMessages = false;
@@ -210,6 +242,7 @@ public class MainConfig
             daysBetweenHordeNights = DAYS_BETWEEN_HORDE_NIGHTS.get();
             chanceForHordeNight = CHANCE_FOR_HORDE_NIGHTS.get();
             sendHordeNightsCountdownMessage = SEND_HORDE_NIGHTS_COUNTDOWN_MESSAGE.get();
+            hordeSpawnedMessageAndSound = HORDE_SPAWNED_MESSAGE_AND_SOUND.get();
             distanceMin = DISTANCE_MIN.get();
             distanceMax = DISTANCE_MAX.get();
             hordeMobsSpawnCap = HORDE_MOBS_SPAWN_CAP.get();
@@ -218,11 +251,14 @@ public class MainConfig
             chanceForAdditionalWaves = CHANCE_FOR_ADDITIONAL_WAVES.get();
             hordeWavesCanSpawnInWater = HORDE_WAVES_CAN_SPAWN_IN_WATER.get();
             hordeWavesCanSpawnOnTrees = HORDE_WAVES_CAN_SPAWN_ON_TREES.get();
+            blockLightLevelsInfluenceMonsterSpawns = BLOCK_LIGHT_LEVELS_INFLUENCE_MONSTER_SPAWNS.get();
+            maxBlockLightLevelForMonsterSpawns = MAX_BLOCK_LIGHT_LEVEL_FOR_MONSTER_SPAWNS.get();
             hordeNightsDisableSleeping = HORDE_NIGHTS_DISABLE_SLEEPING.get();
 	        persistentMobs = PERSISTENT_MOBS.get();
             hordeZombiesBurnInDaylight = HORDE_ZOMBIES_BURN_IN_DAYLIGHT.get();
             hordeZombiesCanBreakBlocks = HORDE_ZOMBIES_CAN_BREAK_BLOCKS.get();
             hordeZombiesBlockBreakTier = HORDE_ZOMBIES_BLOCK_BREAK_TIER.get();
+            hordeZombieWaterMovementEfficiency = HORDE_ZOMBIES_WATER_MOVEMENT_EFFICIENCY.get();
             securityCraftCompatibility = SECURITY_CRAFT_COMPATIBILITY.get();
             spawnStrayHordeZombies = SPAWN_STRAY_HORDE_ZOMBIES.get();
             printDebugMessages = PRINT_DEBUG_MESSAGES.get();

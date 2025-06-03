@@ -160,7 +160,10 @@ public class BreakBlockGoal extends Goal {
         if ((destroyTime > 3.0f) && (HordeMobsCommand.hordeZombiesBlockBreakingTier == 2)) {
             return false;
         }
-        if (destroyTime > 20.0f) {
+        if ((destroyTime > 20.0f) && (HordeMobsCommand.hordeZombiesBlockBreakingTier == 3)) {
+            return false;
+        }
+        if (destroyTime > 75.0f) {
             return false;
         }
 

@@ -78,7 +78,8 @@ public class DemolitionZombieEntity extends Zombie  {
                 .add(Attributes.MOVEMENT_SPEED, 0.30D)      // default 0.23F
                 .add(Attributes.ATTACK_DAMAGE, 5.0D)        // default 3.0
                 .add(Attributes.ARMOR, 4.0D)                // default 2.0
-                .add(Attributes.SPAWN_REINFORCEMENTS_CHANCE, 0.0D);
+                .add(Attributes.SPAWN_REINFORCEMENTS_CHANCE, 0.0D)
+                .add(Attributes.WATER_MOVEMENT_EFFICIENCY, MainConfig.getHordeZombieWaterMovementEfficiency());
     }
 
     @Override

@@ -25,6 +25,7 @@ import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.Blocks;
 import net.petemc.undeadnights.config.MainConfig;
 import net.petemc.undeadnights.entity.ai.goal.BreakBlockGoal;
+import net.petemc.undeadnights.entity.ai.goal.ModFloatGoal;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -77,12 +78,13 @@ public class HordeZombieEntity extends Zombie {
                     .add(Attributes.MOVEMENT_SPEED, 0.30D)      // default 0.23F
                     .add(Attributes.ATTACK_DAMAGE, 5.0D)        // default 3.0
                     .add(Attributes.ARMOR, 4.0D)                // default 2.0
-                    .add(Attributes.SPAWN_REINFORCEMENTS_CHANCE, 0.0D);
+                    .add(Attributes.SPAWN_REINFORCEMENTS_CHANCE, 0.0D)
+                    .add(Attributes.WATER_MOVEMENT_EFFICIENCY, MainConfig.getHordeZombieWaterMovementEfficiency());
         }
 
     @Override
     protected void addBehaviourGoals() {
-        this.goalSelector.addGoal(1, new FloatGoal(this));
+        this.goalSelector.addGoal(1, new ModFloatGoal(this));
         this.goalSelector.addGoal(1, new BreakBlockGoal(this));
         this.goalSelector.addGoal(2, new ZombieAttackGoal(this, 1.0, false));
         this.goalSelector.addGoal(4, new ChasePlayerGoal(this));
