@@ -7,7 +7,8 @@
 		"ServerWorldMixin",
 		"PlayerEntityMixin",
 		"ZombieMixin",
-		"PersistentEntitySectionManagerMixin"
+		"PersistentEntitySectionManagerMixin",
+		"EntityMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

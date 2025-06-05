@@ -5,8 +5,12 @@ import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.monster.Zombie;
+import net.petemc.undeadnights.config.MainConfig;
 import net.petemc.undeadnights.entity.DemolitionZombieEntity;
 import net.petemc.undeadnights.entity.EliteZombieEntity;
 import net.petemc.undeadnights.entity.HordeZombieEntity;
@@ -38,6 +42,11 @@ public class ZombieMixin
     @Inject(method = "defineSynchedData", at = @At("TAIL"))
     public void defineSyncedData(SynchedEntityData.Builder builder, CallbackInfo ci) {
         builder.define(DATA_FLAGS_ID, (byte)0);
+    }
+
+    @Inject(method = "isSunSensitive", at = @At("TAIL"), cancellable = true)
+    public void isSunSensitive(CallbackInfoReturnable<Boolean> cir) {
+        cir.setReturnValue(MainConfig.getVanillaZombiesBurnInDaylight());
     }
 
     @Unique

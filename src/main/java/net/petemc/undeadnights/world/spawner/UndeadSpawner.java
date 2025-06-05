@@ -59,9 +59,9 @@ public class UndeadSpawner implements CustomSpawner {
         //DimensionType dimensiontype = level.dimensionType();
         //int i = dimensiontype.monsterSpawnBlockLightLimit();
         //return i >= 15 || level.getBrightness(LightLayer.BLOCK, pos) <= i;
-        if (MainConfig.getPrintDebugMessages()) {
-            UndeadNights.LOGGER.info("Light Level at {} is {}", pos, level.getBrightness(LightLayer.BLOCK, pos));
-        }
+        //if (MainConfig.getPrintDebugMessages()) {
+        //    UndeadNights.LOGGER.info("Light Level at {} is {}", pos, level.getBrightness(LightLayer.BLOCK, pos));
+        //}
         return level.getBrightness(LightLayer.BLOCK, pos) <= MainConfig.getMaxBlockLightLevelForMonsterSpawns();
     }
 
@@ -163,7 +163,7 @@ public class UndeadSpawner implements CustomSpawner {
         if (entity instanceof Monster) {
             if (MainConfig.getBlockLightLevelsInfluenceMonsterSpawns()) {
                 if (!isDarkEnoughToSpawn(level, new BlockPos(pos.getX() + deltaX, pos.getY(), pos.getZ() + deltaZ))) {
-                    UndeadNights.LOGGER.info("Horde mob can't spawn here, it's not dark enough!");
+                    UndeadNights.LOGGER.info("Horde mob {} can't spawn here, it's not dark enough!", mobSpawnData.mobId());
                     return -1;
                 }
             }
@@ -224,7 +224,8 @@ public class UndeadSpawner implements CustomSpawner {
 
     public int spawnHorde(ServerLevel level, ServerPlayer player, RandomSource randomSource) {
         int randomValue = 0;
-        BlockPos pos = player.blockPosition();
+        int spawnCounter = 0;
+        BlockPos pos;// = player.blockPosition();
         boolean foundHordeSpawnLocation = false;
         int currentHordeCounter = UndeadNights.globalSpawnCounter;
 
@@ -253,99 +254,99 @@ public class UndeadSpawner implements CustomSpawner {
                 d = 0;
                 x = 0;
                 z = 0;
-            } else {
-                if (MainConfig.getPrintDebugMessages()) {
-                    UndeadNights.LOGGER.info("It took {} tries to find a valid Horde spawn location for player: {}", i + 1, player.getName().getString());
-                }
-                break;
+                continue;
             }
-        }
 
-        if (!foundHordeSpawnLocation) {
-            UndeadNights.LOGGER.info("Could not find a valid Horde spawn location for player: {}", player.getName().getString());
-            return -1;
-        }
-
-        if (MainConfig.getPrintDebugMessages()) {
-            UndeadNights.LOGGER.info("Spawning Horde for player: {}", player.getName().getString());
-        }
-
-        boolean spawnCapReached = false;
-        int spawnCounter = 0;
-        /*
-         * Horde config variant 1
-         */
-        if (HordeConfig.getConfigVariant() == 1) {
             if (MainConfig.getPrintDebugMessages()) {
-                UndeadNights.LOGGER.info("Horde config variant 1 detected.");
+                UndeadNights.LOGGER.info("A possible Horde spawn location for player {} was found.", player.getName().getString());
             }
-            int waveMobCounter = 0;
-            while (waveMobCounter < (HordeConfig.getMaxWaveSize())) {
-                if (!HordeConfig.getHordeMobs().isEmpty()) {
-                    for (var mobSpawnData : HordeConfig.getHordeMobs()) {
-                        if (UndeadNights.globalSpawnCounter < MainConfig.getHordeMobsSpawnCap()) {
-                            randomValue = randomSource.nextIntBetweenInclusive(1, 100);
-                            if (spawnHordeMob(level, randomSource, pos, player, (randomValue > (100 - mobSpawnData.chance())) ? mobSpawnData : HordeConfig.getDefaultHordeMob()) == 0) {
-                                spawnCounter++;
-                                waveMobCounter++;
-                            }
-                            if (waveMobCounter >= HordeConfig.getMaxWaveSize()) {
+
+            //if (!foundHordeSpawnLocation) {
+            //    UndeadNights.LOGGER.info("Could not find a valid Horde spawn location for player: {}", player.getName().getString());
+            //    return -1;
+            //}
+
+            boolean spawnCapReached = false;
+            spawnCounter = 0;
+            /*
+             * Horde config variant 1
+             */
+            if (HordeConfig.getConfigVariant() == 1) {
+                if (MainConfig.getPrintDebugMessages()) {
+                    UndeadNights.LOGGER.info("Horde config variant 1 detected.");
+                }
+                int waveMobCounter = 0;
+                while (waveMobCounter < (HordeConfig.getMaxWaveSize())) {
+                    if (!HordeConfig.getHordeMobs().isEmpty()) {
+                        for (var mobSpawnData : HordeConfig.getHordeMobs()) {
+                            if (UndeadNights.globalSpawnCounter < MainConfig.getHordeMobsSpawnCap()) {
+                                randomValue = randomSource.nextIntBetweenInclusive(1, 100);
+                                if (spawnHordeMob(level, randomSource, pos, player, (randomValue > (100 - mobSpawnData.chance())) ? mobSpawnData : HordeConfig.getDefaultHordeMob()) == 0) {
+                                    spawnCounter++;
+                                    waveMobCounter++;
+                                }
+                                if (waveMobCounter >= HordeConfig.getMaxWaveSize()) {
+                                    d = 0;
+                                    break;
+                                }
+                            } else {
+                                // spawn cap reached, don't spawn anymore mobs in this wave
+                                waveMobCounter = HordeConfig.getMaxWaveSize();
+                                spawnCapReached = true;
                                 d = 0;
                                 break;
                             }
-                        } else {
-                            // spawn cap reached, don't spawn anymore mobs in this wave
-                            waveMobCounter = HordeConfig.getMaxWaveSize();
-                            spawnCapReached = true;
-                            d = 0;
-                            break;
                         }
-                    }
-                } else {
-                    if (spawnHordeMob(level, randomSource, pos, player, HordeConfig.getDefaultHordeMob()) == 0) {
-                        spawnCounter++;
-                        waveMobCounter++;
-                    }
-                }
-            }
-        }
-
-        /*
-         * Horde config variant 2
-         */
-        if (HordeConfig.getConfigVariant() == 2) {
-            if (MainConfig.getPrintDebugMessages()) {
-                UndeadNights.LOGGER.info("Horde config variant 2 detected.");
-            }
-            List<HordeConfig.HordesData> hordes = HordeConfig.getHordes();
-            int hordeIdToSpawn = hordeToSpawn - 1;
-            if (hordeToSpawn == 0) {
-                hordeIdToSpawn = randomSource.nextIntBetweenInclusive(0, hordes.size()-1);
-            }
-            for (var mobSpawnData : hordes.get(hordeIdToSpawn).hordeMobs()) {
-                int mobCount = 0;
-                if (mobSpawnData.countMin() >= mobSpawnData.countMax()) {
-                    mobCount = mobSpawnData.countMin();
-                } else {
-                    mobCount = randomSource.nextInt(mobSpawnData.countMin(),mobSpawnData.countMax());
-                    if (MainConfig.getPrintDebugMessages()) {
-                        UndeadNights.LOGGER.info("Spawning {} {}", mobCount, mobSpawnData.mobId());
-                    }
-                }
-                for (int i = 0; i < mobCount; i++) {
-                    boolean spawnMob = true;
-                    if (mobSpawnData.chance() != 100) {
-                        randomValue = randomSource.nextIntBetweenInclusive(1, 100);
-                        if (MainConfig.getPrintDebugMessages()) {
-                            UndeadNights.LOGGER.info("Chance value for horde config (variant 2) found, chance value: {}, randomValue: {}", mobSpawnData.chance(), randomValue);
-                        }
-                        if (!(randomValue > (100 - mobSpawnData.chance()))) {
-                            spawnMob = false;
-                        }
-                    }
-                    if (spawnMob) {
-                        if (spawnHordeMob(level, randomSource, pos, player, mobSpawnData) == 0) {
+                    } else {
+                        if (spawnHordeMob(level, randomSource, pos, player, HordeConfig.getDefaultHordeMob()) == 0) {
                             spawnCounter++;
+                            waveMobCounter++;
+                        }
+                    }
+                }
+            }
+
+            /*
+             * Horde config variant 2
+             */
+            if (HordeConfig.getConfigVariant() == 2) {
+                if (MainConfig.getPrintDebugMessages()) {
+                    UndeadNights.LOGGER.info("Horde config variant 2 detected.");
+                }
+                List<HordeConfig.HordesData> hordes = HordeConfig.getHordes();
+                int hordeIdToSpawn = hordeToSpawn - 1;
+                if (hordeToSpawn == 0) {
+                    hordeIdToSpawn = randomSource.nextIntBetweenInclusive(0, hordes.size() - 1);
+                }
+                for (var mobSpawnData : hordes.get(hordeIdToSpawn).hordeMobs()) {
+                    int mobCount = 0;
+                    if (mobSpawnData.countMin() >= mobSpawnData.countMax()) {
+                        mobCount = mobSpawnData.countMin();
+                    } else {
+                        mobCount = randomSource.nextInt(mobSpawnData.countMin(), mobSpawnData.countMax());
+                        if (MainConfig.getPrintDebugMessages()) {
+                            UndeadNights.LOGGER.info("Spawning {} {}", mobCount, mobSpawnData.mobId());
+                        }
+                    }
+                    for (int j = 0; j < mobCount; j++) {
+                        boolean spawnMob = true;
+                        if (mobSpawnData.chance() != 100) {
+                            randomValue = randomSource.nextIntBetweenInclusive(1, 100);
+                            if (MainConfig.getPrintDebugMessages()) {
+                                UndeadNights.LOGGER.info("Chance value for horde config (variant 2) found, chance value: {}, randomValue: {}", mobSpawnData.chance(), randomValue);
+                            }
+                            if (!(randomValue > (100 - mobSpawnData.chance()))) {
+                                spawnMob = false;
+                            }
+                        }
+                        if (spawnMob) {
+                            if (spawnHordeMob(level, randomSource, pos, player, mobSpawnData) == 0) {
+                                spawnCounter++;
+                            }
+                        }
+                        if (UndeadNights.globalSpawnCounter >= MainConfig.getHordeMobsSpawnCap()) {
+                            spawnCapReached = true;
+                            break;
                         }
                     }
                     if (UndeadNights.globalSpawnCounter >= MainConfig.getHordeMobsSpawnCap()) {
@@ -353,30 +354,37 @@ public class UndeadSpawner implements CustomSpawner {
                         break;
                     }
                 }
-                if (UndeadNights.globalSpawnCounter >= MainConfig.getHordeMobsSpawnCap()) {
-                    spawnCapReached = true;
-                    break;
+            }
+
+            if (currentHordeCounter != UndeadNights.globalSpawnCounter) {
+                if (spawnCounter != 0) {
+                    if (MainConfig.getHordeSpawnedMessageAndSound()) {
+                        player.level().playSound(null, player.getX(), player.getY(), player.getZ(), UndeadNightsSounds.HORDE_SCREAM.get(), SoundSource.HOSTILE, 4.0F, 1);
+                        player.sendSystemMessage(Component.translatable("message.undeadnights.horde_spawned").withStyle(ChatFormatting.RED));
+                    }
+                    if (MainConfig.getPrintDebugMessages()) {
+                        UndeadNights.LOGGER.info("A Horde has spanned!");
+                    }
+                    return 0;
+                } else {
+                    d = 0;
+                    x = 0;
+                    z = 0;
+                    continue;
                 }
             }
-        }
 
-        if (currentHordeCounter != UndeadNights.globalSpawnCounter) {
-            if (spawnCounter != 0) {
-                if (MainConfig.getHordeSpawnedMessageAndSound()) {
-                    player.level().playSound(null, player.getX(), player.getY(), player.getZ(), UndeadNightsSounds.HORDE_SCREAM.get(), SoundSource.HOSTILE, 4.0F, 1);
-                    player.sendSystemMessage(Component.translatable("message.undeadnights.horde_spawned").withStyle(ChatFormatting.RED));
-                }
-                if (MainConfig.getPrintDebugMessages()) {
-                    UndeadNights.LOGGER.info("A Horde has spanned!");
-                }
+            d = 0;
+            if (spawnCapReached) {
+                UndeadNights.LOGGER.info("Spawncap reached, {} Horde Zombies are already loaded into this world.", MainConfig.getHordeMobsSpawnCap());
+                return -1;
             }
-        }
-
-        d = 0;
-        if (spawnCapReached) {
-            UndeadNights.LOGGER.info("Spawncap reached, {} Horde Zombies are already loaded into this world.", MainConfig.getHordeMobsSpawnCap());
+        } // <---
+        if (spawnCounter == 0) {
+            UndeadNights.LOGGER.info("Failed to spawn a horde.");
             return -1;
         }
+
         return 0;
     }
 
@@ -417,6 +425,7 @@ public class UndeadSpawner implements CustomSpawner {
                 for (var player : SpawnHordeCommand.entities.stream().toList()) {
                     if (player instanceof ServerPlayer serverPlayer) {
                         if (spawnHorde(level, serverPlayer, randomSource) == -1) {
+                            serverPlayer.sendSystemMessage(Component.translatable("message.undeadnights.command_spawn_horde_failed"));
                             break;
                         }
                     }
@@ -425,6 +434,7 @@ public class UndeadSpawner implements CustomSpawner {
             } else {
                 for (ServerPlayer player : level.getPlayers(LivingEntity::isAlive)) {
                     if (spawnHorde(level, player, randomSource) == -1) {
+                        player.sendSystemMessage(Component.translatable("message.undeadnights.command_spawn_horde_failed"));
                         break;
                     }
                 }

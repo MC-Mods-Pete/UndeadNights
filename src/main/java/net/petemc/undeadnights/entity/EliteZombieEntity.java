@@ -6,6 +6,8 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -162,10 +164,10 @@ public class EliteZombieEntity extends Zombie {
     }
 
     @Override
-    public void push(@NotNull Entity entity) {
+    public void push(Entity entity) {
         super.push(entity);
         if ((this.getDeltaMovement().x != 0.0f) || (this.getDeltaMovement().z != 0.0f)) {
-            double y = 0.18F;
+            double y = 0.19F;
             if (y < 0.0) {
                 y = -y;
             }
@@ -181,11 +183,17 @@ public class EliteZombieEntity extends Zombie {
                 y *= g;
                 y *= 0.05F;
                 if (!this.isVehicle() && this.isPushable()) {
+                    this.addEffect(new MobEffectInstance(MobEffects.SLOW_FALLING, 5, 0, false, false));
                     this.push(0, y, 0);
+                    this.fallDistance = 0;
                 }
 
                 if (!entity.isVehicle() && entity.isPushable()) {
+                    if (entity instanceof LivingEntity _entity) {
+                        _entity.addEffect(new MobEffectInstance(MobEffects.SLOW_FALLING, 5, 0, false, false));
+                    }
                     entity.push(0, y, 0);
+                    entity.fallDistance = 0;
                 }
             }
         }

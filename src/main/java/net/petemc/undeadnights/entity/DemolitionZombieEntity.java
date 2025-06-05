@@ -7,6 +7,8 @@ import net.minecraft.world.Difficulty;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -195,6 +197,42 @@ public class DemolitionZombieEntity extends Zombie  {
 
     public int getNumberTnt() {
         return this.numberTnt;
+    }
+
+    @Override
+    public void push(Entity entity) {
+        super.push(entity);
+        if ((this.getDeltaMovement().x != 0.0f) || (this.getDeltaMovement().z != 0.0f)) {
+            double y = 0.19F;
+            if (y < 0.0) {
+                y = -y;
+            }
+            double f = y;
+            if (f >= 0.01F) {
+                f = Math.sqrt(f);
+                y /= f;
+                double g = 1.0 / f;
+                if (g > 1.0) {
+                    g = 1.0;
+                }
+
+                y *= g;
+                y *= 0.05F;
+                if (!this.isVehicle() && this.isPushable()) {
+                    this.addEffect(new MobEffectInstance(MobEffects.SLOW_FALLING, 5, 0, false, false));
+                    this.push(0, y, 0);
+                    this.fallDistance = 0;
+                }
+
+                if (!entity.isVehicle() && entity.isPushable()) {
+                    if (entity instanceof LivingEntity _entity) {
+                        _entity.addEffect(new MobEffectInstance(MobEffects.SLOW_FALLING, 5, 0, false, false));
+                    }
+                    entity.push(0, y, 0);
+                    entity.fallDistance = 0;
+                }
+            }
+        }
     }
 
     static class ChasePlayerGoal extends Goal {

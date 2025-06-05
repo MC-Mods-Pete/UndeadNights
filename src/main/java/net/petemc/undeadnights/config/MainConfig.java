@@ -79,12 +79,20 @@ public class MainConfig
         return hordeZombiesBurnInDaylight;
     }
 
+    public static boolean getVanillaZombiesBurnInDaylight() {
+        return vanillaZombiesBurnInDaylight;
+    }
+
     public static boolean getHordeZombiesCanBreakBlocks() {
         return hordeZombiesCanBreakBlocks;
     }
 
-    public static int getHordeZombiesBlockBreakTier() {
-        return hordeZombiesBlockBreakTier;
+    public static boolean getVanillaZombiesCanBreakBlocks() {
+        return vanillaZombiesCanBreakBlocks;
+    }
+
+    public static int getZombiesBlockBreakTier() {
+        return zombiesBlockBreakTier;
     }
 
     public static double getHordeZombieWaterMovementEfficiency() { return hordeZombieWaterMovementEfficiency; }
@@ -176,16 +184,24 @@ public class MainConfig
             .comment("If true, the horde zombies (only those added by this mod) will burn in daylight | default: false")
             .define("hordeZombiesBurnInDaylight", false);
 
+    private static final ModConfigSpec.BooleanValue VANILLA_ZOMBIES_BURN_IN_DAYLIGHT = BUILDER_SERVER
+            .comment("If true, the vanilla zombies will burn in daylight | default: false")
+            .define("vanillaZombiesBurnInDaylight", true);
+
     private static final ModConfigSpec.BooleanValue HORDE_ZOMBIES_CAN_BREAK_BLOCKS = BUILDER_SERVER
             .comment("If true, Horde Zombies can break blocks | default: false")
             .define("hordeZombiesCanBreakBlocks", false);
 
-    private static final ModConfigSpec.IntValue HORDE_ZOMBIES_BLOCK_BREAK_TIER = BUILDER_SERVER
-            .comment("Horde Zombie block break tier (0-3) | default: 1")
-            .defineInRange("hordeZombieBlockBreakTier", 1, 0, 3);
+    private static final ModConfigSpec.BooleanValue VANILLA_ZOMBIES_CAN_BREAK_BLOCKS = BUILDER_SERVER
+            .comment("If true, Vanilla Zombies can break blocks | default: false")
+            .define("vanillaZombiesCanBreakBlocks", false);
+
+    private static final ModConfigSpec.IntValue ZOMBIES_BLOCK_BREAK_TIER = BUILDER_SERVER
+            .comment("Zombie block break tier (0-4) | default: 1")
+            .defineInRange("zombieBlockBreakTier", 1, 0, 3);
 
     private static final ModConfigSpec.DoubleValue HORDE_ZOMBIES_WATER_MOVEMENT_EFFICIENCY = BUILDER_SERVER
-            .comment("Horde Zombie water movement efficiency | default: 0.5D")
+            .comment("Horde Zombie water movement efficiency (0.0D = vanilla) | default: 0.5D")
             .defineInRange("hordeZombieWaterMovementEfficiency", 0.5D, 0.0D, 1.0D);
 
     private static final ModConfigSpec.BooleanValue SECURITY_CRAFT_COMPATIBILITY = BUILDER_SERVER
@@ -226,8 +242,10 @@ public class MainConfig
     private static boolean hordeNightsDisableSleeping = true;
     private static boolean persistentMobs = false;
     private static boolean hordeZombiesBurnInDaylight = false;
+    private static boolean vanillaZombiesBurnInDaylight = true;
     private static boolean hordeZombiesCanBreakBlocks = false;
-    private static int hordeZombiesBlockBreakTier = 2;
+    private static boolean vanillaZombiesCanBreakBlocks = false;
+    private static int zombiesBlockBreakTier = 2;
     private static double hordeZombieWaterMovementEfficiency = 0.5D;
     private static boolean securityCraftCompatibility = false;
     private static boolean spawnStrayHordeZombies = true;
@@ -256,8 +274,10 @@ public class MainConfig
             hordeNightsDisableSleeping = HORDE_NIGHTS_DISABLE_SLEEPING.get();
 	        persistentMobs = PERSISTENT_MOBS.get();
             hordeZombiesBurnInDaylight = HORDE_ZOMBIES_BURN_IN_DAYLIGHT.get();
+            vanillaZombiesBurnInDaylight = VANILLA_ZOMBIES_BURN_IN_DAYLIGHT.get();
             hordeZombiesCanBreakBlocks = HORDE_ZOMBIES_CAN_BREAK_BLOCKS.get();
-            hordeZombiesBlockBreakTier = HORDE_ZOMBIES_BLOCK_BREAK_TIER.get();
+            vanillaZombiesCanBreakBlocks = VANILLA_ZOMBIES_CAN_BREAK_BLOCKS.get();
+            zombiesBlockBreakTier = ZOMBIES_BLOCK_BREAK_TIER.get();
             hordeZombieWaterMovementEfficiency = HORDE_ZOMBIES_WATER_MOVEMENT_EFFICIENCY.get();
             securityCraftCompatibility = SECURITY_CRAFT_COMPATIBILITY.get();
             spawnStrayHordeZombies = SPAWN_STRAY_HORDE_ZOMBIES.get();
