@@ -6,7 +6,7 @@ import net.neoforged.fml.event.config.ModConfigEvent;
 import net.neoforged.neoforge.common.ModConfigSpec;
 import net.petemc.undeadnights.UndeadNights;
 
-@EventBusSubscriber(modid = UndeadNights.MOD_ID, bus = EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber(modid = UndeadNights.MOD_ID)
 public class MainConfig
 {
     public static boolean getUndeadNightsEnabled() {

@@ -6,7 +6,7 @@ import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
 import net.petemc.undeadnights.UndeadNights;
 
 public class RegisterEntityAttributes {
-    @EventBusSubscriber(modid = UndeadNights.MOD_ID, bus = EventBusSubscriber.Bus.MOD)
+    @EventBusSubscriber(modid = UndeadNights.MOD_ID)
     public static class ForgeEvents {
         @SubscribeEvent
         public static void registerAttributes(EntityAttributeCreationEvent event) {
@@ -17,5 +17,3 @@ public class RegisterEntityAttributes {
     }
 
 }
-
-
