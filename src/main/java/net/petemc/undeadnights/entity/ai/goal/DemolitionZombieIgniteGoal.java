@@ -51,9 +51,9 @@ public class DemolitionZombieIgniteGoal extends Goal {
 			if (this.target != null) {
 				if (this.demolitionZombie.squaredDistanceTo(this.target) < 12.0 && this.demolitionZombie.getVisibilityCache().canSee(this.target)
 						&& this.demolitionZombie.getMainHandStack().getCount() > 0) {
-					TntEntity tntEntity = new TntEntity(this.demolitionZombie.getEntityWorld(), (double) pos.getX() + 0.5, pos.getY(), (double) pos.getZ() + 0.5, this.demolitionZombie);
-					this.demolitionZombie.getEntityWorld().spawnEntity(tntEntity);
-					this.demolitionZombie.getEntityWorld().playSound(null, tntEntity.getX(), tntEntity.getY(), tntEntity.getZ(), SoundEvents.ENTITY_TNT_PRIMED, SoundCategory.BLOCKS, 1.0F, 1.0F);
+					TntEntity tntEntity = new TntEntity(this.demolitionZombie.getWorld(), (double) pos.getX() + 0.5, pos.getY(), (double) pos.getZ() + 0.5, this.demolitionZombie);
+					this.demolitionZombie.getWorld().spawnEntity(tntEntity);
+					this.demolitionZombie.getWorld().playSound(null, tntEntity.getX(), tntEntity.getY(), tntEntity.getZ(), SoundEvents.ENTITY_TNT_PRIMED, SoundCategory.BLOCKS, 1.0F, 1.0F);
 					if (this.demolitionZombie.getNumberTnt() != 0) {
 						this.demolitionZombie.getMainHandStack().decrement(1);
 					}
