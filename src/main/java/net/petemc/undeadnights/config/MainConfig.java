@@ -13,6 +13,8 @@ public class MainConfig
         return undeadNightsEnabled;
     }
 
+    public static int getGracePeriodBeforeFirstHordeNight() { return gracePeriodBeforeFirstHordeNight; }
+
     public static int getDaysBetweenHordeNights() {
         return daysBetweenHordeNights;
     }
@@ -24,6 +26,8 @@ public class MainConfig
     public static boolean getSendHordeNightsCountdownMessage() {
         return sendHordeNightsCountdownMessage;
     }
+
+    public static boolean getHordeSpawnedMessageAndSound() { return hordeSpawnedMessageAndSound; }
 
     public static int getDistanceMin() {
         return distanceMin;
@@ -57,6 +61,14 @@ public class MainConfig
         return hordeWavesCanSpawnOnTrees;
     }
 
+    public static boolean getBlockLightLevelsInfluenceMonsterSpawns() {
+        return blockLightLevelsInfluenceMonsterSpawns;
+    }
+
+    public static int getMaxBlockLightLevelForMonsterSpawns() {
+        return maxBlockLightLevelForMonsterSpawns;
+    }
+
     public static boolean getHordeNightsDisableSleeping() {
         return hordeNightsDisableSleeping;
     }
@@ -69,13 +81,23 @@ public class MainConfig
         return hordeZombiesBurnInDaylight;
     }
 
+    public static boolean getVanillaZombiesBurnInDaylight() {
+        return vanillaZombiesBurnInDaylight;
+    }
+
+    public static boolean getHordeZombiesCanPushEachOtherUp() {
+        return hordeZombiesCanPushEachOtherUp;
+    }
+
     public static boolean getHordeZombiesCanBreakBlocks() {
         return hordeZombiesCanBreakBlocks;
     }
 
-    public static int getHordeZombiesBlockBreakTier() {
-        return hordeZombiesBlockBreakTier;
+    public static int getZombiesBlockBreakTier() {
+        return zombiesBlockBreakTier;
     }
+
+    public static boolean getHordeZombiesHaveIncreasedWaterMovementSpeed() { return hordeZombiesHaveIncreasedWaterMovementSpeed; }
 
     public static boolean getSecurityCraftCompatibility() {
         return securityCraftCompatibility;
@@ -96,6 +118,13 @@ public class MainConfig
             .comment("If true, Nights of the Undead (horde nights) are enabled | default: true")
             .define("undeadNightsEnabled", true);
 
+    private static final ForgeConfigSpec.IntValue GRACE_PERIOD = BUILDER_SERVER
+            .comment("Grace period in days before the first horde night | default: 5")
+            .comment("After the grace period the first horde night will happen and")
+            .comment("after the first horde night only the config values daysBetweenHordeNights")
+            .comment("and chanceForHordeNight will be taken into consideration.")
+            .defineInRange("gracePeriod", 5, 0, Integer.MAX_VALUE);
+
     private static final ForgeConfigSpec.IntValue DAYS_BETWEEN_HORDE_NIGHTS = BUILDER_SERVER
             .comment("Days between horde nights (1 = every night is a horde night) | default: 5")
             .defineInRange("daysBetweenHordeNights", 5, 1, Integer.MAX_VALUE);
@@ -107,6 +136,10 @@ public class MainConfig
     private static final ForgeConfigSpec.BooleanValue SEND_HORDE_NIGHTS_COUNTDOWN_MESSAGE = BUILDER_SERVER
             .comment("If true, each night a message will be sent to the player with how many nights are left before the next Horde Night | default: false")
             .define("sendHordeNightsCountdownMessage", false);
+
+    private static final ForgeConfigSpec.BooleanValue HORDE_SPAWNED_MESSAGE_AND_SOUND = BUILDER_SERVER
+            .comment("If true, the horde has spawned message and the horde sound are enabled | default: true")
+            .define("hordeSpawnedMessageAndSound", true);
 
     private static final ForgeConfigSpec.IntValue DISTANCE_MIN = BUILDER_SERVER
             .comment("Minimum distance a horde will spawn away from the player | default: 70")
@@ -140,6 +173,14 @@ public class MainConfig
             .comment("If true, horde waves can spawn on trees | default: false")
             .define("hordeWavesCanSpawnOnTrees", false);
 
+    private static final ForgeConfigSpec.BooleanValue BLOCK_LIGHT_LEVELS_INFLUENCE_MONSTER_SPAWNS = BUILDER_SERVER
+            .comment("If true, the light level of the block position can prevent horde mobs from spawning | default: false")
+            .define("blockLightLevelsInfluenceMonsterSpawns", false);
+
+    private static final ForgeConfigSpec.IntValue MAX_BLOCK_LIGHT_LEVEL_FOR_MONSTER_SPAWNS = BUILDER_SERVER
+            .comment("Maximum block light level so a monster can spawn | default: 0")
+            .defineInRange("maxBlockLightLevelForMonsterSpawns", 0, 0, 256);
+
     private static final ForgeConfigSpec.BooleanValue HORDE_NIGHTS_DISABLE_SLEEPING = BUILDER_SERVER
             .comment("If true, Players can't sleep through horde nights | default: true")
             .define("hordeNightsDisableSleeping", true);
@@ -152,13 +193,27 @@ public class MainConfig
             .comment("If true, the horde zombies (only those added by this mod) will burn in daylight | default: false")
             .define("hordeZombiesBurnInDaylight", false);
 
-   private static final ForgeConfigSpec.BooleanValue HORDE_ZOMBIES_CAN_BREAK_BLOCKS = BUILDER_SERVER
+    private static final ForgeConfigSpec.BooleanValue VANILLA_ZOMBIES_BURN_IN_DAYLIGHT = BUILDER_SERVER
+            .comment("If true, the vanilla zombies will burn in daylight | default: false")
+            .define("vanillaZombiesBurnInDaylight", true);
+
+    private static final ForgeConfigSpec.BooleanValue HORDE_ZOMBIES_CAN_PUSH_EACH_OTHER_UP = BUILDER_SERVER
+            .comment("If true, Horde Zombies can push each other up (WWZ stile) | default: true")
+            .comment("This applies to: Horde Zombies, Elite Zombies and Vanilla Zombies")
+            .define("hordeZombiesCanPushEachOtherUp", true);
+
+    private static final ForgeConfigSpec.BooleanValue HORDE_ZOMBIES_CAN_BREAK_BLOCKS = BUILDER_SERVER
             .comment("If true, Horde Zombies can break blocks | default: false")
+            .comment("This applies to: Horde Zombies, Elite Zombies and Vanilla Zombies")
             .define("hordeZombiesCanBreakBlocks", false);
 
-    private static final ForgeConfigSpec.IntValue HORDE_ZOMBIES_BLOCK_BREAK_TIER = BUILDER_SERVER
-            .comment("Horde Zombie block break tier (0-3) | default: 1")
-            .defineInRange("hordeZombieBlockBreakTier", 1, 0, 3);
+    private static final ForgeConfigSpec.IntValue ZOMBIES_BLOCK_BREAK_TIER = BUILDER_SERVER
+            .comment("Zombie block break tier (0-4) | default: 1")
+            .defineInRange("zombieBlockBreakTier", 1, 0, 4);
+
+    private static final ForgeConfigSpec.BooleanValue HORDE_ZOMBIES_HAVE_INCREASED_WATER_MOVEMENT_SPEED = BUILDER_SERVER
+            .comment("Horde Zombie have increased water movement speed | default: false")
+            .define("hordeZombiesHaveIncreasedWaterMovementSpeed", false);
 
     private static final ForgeConfigSpec.BooleanValue SECURITY_CRAFT_COMPATIBILITY = BUILDER_SERVER
             .comment("If true, Horde Zombies are not able to break reinforced blocks from the Security Craft mod | default: false")
@@ -181,22 +236,29 @@ public class MainConfig
 
 
     private static boolean undeadNightsEnabled = true;
+    private static int gracePeriodBeforeFirstHordeNight = 0;
     private static int daysBetweenHordeNights = 5;
     private static int chanceForHordeNight = 100;
     private static boolean sendHordeNightsCountdownMessage = false;
+    private static boolean hordeSpawnedMessageAndSound = true;
     private static int distanceMin = 70;
     private static int distanceMax = 75;
     private static int hordeMobsSpawnCap = 80;
     private static boolean spawnAdditionalWaves = true;
     private static int cooldownBetweenWaves = 45;
     private static int chanceForAdditionalWaves = 7;
-    private static boolean hordeWavesCanSpawnInWater =false;
+    private static boolean hordeWavesCanSpawnInWater = false;
     private static boolean hordeWavesCanSpawnOnTrees = false;
+    private static boolean blockLightLevelsInfluenceMonsterSpawns = false;
+    private static int maxBlockLightLevelForMonsterSpawns = 0;
     private static boolean hordeNightsDisableSleeping = true;
     private static boolean persistentMobs = false;
     private static boolean hordeZombiesBurnInDaylight = false;
+    private static boolean vanillaZombiesBurnInDaylight = true;
+    private static boolean hordeZombiesCanPushEachOtherUp = true;
     private static boolean hordeZombiesCanBreakBlocks = false;
-    private static int hordeZombiesBlockBreakTier = 2;
+    private static int zombiesBlockBreakTier = 2;
+    private static boolean hordeZombiesHaveIncreasedWaterMovementSpeed = false;
     private static boolean securityCraftCompatibility = false;
     private static boolean spawnStrayHordeZombies = true;
     private static boolean printDebugMessages = false;
@@ -207,9 +269,11 @@ public class MainConfig
         if (SPEC_SERVER.isLoaded()) {
             UndeadNights.LOGGER.info("Loading {} server config", UndeadNights.MOD_ID);
             undeadNightsEnabled = UNDEAD_NIGHTS_ENABLED.get();
+            gracePeriodBeforeFirstHordeNight = GRACE_PERIOD.get();
             daysBetweenHordeNights = DAYS_BETWEEN_HORDE_NIGHTS.get();
             chanceForHordeNight = CHANCE_FOR_HORDE_NIGHTS.get();
             sendHordeNightsCountdownMessage = SEND_HORDE_NIGHTS_COUNTDOWN_MESSAGE.get();
+            hordeSpawnedMessageAndSound = HORDE_SPAWNED_MESSAGE_AND_SOUND.get();
             distanceMin = DISTANCE_MIN.get();
             distanceMax = DISTANCE_MAX.get();
             hordeMobsSpawnCap = HORDE_MOBS_SPAWN_CAP.get();
@@ -218,11 +282,16 @@ public class MainConfig
             chanceForAdditionalWaves = CHANCE_FOR_ADDITIONAL_WAVES.get();
             hordeWavesCanSpawnInWater = HORDE_WAVES_CAN_SPAWN_IN_WATER.get();
             hordeWavesCanSpawnOnTrees = HORDE_WAVES_CAN_SPAWN_ON_TREES.get();
+            blockLightLevelsInfluenceMonsterSpawns = BLOCK_LIGHT_LEVELS_INFLUENCE_MONSTER_SPAWNS.get();
+            maxBlockLightLevelForMonsterSpawns = MAX_BLOCK_LIGHT_LEVEL_FOR_MONSTER_SPAWNS.get();
             hordeNightsDisableSleeping = HORDE_NIGHTS_DISABLE_SLEEPING.get();
 	        persistentMobs = PERSISTENT_MOBS.get();
             hordeZombiesBurnInDaylight = HORDE_ZOMBIES_BURN_IN_DAYLIGHT.get();
+            vanillaZombiesBurnInDaylight = VANILLA_ZOMBIES_BURN_IN_DAYLIGHT.get();
+            hordeZombiesCanPushEachOtherUp = HORDE_ZOMBIES_CAN_PUSH_EACH_OTHER_UP.get();
             hordeZombiesCanBreakBlocks = HORDE_ZOMBIES_CAN_BREAK_BLOCKS.get();
-            hordeZombiesBlockBreakTier = HORDE_ZOMBIES_BLOCK_BREAK_TIER.get();
+            zombiesBlockBreakTier = ZOMBIES_BLOCK_BREAK_TIER.get();
+            hordeZombiesHaveIncreasedWaterMovementSpeed = HORDE_ZOMBIES_HAVE_INCREASED_WATER_MOVEMENT_SPEED.get();
             securityCraftCompatibility = SECURITY_CRAFT_COMPATIBILITY.get();
             spawnStrayHordeZombies = SPAWN_STRAY_HORDE_ZOMBIES.get();
             printDebugMessages = PRINT_DEBUG_MESSAGES.get();

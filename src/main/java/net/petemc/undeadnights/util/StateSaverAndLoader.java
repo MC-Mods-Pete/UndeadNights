@@ -3,8 +3,8 @@ package net.petemc.undeadnights.util;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.saveddata.SavedData;
-import net.petemc.undeadnights.config.MainConfig;
 import net.petemc.undeadnights.UndeadNights;
+import net.petemc.undeadnights.config.MainConfig;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashSet;
@@ -15,8 +15,11 @@ public class StateSaverAndLoader extends SavedData {
     private int lastMaxDaysCounter = MainConfig.getDaysBetweenHordeNights();
     private int tickCounter = 60;
     private boolean hordeNight = false;
+    private boolean nightIsStarting = false;
+    private boolean firstWaveHasSpawned = false;
     private boolean spawnZombies = true;
     private boolean respawnZombies = false;
+    private long prevNormalizedTimeOfDay = 0;
     public HashSet<UUID> spawnedHordeMobs = new HashSet<UUID>();
     public HashSet<UUID> hordeMobsToRemove = new HashSet<UUID>();
 
@@ -57,6 +60,24 @@ public class StateSaverAndLoader extends SavedData {
         this.setDirty();
     }
 
+    public boolean getNightIsStarting() {
+        return this.nightIsStarting;
+    }
+
+    public void setNightIsStarting(boolean val) {
+        this.nightIsStarting = val;
+        this.setDirty();
+    }
+
+    public boolean getFirstWaveHasSpawned() {
+        return this.firstWaveHasSpawned;
+    }
+
+    public void setFirstWaveHasSpawned(boolean val) {
+        this.firstWaveHasSpawned = val;
+        this.setDirty();
+    }
+
     public boolean getSpawnZombies() {
         return this.spawnZombies;
     }
@@ -74,15 +95,27 @@ public class StateSaverAndLoader extends SavedData {
         this.respawnZombies = val;
         this.setDirty();
     }
-    
+
+    public long getPrevNormalizedTimeOfDay() {
+        return this.prevNormalizedTimeOfDay;
+    }
+
+    public void setPrevNormalizedTimeOfDay(long val) {
+        this.prevNormalizedTimeOfDay = val;
+        this.setDirty();
+    }
+
     public static StateSaverAndLoader load(CompoundTag tag) {
         StateSaverAndLoader state = new StateSaverAndLoader();
         state.daysCounter = tag.getInt("daysCounter");
         state.lastMaxDaysCounter = tag.getInt("lastMaxDaysCounter");
         state.tickCounter = tag.getInt("tickCounter");
         state.hordeNight = tag.getBoolean("hordeNight");
+        state.nightIsStarting = tag.getBoolean("nightIsStarting");
+        state.firstWaveHasSpawned = tag.getBoolean("firstWaveHasSpawned");
         state.spawnZombies = tag.getBoolean("spawnZombies");
         state.respawnZombies = tag.getBoolean("respawnZombies");
+        state.prevNormalizedTimeOfDay = tag.getLong("prevNormalizedTimeOfDay");
         CompoundTag mobUUIDs = tag.getCompound("spawnedHordeMobs");
         mobUUIDs.getAllKeys().forEach(key -> {
             UUID hordeMobUUID = mobUUIDs.getUUID(key);
@@ -103,8 +136,11 @@ public class StateSaverAndLoader extends SavedData {
         tag.putInt("lastMaxDaysCounter", lastMaxDaysCounter);
         tag.putInt("tickCounter", tickCounter);
         tag.putBoolean("hordeNight", hordeNight);
+        tag.putBoolean("nightIsStarting", nightIsStarting);
+        tag.putBoolean("firstWaveHasSpawned", firstWaveHasSpawned);
         tag.putBoolean("spawnZombies", spawnZombies);
         tag.putBoolean("respawnZombies", respawnZombies);
+        tag.putLong("prevNormalizedTimeOfDay", prevNormalizedTimeOfDay);
         CompoundTag mobUUIDs = new CompoundTag();
         spawnedHordeMobs.forEach((uuid) -> {
             mobUUIDs.putUUID(uuid.toString(), uuid);

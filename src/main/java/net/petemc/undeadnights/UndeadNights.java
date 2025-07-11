@@ -9,7 +9,6 @@ import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
 import net.minecraftforge.event.server.ServerStartingEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
@@ -19,8 +18,8 @@ import net.petemc.undeadnights.client.render.DemolitionZombieRenderer;
 import net.petemc.undeadnights.client.render.EliteZombieRenderer;
 import net.petemc.undeadnights.client.render.HordeZombieRenderer;
 import net.petemc.undeadnights.command.HordeMobsCommand;
-import net.petemc.undeadnights.config.MainConfig;
 import net.petemc.undeadnights.config.HordeConfig;
+import net.petemc.undeadnights.config.MainConfig;
 import net.petemc.undeadnights.entity.ModEntities;
 import net.petemc.undeadnights.item.ModItems;
 import net.petemc.undeadnights.sound.UndeadNightsSounds;
@@ -31,33 +30,37 @@ import org.slf4j.Logger;
 @Mod(UndeadNights.MOD_ID)
 public class UndeadNights {
 	public static final String MOD_ID = "undeadnights";
+	public static final String MOD_NAME = "UndeadNights";
 	public static final Logger LOGGER = LogUtils.getLogger();
 
 	public static StateSaverAndLoader serverState = null;
 
 	public static int globalSpawnCounter = 0;
 
-	public UndeadNights() {
-		IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
+	public UndeadNights(FMLJavaModLoadingContext context) {
+		IEventBus modEventBus = context.getModEventBus();
 
 		UndeadNightsSounds.register(modEventBus);
 		ModEntities.register(modEventBus);
 		ModItems.register(modEventBus);
 
+		// Register the commonSetup method for modloading
 		modEventBus.addListener(this::commonSetup);
 
 		MinecraftForge.EVENT_BUS.register(this);
 		modEventBus.addListener(this::addCreative);
-		ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, MainConfig.SPEC_SERVER);
+		context.registerConfig(ModConfig.Type.SERVER, MainConfig.SPEC_SERVER);
 		HordeConfig.loadConfig();
 	}
 
 	private void commonSetup(final FMLCommonSetupEvent event) {
+		LOGGER.info("Initializing the {} Mod", MOD_NAME);
 		event.enqueueWork(() -> {
 
 		});
 	}
 
+	// Add the example block item to the building blocks tab
 	private void addCreative(BuildCreativeModeTabContentsEvent event) {
 		if (event.getTabKey() == CreativeModeTabs.SPAWN_EGGS) {
 			event.accept(ModItems.HORDE_ZOMBIE_SPAWN_EGG);
@@ -83,9 +86,9 @@ public class UndeadNights {
 				UndeadNights.LOGGER.info("INIT HordeNight: {} SpawnZombies: {} RespawnZombies: {}", UndeadNights.serverState.getHordeNight(), UndeadNights.serverState.getSpawnZombies(), UndeadNights.serverState.getRespawnZombies());
 			}
 			UndeadSpawner.hordeToSpawn = HordeConfig.getDefaultHorde();
-			UndeadSpawner.prevNormalizedTimeOfDay = event.getServer().overworld().getDayTime() - 1;
+			//UndeadSpawner.prevNormalizedTimeOfDay = event.getServer().overworld().getDayTime() - 1;
 			HordeMobsCommand.hordeZombiesCanBreakBlocks = MainConfig.getHordeZombiesCanBreakBlocks();
-			HordeMobsCommand.hordeZombiesBlockBreakingTier = MainConfig.getHordeZombiesBlockBreakTier();
+			HordeMobsCommand.hordeZombiesBlockBreakingTier = MainConfig.getZombiesBlockBreakTier();
 		}
 	}
 

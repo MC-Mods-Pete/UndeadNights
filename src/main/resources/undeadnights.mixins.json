@@ -9,7 +9,8 @@
 		"ServerPlayerEntityMixin",
 		"PlayerEntityMixin",
 		"ZombieEntityMixin",
-		"PersistentEntitySectionManagerMixin"
+		"PersistentEntitySectionManagerMixin",
+		"LivingEntityMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

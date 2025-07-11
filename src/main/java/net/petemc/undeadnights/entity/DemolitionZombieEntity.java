@@ -47,10 +47,10 @@ public class DemolitionZombieEntity extends Zombie  {
         float f = difficulty.getSpecialMultiplier();
         this.setCanPickUpLoot(randomsource.nextFloat() < 0.55F * f);
         if (spawnGroupData == null) {
-            spawnGroupData = new Zombie.ZombieGroupData(false, false);
+            spawnGroupData = new ZombieGroupData(false, false);
         }
 
-        if (spawnGroupData instanceof Zombie.ZombieGroupData) {
+        if (spawnGroupData instanceof ZombieGroupData) {
             this.setCanBreakDoors(true);
             this.populateDefaultEquipmentSlots(randomsource, difficulty);
             this.populateDefaultEquipmentEnchantments(randomsource, difficulty);
@@ -75,7 +75,7 @@ public class DemolitionZombieEntity extends Zombie  {
         return Monster.createMonsterAttributes()
                 .add(Attributes.MAX_HEALTH, 40.0D)          // default 20.F
                 .add(Attributes.FOLLOW_RANGE, 128.0D)       // default 35.0D
-                .add(Attributes.MOVEMENT_SPEED, 0.30D)    // default 0.23F
+                .add(Attributes.MOVEMENT_SPEED, 0.30D)      // default 0.23F
                 .add(Attributes.ATTACK_DAMAGE, 5.0D)        // default 3.0
                 .add(Attributes.ARMOR, 4.0D)                // default 2.0
                 .add(Attributes.SPAWN_REINFORCEMENTS_CHANCE, 0.0D);
@@ -86,7 +86,7 @@ public class DemolitionZombieEntity extends Zombie  {
         this.goalSelector.addGoal(1, new FloatGoal(this));
         this.goalSelector.addGoal(2, new TntIgniteAndThrowGoal(this));
         this.goalSelector.addGoal(3, new ZombieAttackGoal(this, 1.0, false));
-        this.goalSelector.addGoal(4, new DemolitionZombieEntity.ChasePlayerGoal(this));
+        this.goalSelector.addGoal(4, new ChasePlayerGoal(this));
         this.goalSelector.addGoal(6, new MoveThroughVillageGoal(this, 1.0, true, 4, this::canBreakDoors));
         this.goalSelector.addGoal(7, new RandomStrollGoal(this, 1.0));
         this.targetSelector.addGoal(1, new HurtByTargetGoal(this, new Class[]{HordeZombieEntity.class, EliteZombieEntity.class, DemolitionZombieEntity.class}).setAlertOthers(HordeZombieEntity.class));
@@ -185,6 +185,11 @@ public class DemolitionZombieEntity extends Zombie  {
     }
 
     @Override
+    protected float getWaterSlowDown() {
+        return MainConfig.getHordeZombiesHaveIncreasedWaterMovementSpeed() ? 0.94F : 0.8F;
+    }
+
+    @Override
     public void randomizeReinforcementsChance() {
         Objects.requireNonNull(this.getAttribute(Attributes.SPAWN_REINFORCEMENTS_CHANCE)).setBaseValue((double)0.0F);
     }
@@ -195,6 +200,11 @@ public class DemolitionZombieEntity extends Zombie  {
 
     public int getNumberTnt() {
         return this.numberTnt;
+    }
+
+    @Override
+    public void push(Entity entity) {
+        super.push(entity);
     }
 
     static class ChasePlayerGoal extends Goal {
