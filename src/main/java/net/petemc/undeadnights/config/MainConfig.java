@@ -13,8 +13,6 @@ public class MainConfig
         return undeadNightsEnabled;
     }
 
-    public static int getGracePeriodBeforeFirstHordeNight() { return gracePeriodBeforeFirstHordeNight; }
-
     public static int getDaysBetweenHordeNights() {
         return daysBetweenHordeNights;
     }
@@ -117,13 +115,6 @@ public class MainConfig
     private static final ForgeConfigSpec.BooleanValue UNDEAD_NIGHTS_ENABLED = BUILDER_SERVER
             .comment("If true, Nights of the Undead (horde nights) are enabled | default: true")
             .define("undeadNightsEnabled", true);
-
-    private static final ForgeConfigSpec.IntValue GRACE_PERIOD = BUILDER_SERVER
-            .comment("Grace period in days before the first horde night | default: 5")
-            .comment("After the grace period the first horde night will happen and")
-            .comment("after the first horde night only the config values daysBetweenHordeNights")
-            .comment("and chanceForHordeNight will be taken into consideration.")
-            .defineInRange("gracePeriod", 5, 0, Integer.MAX_VALUE);
 
     private static final ForgeConfigSpec.IntValue DAYS_BETWEEN_HORDE_NIGHTS = BUILDER_SERVER
             .comment("Days between horde nights (1 = every night is a horde night) | default: 5")
@@ -236,7 +227,6 @@ public class MainConfig
 
 
     private static boolean undeadNightsEnabled = true;
-    private static int gracePeriodBeforeFirstHordeNight = 0;
     private static int daysBetweenHordeNights = 5;
     private static int chanceForHordeNight = 100;
     private static boolean sendHordeNightsCountdownMessage = false;
@@ -269,7 +259,6 @@ public class MainConfig
         if (SPEC_SERVER.isLoaded()) {
             UndeadNights.LOGGER.info("Loading {} server config", UndeadNights.MOD_ID);
             undeadNightsEnabled = UNDEAD_NIGHTS_ENABLED.get();
-            gracePeriodBeforeFirstHordeNight = GRACE_PERIOD.get();
             daysBetweenHordeNights = DAYS_BETWEEN_HORDE_NIGHTS.get();
             chanceForHordeNight = CHANCE_FOR_HORDE_NIGHTS.get();
             sendHordeNightsCountdownMessage = SEND_HORDE_NIGHTS_COUNTDOWN_MESSAGE.get();
