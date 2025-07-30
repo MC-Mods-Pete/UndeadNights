@@ -22,6 +22,9 @@ public class ModItems {
     public static final RegistryObject<Item> DEMOLITION_ZOMBIE_SPAWN_EGG = ITEMS.register("demolition_zombie_spawn_egg",
             () -> new ForgeSpawnEggItem(ModEntities.DEMOLITION_ZOMBIE, -16765109, -16738748, (new Item.Properties())));
 
+    public static final RegistryObject<Item> SLIMY_ROTTEN_FLESH = ITEMS.register("slimy_rotten_flesh",
+            () -> new Item(new Item.Properties()));
+
     public static void register(IEventBus eventBus) {
         ITEMS.register(eventBus);
     }

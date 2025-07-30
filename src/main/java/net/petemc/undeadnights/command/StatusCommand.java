@@ -24,6 +24,7 @@ public class StatusCommand {
 
     private int status(CommandSourceStack source) throws CommandSyntaxException {
         String message = "DayCounter: " + UndeadNights.serverState.getDaysCounter() + " (max " + MainConfig.getDaysBetweenHordeNights() + ")\n" +
+                         "Grace period: " + UndeadNights.serverState.getGracePeriod() + " (of " + MainConfig.getGracePeriodBeforeFirstHordeNight() + " days remaining)\n" +
                          "UndeadNights enabled: " + MainConfig.getUndeadNightsEnabled() + "\n" +
                          "Is it HordeNight: " + UndeadNights.serverState.getHordeNight() + "\n" +
                          "SpawnCounter: " + UndeadNights.globalSpawnCounter + " of max " + MainConfig.getHordeMobsSpawnCap() + "\n" +

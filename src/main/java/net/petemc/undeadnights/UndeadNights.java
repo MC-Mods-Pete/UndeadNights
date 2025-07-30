@@ -3,6 +3,8 @@ package net.petemc.undeadnights;
 import com.mojang.logging.LogUtils;
 import net.minecraft.client.renderer.entity.EntityRenderers;
 import net.minecraft.world.item.CreativeModeTabs;
+import net.minecraft.world.item.alchemy.PotionBrewing;
+import net.minecraft.world.item.alchemy.Potions;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
@@ -20,8 +22,11 @@ import net.petemc.undeadnights.client.render.HordeZombieRenderer;
 import net.petemc.undeadnights.command.HordeMobsCommand;
 import net.petemc.undeadnights.config.HordeConfig;
 import net.petemc.undeadnights.config.MainConfig;
+import net.petemc.undeadnights.effect.ModEffects;
 import net.petemc.undeadnights.entity.ModEntities;
+import net.petemc.undeadnights.item.ModCreativeModeTabs;
 import net.petemc.undeadnights.item.ModItems;
+import net.petemc.undeadnights.potion.ModPotions;
 import net.petemc.undeadnights.sound.UndeadNightsSounds;
 import net.petemc.undeadnights.util.StateSaverAndLoader;
 import net.petemc.undeadnights.world.spawner.UndeadSpawner;
@@ -43,8 +48,11 @@ public class UndeadNights {
 		UndeadNightsSounds.register(modEventBus);
 		ModEntities.register(modEventBus);
 		ModItems.register(modEventBus);
+		ModEffects.register(modEventBus);
+		ModPotions.register(modEventBus);
+		ModCreativeModeTabs.register(modEventBus);
 
-		// Register the commonSetup method for modloading
+		// Register the commonSetup method for loading the mod
 		modEventBus.addListener(this::commonSetup);
 
 		MinecraftForge.EVENT_BUS.register(this);
@@ -56,7 +64,8 @@ public class UndeadNights {
 	private void commonSetup(final FMLCommonSetupEvent event) {
 		LOGGER.info("Initializing the {} Mod", MOD_NAME);
 		event.enqueueWork(() -> {
-
+			ModEntities.initModEntities();
+			PotionBrewing.addMix(Potions.AWKWARD, ModItems.SLIMY_ROTTEN_FLESH.get(), ModPotions.LURE_HORDE_POTION.get());
 		});
 	}
 
@@ -79,6 +88,22 @@ public class UndeadNights {
 			if (UndeadNights.serverState.getLastMaxDaysCounter() != MainConfig.getDaysBetweenHordeNights()) {
 				UndeadNights.serverState.setDaysCounter(MainConfig.getDaysBetweenHordeNights());
 				UndeadNights.serverState.setLastMaxDaysCounter(MainConfig.getDaysBetweenHordeNights());
+			}
+
+			// check if the Grace Period in the config was changed
+			if (UndeadNights.serverState.getLastMaxGracePeriod() != MainConfig.getGracePeriodBeforeFirstHordeNight()) {
+				UndeadNights.serverState.setGracePeriod(MainConfig.getGracePeriodBeforeFirstHordeNight());
+				UndeadNights.serverState.setLastMaxGracePeriod(MainConfig.getGracePeriodBeforeFirstHordeNight());
+			}
+
+			// check if the maximum number of hordes per night in the config was changed
+			if (UndeadNights.serverState.getLastMaxHordesCounter() != MainConfig.getMaxHordesPerHordeNight()) {
+				if (MainConfig.getMaxHordesPerHordeNight() != 0) {
+					UndeadNights.serverState.setHordesCounter(MainConfig.getMaxHordesPerHordeNight() + 1);
+				} else {
+					UndeadNights.serverState.setHordesCounter(0);
+				}
+				UndeadNights.serverState.setLastMaxHordesCounter(MainConfig.getMaxHordesPerHordeNight());
 			}
 
 			if (MainConfig.getPrintDebugMessages()) {

@@ -57,9 +57,13 @@ public class ModEvents {
                     if (UndeadNights.serverState.spawnedHordeMobs.contains(event.getEntity().getUUID())) {
                         UndeadNights.globalSpawnCounter++;
                         if (event.getEntity() instanceof Zombie zombie) {
-                            UndeadNights.LOGGER.info("We have a Zombie");
-                            zombie.goalSelector.addGoal(1, new FloatGoal(zombie));
-                            zombie.goalSelector.addGoal(1, new BreakBlockGoal(zombie));
+                            if (!(zombie instanceof HordeZombieEntity) && !(zombie instanceof DemolitionZombieEntity) && !(zombie instanceof EliteZombieEntity)) {
+                                if (MainConfig.getPrintDebugMessages()) {
+                                    UndeadNights.LOGGER.info("Vanilla zombie detected, adding float and block breaking goals.");
+                                }
+                                zombie.goalSelector.addGoal(1, new FloatGoal(zombie));
+                                zombie.goalSelector.addGoal(1, new BreakBlockGoal(zombie));
+                            }
                         }
                         if (MainConfig.getPrintDebugMessages()) {
                             UndeadNights.LOGGER.info("LOAD GlobalSpawnCount: : {} {} {}", UndeadNights.globalSpawnCounter, event.getEntity().getName().getString(), event.getEntity().getUUID());

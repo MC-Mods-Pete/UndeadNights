@@ -3,10 +3,19 @@
   "entity.undeadnights.demolition_zombie": "Demolition Zombie",
   "entity.undeadnights.elite_zombie": "Elite Zombie",
 
+  "itemgroup.undeadnights": "Undead Nights",
   "item.undeadnights.horde_zombie_spawn_egg": "Horde Zombie Spawn Egg",
   "item.undeadnights.elite_zombie_spawn_egg": "Elite Zombie Spawn Egg",
   "item.undeadnights.demolition_zombie_spawn_egg": "Demolition Zombie Spawn Egg",
+  "item.undeadnights.slimy_rotten_flesh": "Slimy Rotten Flesh",
+  "item.minecraft.potion.effect.lure_horde_potion": "Horde Lure Potion",
+  "item.minecraft.splash_potion.effect.lure_horde_potion": "Splash Horde Lure Potion",
+  "item.minecraft.lingering_potion.effect.lure_horde_potion": "Lingering Horde Lure Potion",
+  "item.minecraft.tipped_arrow.effect.lure_horde_potion": "Arrow of Horde Lure",
 
+  "effect.undeadnights.lure_horde": "Horde Lure",
+
+  "message.undeadnights.days_of_grace_remaining": "%s days of grace period remaining!",
   "message.undeadnights.nights_remaining": "%s nights remaining until the next Night of the Undead!",
   "message.undeadnights.last_nights": "This is the last night before the next Night of the Undead!",
   "message.undeadnights.horde_night": "The sun is starting to set and you feel uneasy about the coming night...",
