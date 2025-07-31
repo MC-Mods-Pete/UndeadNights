@@ -59,11 +59,11 @@ public class StateSaverAndLoader extends SavedData {
     }
 
     public int getLastMaxGracePeriod() {
-        return this.gracePeriod;
+        return this.lastMaxGracePeriod;
     }
 
     public void setLastMaxGracePeriod(int val) {
-        this.gracePeriod = val;
+        this.lastMaxGracePeriod = val;
         this.setDirty();
     }
 

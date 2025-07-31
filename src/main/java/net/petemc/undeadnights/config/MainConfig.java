@@ -155,12 +155,13 @@ public class MainConfig
             .define("undeadNightsEnabled", true);
 
     private static final ForgeConfigSpec.IntValue GRACE_PERIOD = BUILDER_SERVER
-            .comment("Grace period in days before the first horde night | default: 5")
+            .comment("Grace period in days before the first horde night | default: 0")
             .comment("After the grace period the first horde night will happen and")
             .comment("after the first horde night only the config values daysBetweenHordeNights")
             .comment("and chanceForHordeNight will be taken into consideration.")
-            .comment("Note: if grace period is set to 0 the first night will be a horde night")
-            .defineInRange("gracePeriod", 5, 0, Integer.MAX_VALUE);
+            .comment("Note: if grace period is set to 0 the first horde night will occur after")
+            .comment("the amount of days set with daysBetweenHordeNights below.")
+            .defineInRange("gracePeriod", 0, 0, Integer.MAX_VALUE);
 
     private static final ForgeConfigSpec.IntValue DAYS_BETWEEN_HORDE_NIGHTS = BUILDER_SERVER
             .comment("Days between horde nights (1 = every night is a horde night) | default: 5")
@@ -315,7 +316,7 @@ public class MainConfig
 
 
     private static boolean undeadNightsEnabled = true;
-    private static int gracePeriodBeforeFirstHordeNight = 5;
+    private static int gracePeriodBeforeFirstHordeNight = 0;
     private static int daysBetweenHordeNights = 5;
     private static int chanceForHordeNight = 100;
     private static int maxHordesPerHordeNight = 0;
