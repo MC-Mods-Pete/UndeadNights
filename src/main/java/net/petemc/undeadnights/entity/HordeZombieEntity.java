@@ -8,6 +8,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.entity.*;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.*;
@@ -26,6 +27,7 @@ import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.levelgen.Heightmap;
+import net.petemc.undeadnights.UndeadNights;
 import net.petemc.undeadnights.config.MainConfig;
 import net.petemc.undeadnights.entity.ai.goal.BreakBlockGoal;
 import org.jetbrains.annotations.NotNull;
@@ -67,15 +69,17 @@ public class HordeZombieEntity extends Zombie {
                 this.armorDropChances[EquipmentSlot.HEAD.getIndex()] = 0.0F;
             }
         }
+        Objects.requireNonNull(this.getAttribute(Attributes.MAX_HEALTH)).addPermanentModifier(new AttributeModifier("Horde zombie health bonus", MainConfig.getMaxHealthHordeZombies() - 20.0F, AttributeModifier.Operation.ADDITION));
 
         this.handleAttributes(f);
+        this.setHealth(this.getMaxHealth());
         this.setBaby(false);
         return spawnGroupData;
     }
 
         public static AttributeSupplier.@NotNull Builder createAttributes() {
             return Monster.createMonsterAttributes()
-                    .add(Attributes.MAX_HEALTH, 40.0D)          // default 20.F
+                    //.add(Attributes.MAX_HEALTH, 40.0D)          // default 20.0F
                     .add(Attributes.FOLLOW_RANGE, 128.0D)       // default 35.0D
                     .add(Attributes.MOVEMENT_SPEED, 0.30D)      // default 0.23F
                     .add(Attributes.ATTACK_DAMAGE, 5.0D)        // default 3.0
@@ -202,10 +206,11 @@ public class HordeZombieEntity extends Zombie {
         SpawnPlacements.register(ModEntities.HORDE_ZOMBIE.get(), SpawnPlacements.Type.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
                 (entityType, serverLevel, reason, pos, random) ->
                         MainConfig.getHordeZombiesSpawnNaturally()
-                        && !(serverLevel.getBiome(pos).is(Biomes.MUSHROOM_FIELDS))
-                        && serverLevel.getDifficulty() != Difficulty.PEACEFUL
-                        && Monster.isDarkEnoughToSpawn(serverLevel, pos, random)
-                        && Mob.checkMobSpawnRules(entityType, serverLevel, reason, pos, random));
+                                && UndeadNights.serverState.getIsNaturalSpawningOk()
+                                && !(serverLevel.getBiome(pos).is(Biomes.MUSHROOM_FIELDS))
+                                && serverLevel.getDifficulty() != Difficulty.PEACEFUL
+                                && Monster.isDarkEnoughToSpawn(serverLevel, pos, random)
+                                && Mob.checkMobSpawnRules(entityType, serverLevel, reason, pos, random));
     }
 
     @Override

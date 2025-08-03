@@ -35,15 +35,13 @@ public class LivingEntityMixin
                 boolean isZombie = (((Entity)(Object) this) instanceof Zombie);
                 boolean flag = (MainConfig.getNonHordeZombiesCanCauseLureHordeEffect() && isZombie);
                 if ((UndeadNights.serverState.spawnedHordeMobs.contains(((Entity)(Object) this).getUUID())) || flag) {
-                    UndeadNights.LOGGER.info("------------------------> is horde mob");
                     RandomSource randomSource = player.level().random;
                     double rand = randomSource.nextDouble();
-                    if (rand < MainConfig.getChanceForLureHordeEffect()) {
+                    if (rand <= MainConfig.getChanceForLureHordeEffect()) {
                         if (!player.hasEffect(ModEffects.LURE_HORDE.get())) {
                             player.addEffect(new MobEffectInstance(ModEffects.LURE_HORDE.get(), MainConfig.getDurationForLureHordeEffect() * 20, 0));
                         }
                     }
-                    UndeadNights.LOGGER.info("------------------------> is player, random: {}", rand);
                 }
             }
         }

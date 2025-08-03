@@ -55,14 +55,27 @@ public class ModEvents {
             if(!event.getLevel().isClientSide()) {
                 if (UndeadNights.serverState != null) {
                     if (UndeadNights.serverState.spawnedHordeMobs.contains(event.getEntity().getUUID())) {
-                        UndeadNights.globalSpawnCounter++;
-                        if (event.getEntity() instanceof Zombie zombie) {
-                            if (!(zombie instanceof HordeZombieEntity) && !(zombie instanceof DemolitionZombieEntity) && !(zombie instanceof EliteZombieEntity)) {
-                                if (MainConfig.getPrintDebugMessages()) {
-                                    UndeadNights.LOGGER.info("Vanilla zombie detected, adding float and block breaking goals.");
+                        if (UndeadNights.serverState.hordeMobsToRemove.contains(event.getEntity().getUUID())) {
+                            UndeadNights.serverState.hordeMobsToRemove.remove(event.getEntity().getUUID());
+                            event.getEntity().remove(Entity.RemovalReason.DISCARDED);
+                            event.setCanceled(true);
+                            UndeadNights.LOGGER.info("LOAD canceled, Entity marked for removal: {}", event.getEntity().getUUID());
+                        } else {
+                            UndeadNights.globalSpawnCounter++;
+                            if (event.getEntity() instanceof Zombie zombie) {
+                                if (!(zombie instanceof HordeZombieEntity) && !(zombie instanceof DemolitionZombieEntity) && !(zombie instanceof EliteZombieEntity)) {
+                                    if (MainConfig.getPrintDebugMessages()) {
+                                        UndeadNights.LOGGER.info("Vanilla zombie detected, adding float and block breaking goals.");
+                                    }
+                                    zombie.goalSelector.addGoal(1, new FloatGoal(zombie));
+                                    zombie.goalSelector.addGoal(1, new BreakBlockGoal(zombie));
                                 }
-                                zombie.goalSelector.addGoal(1, new FloatGoal(zombie));
-                                zombie.goalSelector.addGoal(1, new BreakBlockGoal(zombie));
+                                if (zombie instanceof EliteZombieEntity) {
+                                    UndeadNights.serverState.setFirstEliteZombieHasSpawned(true);
+                                }
+                                if (zombie instanceof DemolitionZombieEntity) {
+                                    UndeadNights.serverState.setFirstDemolitionZombieHasSpawned(true);
+                                }
                             }
                         }
                         if (MainConfig.getPrintDebugMessages()) {

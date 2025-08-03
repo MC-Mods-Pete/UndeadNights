@@ -1,5 +1,6 @@
 package net.petemc.undeadnights.effect;
 
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.entity.Entity;
@@ -26,11 +27,17 @@ public class LureHordeMobsEffect extends MobEffect {
         if (!pLivingEntity.level().isClientSide()) {
             if (pLivingEntity instanceof Player pPlayer) {
                 LevelAccessor world = pPlayer.level();
+                RandomSource randomSource = pPlayer.getRandom();
                 if (MainConfig.getLureHordeEffectSpawnsHorde()) {
                     if (!UndeadNights.serverState.entitiesWithReceivedHorde.contains(pPlayer.getUUID())) {
-                        UndeadNights.serverState.entitiesWithPendingHorde.add(pPlayer.getUUID());
+                        if (randomSource.nextDouble() < MainConfig.getChanceForLureEffectToSpawnHorde()) {
+                            UndeadNights.serverState.entitiesWithPendingHorde.add(pPlayer.getUUID());
+                        } else {
+                            UndeadNights.serverState.entitiesWithReceivedHorde.add(pPlayer.getUUID());
+                        }
                     }
                 }
+
                 final Vec3 entityPosition = pPlayer.position();
                 final AABB entitySearchArea = new AABB(entityPosition, entityPosition).inflate(15d);
 

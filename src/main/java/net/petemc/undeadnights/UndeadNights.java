@@ -106,6 +106,10 @@ public class UndeadNights {
 				UndeadNights.serverState.setLastMaxHordesCounter(MainConfig.getMaxHordesPerHordeNight());
 			}
 
+			if (!MainConfig.getNoNaturalSpawningBeforeFirstHordeNight()) {
+				UndeadNights.serverState.setIsNaturalSpawningOk(true);
+			}
+
 			if (MainConfig.getPrintDebugMessages()) {
 				UndeadNights.LOGGER.info("INIT DaysCounter: {} LastMaxDaysCounter: {}", UndeadNights.serverState.getDaysCounter(), UndeadNights.serverState.getLastMaxDaysCounter());
 				UndeadNights.LOGGER.info("INIT HordeNight: {} SpawnZombies: {} RespawnZombies: {}", UndeadNights.serverState.getHordeNight(), UndeadNights.serverState.getSpawnZombies(), UndeadNights.serverState.getRespawnZombies());

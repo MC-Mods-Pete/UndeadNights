@@ -121,14 +121,18 @@ public class MainConfig
 
     public static boolean getNonHordeZombiesCanCauseLureHordeEffect() { return nonHordeZombiesCanCauseLureHordeEffect; }
 
-    public static boolean getLureHordeEffectSpawnsHorde() { return lureHordeEffectSpawnsHorde; }
-
     public static double getChanceForLureHordeEffect() {
         return chanceForLureHordeEffect;
     }
 
     public static int getDurationForLureHordeEffect() {
         return durationForLureHordeEffect;
+    }
+
+    public static boolean getLureHordeEffectSpawnsHorde() { return lureHordeEffectSpawnsHorde; }
+
+    public static double getChanceForLureEffectToSpawnHorde() {
+        return chanceForLureEffectToSpawnHorde;
     }
 
     public static boolean getHordeZombiesSpawnNaturally() {
@@ -141,6 +145,20 @@ public class MainConfig
 
     public static boolean getDemolitionZombiesSpawnNaturally() {
         return demolitionZombiesSpawnNaturally;
+    }
+
+    public static boolean getNoNaturalSpawningBeforeFirstHordeNight() { return noNaturalSpawningBeforeFirstHordeNight; }
+
+    public static double getMaxHealthHordeZombies() {
+        return maxHealthHordeZombies;
+    }
+
+    public static double getMaxHealthEliteZombies() {
+        return maxHealthEliteZombies;
+    }
+
+    public static double getMaxHealthDemolitionZombies() {
+        return maxHealthDemolitionZombies;
     }
 
     public static boolean getPrintDebugMessages() {
@@ -159,8 +177,8 @@ public class MainConfig
             .comment("After the grace period the first horde night will happen and")
             .comment("after the first horde night only the config values daysBetweenHordeNights")
             .comment("and chanceForHordeNight will be taken into consideration.")
-            .comment("Note: if grace period is set to 0 the first horde night will occur after")
-            .comment("the amount of days set with daysBetweenHordeNights below.")
+            .comment("Note: if the grace period is set to 0 the first horde night will occur after")
+            .comment("the number of days set with daysBetweenHordeNights below.")
             .defineInRange("gracePeriod", 0, 0, Integer.MAX_VALUE);
 
     private static final ForgeConfigSpec.IntValue DAYS_BETWEEN_HORDE_NIGHTS = BUILDER_SERVER
@@ -236,17 +254,15 @@ public class MainConfig
             .define("hordeZombiesBurnInDaylight", false);
 
     private static final ForgeConfigSpec.BooleanValue VANILLA_ZOMBIES_BURN_IN_DAYLIGHT = BUILDER_SERVER
-            .comment("If true, the vanilla zombies will burn in daylight | default: false")
+            .comment("If true, the vanilla zombies will burn in daylight | default: true")
             .define("vanillaZombiesBurnInDaylight", true);
 
     private static final ForgeConfigSpec.BooleanValue HORDE_ZOMBIES_CAN_PUSH_EACH_OTHER_UP = BUILDER_SERVER
-            .comment("If true, Horde Zombies can push each other up (WWZ stile) | default: true")
-            .comment("This applies to: Horde Zombies, Elite Zombies and Vanilla Zombies")
+            .comment("If true, (Horde, Elite and vanilla) zombies can push each other up (WWZ style) | default: true")
             .define("hordeZombiesCanPushEachOtherUp", true);
 
     private static final ForgeConfigSpec.BooleanValue HORDE_ZOMBIES_CAN_BREAK_BLOCKS = BUILDER_SERVER
-            .comment("If true, Horde Zombies can break blocks | default: false")
-            .comment("This applies to: Horde Zombies, Elite Zombies and Vanilla Zombies")
+            .comment("If true, (Horde, Elite and vanilla) zombies can break blocks | default: false")
             .define("hordeZombiesCanBreakBlocks", false);
 
     private static final ForgeConfigSpec.IntValue ZOMBIES_BLOCK_BREAK_TIER = BUILDER_SERVER
@@ -254,7 +270,7 @@ public class MainConfig
             .defineInRange("zombieBlockBreakTier", 1, 0, 4);
 
     private static final ForgeConfigSpec.BooleanValue HORDE_ZOMBIES_HAVE_INCREASED_WATER_MOVEMENT_SPEED = BUILDER_SERVER
-            .comment("Horde Zombie have increased water movement speed | default: false")
+            .comment("If true, Horde Zombies (incl. vanilla) have increased water movement speed | default: false")
             .define("hordeZombiesHaveIncreasedWaterMovementSpeed", false);
 
     private static final ForgeConfigSpec.BooleanValue SECURITY_CRAFT_COMPATIBILITY = BUILDER_SERVER
@@ -262,34 +278,37 @@ public class MainConfig
             .define("securityCraftCompatibility", false);
 
     private static final ForgeConfigSpec.BooleanValue ENABLE_RANDOM_HORDES = BUILDER_SERVER
-            .comment("If true, a random horde can spawn on none hordes nights | default: false")
+            .comment("If true, a random horde can spawn on none-horde nights | default: false")
             .define("enableRandomHordes", false);
 
     private static final ForgeConfigSpec.IntValue CHANCE_FOR_RANDOM_HORDES = BUILDER_SERVER
-            .comment("Chance in % for a random horde (checked once per night, not on horde nights) | default: 15")
+            .comment("Chance in % for a random horde (checked once per night, on none-horde nights) | default: 15")
             .defineInRange("chanceForRandomHordes", 15, 1, 100);
 
     private static final ForgeConfigSpec.BooleanValue ENABLE_LURE_HORDE_EFFECT = BUILDER_SERVER
-            .comment("If true, the player can get the lure horde effect when killing a horde mob | default: true")
-            .comment("Getting this effect attract will horde mobs in the area.")
-            .comment("Note: This effect can be crafted... ;)")
+            .comment("If true, killing a horde mob can give the player the lure horde effect | default: true")
+            .comment("Getting this effect will attract horde mobs in the area.")
             .define("enableLureHordeEffect", true);
 
     private static final ForgeConfigSpec.BooleanValue NON_HORDE_ZOMBIES_CAN_CAUSE_LURE_HORDE_EFFECT = BUILDER_SERVER
-            .comment("If true, killing Zombies that were not spawned in a horde can also give the player the lure horde effect | default: true")
+            .comment("If true, killing zombies that were not spawned in a horde can also give the player the lure horde effect | default: true")
             .define("nonHordeZombiesCanCauseLureHordeEffect", true);
 
-    private static final ForgeConfigSpec.BooleanValue LURE_HORDE_EFFECT_SPAWNS_HORDE = BUILDER_SERVER
-            .comment("If true, getting the lure horde effect will spawn a horde | default: true")
-            .define("lureHordeEffectSpawnsHorde", true);
-
     private static final ForgeConfigSpec.DoubleValue CHANCE_FOR_LURE_HORDE_EFFECT = BUILDER_SERVER
-            .comment("Chance to get the lure horde effect, when the player hits a horde mob | default: 0.07")
+            .comment("Chance to get the lure horde effect, when the player kills a horde mob (1.0 = 100%) | default: 0.07")
             .defineInRange("chanceForLureHordeEffect", 0.07, 0.0, 1.0);
 
     private static final ForgeConfigSpec.IntValue DURATION_FOR_LURE_HORDE_EFFECT = BUILDER_SERVER
-            .comment("Duration in seconds for the horde lure effect | default: 60")
+            .comment("Duration in seconds for the lure horde effect | default: 60")
             .defineInRange("durationForLureHordeEffect", 60, 1, Integer.MAX_VALUE);
+
+    private static final ForgeConfigSpec.BooleanValue LURE_HORDE_EFFECT_SPAWNS_HORDE = BUILDER_SERVER
+            .comment("If true, getting the lure horde effect can spawn a horde | default: true")
+            .define("lureHordeEffectSpawnsHorde", true);
+
+    private static final ForgeConfigSpec.DoubleValue CHANCE_FOR_LURE_EFFECT_HORDE = BUILDER_SERVER
+            .comment("Chance for the lure horde effect to spawn a horde (1.0 = 100%) | default: 0.2")
+            .defineInRange("chanceForLureEffectToSpawnHorde", 0.2, 0.0, 1.0);
 
     private static final ForgeConfigSpec.BooleanValue HORDE_ZOMBIES_SPAWN_NATURALLY = BUILDER_SERVER
             .comment("If true, Horde Zombies will spawn naturally | default: true")
@@ -302,6 +321,22 @@ public class MainConfig
     private static final ForgeConfigSpec.BooleanValue DEMOLITION_ZOMBIES_SPAWN_NATURALLY = BUILDER_SERVER
             .comment("If true, Demolition Zombies will spawn naturally | default: true")
             .define("demolitionZombiesSpawnNaturally", true);
+
+    private static final ForgeConfigSpec.BooleanValue NO_NATURAL_SPAWNING_BEFORE_FIRST_HORDE_NIGHT = BUILDER_SERVER
+            .comment("If true, Horde, Elite and Demolition zombies will not spawn naturally before the first horde night | default: true")
+            .define("noNaturalSpawningBeforeFirstHordeNight", true);
+
+    private static final ForgeConfigSpec.DoubleValue MAX_HEALTH_HORDE_ZOMBIES = BUILDER_SERVER
+            .comment("Horde zombie max health | default: 40.0")
+            .defineInRange("maxHealthHordeZombies", 40.0, 1.0, 2048.0);
+
+    private static final ForgeConfigSpec.DoubleValue MAX_HEALTH_ELITE_ZOMBIES = BUILDER_SERVER
+            .comment("Elite zombie max health | default: 40.0")
+            .defineInRange("maxHealthEliteZombies", 40.0, 1.0, 2048.0);
+
+    private static final ForgeConfigSpec.DoubleValue MAX_HEALTH_DEMOLITION_ZOMBIES = BUILDER_SERVER
+            .comment("Demolition zombie max health | default: 40.0")
+            .defineInRange("maxHealthDemolitionZombies", 40.0, 1.0, 2048.0);
 
     private static final ForgeConfigSpec.BooleanValue PRINT_DEBUG_MESSAGES = BUILDER_SERVER
             .comment("If true, debug messages will be logged out | default: false")
@@ -345,12 +380,17 @@ public class MainConfig
     private static int chanceForRandomHordes = 15;
     private static boolean enableLureHordeEffect = true;
     private static boolean nonHordeZombiesCanCauseLureHordeEffect = true;
-    private static boolean lureHordeEffectSpawnsHorde = true;
     private static double chanceForLureHordeEffect = 0.07;
     private static int durationForLureHordeEffect = 60;
+    private static boolean lureHordeEffectSpawnsHorde = true;
+    private static double chanceForLureEffectToSpawnHorde = 0.2;
     private static boolean hordeZombiesSpawnNaturally = true;
     private static boolean eliteZombiesSpawnNaturally = true;
     private static boolean demolitionZombiesSpawnNaturally = true;
+    private static boolean noNaturalSpawningBeforeFirstHordeNight = true;
+    private static double maxHealthHordeZombies = 40.0D;
+    private static double maxHealthEliteZombies = 40.0D;
+    private static double maxHealthDemolitionZombies = 40.0D;
     private static boolean printDebugMessages = false;
 
     @SubscribeEvent
@@ -388,12 +428,17 @@ public class MainConfig
             chanceForRandomHordes = CHANCE_FOR_RANDOM_HORDES.get();
             enableLureHordeEffect = ENABLE_LURE_HORDE_EFFECT.get();
             nonHordeZombiesCanCauseLureHordeEffect = NON_HORDE_ZOMBIES_CAN_CAUSE_LURE_HORDE_EFFECT.get();
-            lureHordeEffectSpawnsHorde = LURE_HORDE_EFFECT_SPAWNS_HORDE.get();
             chanceForLureHordeEffect = CHANCE_FOR_LURE_HORDE_EFFECT.get();
             durationForLureHordeEffect = DURATION_FOR_LURE_HORDE_EFFECT.get();
+            lureHordeEffectSpawnsHorde = LURE_HORDE_EFFECT_SPAWNS_HORDE.get();
+            chanceForLureEffectToSpawnHorde = CHANCE_FOR_LURE_EFFECT_HORDE.get();
             hordeZombiesSpawnNaturally = HORDE_ZOMBIES_SPAWN_NATURALLY.get();
             eliteZombiesSpawnNaturally = ELITE_ZOMBIES_SPAWN_NATURALLY.get();
             demolitionZombiesSpawnNaturally = DEMOLITION_ZOMBIES_SPAWN_NATURALLY.get();
+            noNaturalSpawningBeforeFirstHordeNight = NO_NATURAL_SPAWNING_BEFORE_FIRST_HORDE_NIGHT.get();
+            maxHealthHordeZombies = MAX_HEALTH_HORDE_ZOMBIES.get();
+            maxHealthEliteZombies = MAX_HEALTH_ELITE_ZOMBIES.get();
+            maxHealthDemolitionZombies = MAX_HEALTH_DEMOLITION_ZOMBIES.get();
             printDebugMessages = PRINT_DEBUG_MESSAGES.get();
         }
         if (SPEC_CLIENT.isLoaded()) {

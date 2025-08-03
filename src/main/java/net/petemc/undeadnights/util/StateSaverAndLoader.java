@@ -24,6 +24,9 @@ public class StateSaverAndLoader extends SavedData {
     private boolean spawnZombies = true;
     private boolean respawnZombies = false;
     private boolean tryToSpawnRandomHorde = true;
+    private boolean isNaturalSpawningOk = false;
+    private boolean firstEliteZombieHasSpawned = false;
+    private boolean firstDemolitionZombieHasSpawned = false;
     private long prevNormalizedTimeOfDay = 0;
     public HashSet<UUID> spawnedHordeMobs = new HashSet<UUID>();
     public HashSet<UUID> hordeMobsToRemove = new HashSet<UUID>();
@@ -148,6 +151,33 @@ public class StateSaverAndLoader extends SavedData {
         this.setDirty();
     }
 
+    public boolean getIsNaturalSpawningOk() {
+        return this.isNaturalSpawningOk;
+    }
+
+    public void setIsNaturalSpawningOk(boolean val) {
+        this.isNaturalSpawningOk = val;
+        this.setDirty();
+    }
+
+    public boolean getFirstEliteZombieHasSpawned() {
+        return this.firstEliteZombieHasSpawned;
+    }
+
+    public void setFirstEliteZombieHasSpawned(boolean val) {
+        this.firstEliteZombieHasSpawned = val;
+        this.setDirty();
+    }
+
+    public boolean getFirstDemolitionZombieHasSpawned() {
+        return this.firstDemolitionZombieHasSpawned;
+    }
+
+    public void setFirstDemolitionZombieHasSpawned(boolean val) {
+        this.firstDemolitionZombieHasSpawned = val;
+        this.setDirty();
+    }
+
     public long getPrevNormalizedTimeOfDay() {
         return this.prevNormalizedTimeOfDay;
     }
@@ -172,6 +202,9 @@ public class StateSaverAndLoader extends SavedData {
         state.spawnZombies = tag.getBoolean("spawnZombies");
         state.respawnZombies = tag.getBoolean("respawnZombies");
         state.tryToSpawnRandomHorde = tag.getBoolean("tryToSpawnRandomHorde");
+        state.isNaturalSpawningOk = tag.getBoolean("isNaturalSpawningOk");
+        state.firstEliteZombieHasSpawned = tag.getBoolean("firstEliteZombieHasSpawned");
+        state.firstDemolitionZombieHasSpawned = tag.getBoolean("firstDemolitionZombieHasSpawned");
         state.prevNormalizedTimeOfDay = tag.getLong("prevNormalizedTimeOfDay");
 
         CompoundTag mobUUIDs = tag.getCompound("spawnedHordeMobs");
@@ -217,6 +250,9 @@ public class StateSaverAndLoader extends SavedData {
         tag.putBoolean("spawnZombies", spawnZombies);
         tag.putBoolean("respawnZombies", respawnZombies);
         tag.putBoolean("tryToSpawnRandomHorde", tryToSpawnRandomHorde);
+        tag.putBoolean("isNaturalSpawningOk", isNaturalSpawningOk);
+        tag.putBoolean("firstEliteZombieHasSpawned", firstEliteZombieHasSpawned);
+        tag.putBoolean("firstDemolitionZombieHasSpawned", firstDemolitionZombieHasSpawned);
         tag.putLong("prevNormalizedTimeOfDay", prevNormalizedTimeOfDay);
 
         CompoundTag mobUUIDs = new CompoundTag();

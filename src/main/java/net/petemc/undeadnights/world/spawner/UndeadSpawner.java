@@ -339,6 +339,10 @@ public class UndeadSpawner implements CustomSpawner {
                     }
                     for (int j = 0; j < mobCount; j++) {
                         boolean spawnMob = true;
+                        if (UndeadNights.globalSpawnCounter >= MainConfig.getHordeMobsSpawnCap()) {
+                            spawnCapReached = true;
+                            break;
+                        }
                         if (mobSpawnData.chance() != 100) {
                             randomValue = randomSource.nextIntBetweenInclusive(1, 100);
                             if (MainConfig.getPrintDebugMessages()) {
@@ -352,10 +356,6 @@ public class UndeadSpawner implements CustomSpawner {
                             if (spawnHordeMob(level, randomSource, pos, player, mobSpawnData) == 0) {
                                 spawnCounter++;
                             }
-                        }
-                        if (UndeadNights.globalSpawnCounter >= MainConfig.getHordeMobsSpawnCap()) {
-                            spawnCapReached = true;
-                            break;
                         }
                     }
                     if (UndeadNights.globalSpawnCounter >= MainConfig.getHordeMobsSpawnCap()) {
@@ -583,6 +583,7 @@ public class UndeadSpawner implements CustomSpawner {
                 if (!(randomValue > (100 - MainConfig.getChanceForHordeNight()))) {
                     return 0;
                 } else {
+                    UndeadNights.serverState.setIsNaturalSpawningOk(true);
                     UndeadNights.serverState.setHordeNight(true);
                     UndeadNights.serverState.setSpawnZombies(true);
                     UndeadNights.serverState.setFirstWaveHasSpawned(false);

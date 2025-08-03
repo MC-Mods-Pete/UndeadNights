@@ -15,7 +15,7 @@ public class ModCreativeModeTabs {
     public static final DeferredRegister<CreativeModeTab> CREATIVE_MODE_TAB =
             DeferredRegister.create(Registries.CREATIVE_MODE_TAB, UndeadNights.MOD_ID);
 
-    public static final Supplier<CreativeModeTab> CONTAGION_ITEMS_TAB = CREATIVE_MODE_TAB.register("contagion_items_tab",
+    public static final Supplier<CreativeModeTab> UNDEAD_NIGHTS_ITEMS_TAB = CREATIVE_MODE_TAB.register("undead_nights_items_tab",
             () -> CreativeModeTab.builder().icon(() -> new ItemStack(ModItems.SLIMY_ROTTEN_FLESH.get()))
                     .title(Component.translatable("itemgroup.undeadnights"))
                     .displayItems((itemDisplayParameters, output) -> {
