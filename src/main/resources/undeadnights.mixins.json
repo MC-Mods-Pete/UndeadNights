@@ -3,11 +3,13 @@
 	"package": "net.petemc.undeadnights.mixin",
 	"compatibilityLevel": "JAVA_17",
 	"mixins": [
-		"ServerWorldMixin",
-		"ServerPlayerEntityMixin",
+		"BrewingRecipeRegistryMixin",
+		"LivingEntityMixin",
 		"PlayerEntityMixin",
-		"ZombieEntityMixin",
-		"ServerEntityManagerMixin"
+		"ServerEntityManagerMixin",
+		"ServerPlayerEntityMixin",
+		"ServerWorldMixin",
+		"ZombieEntityMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

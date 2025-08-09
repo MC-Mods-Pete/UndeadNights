@@ -6,6 +6,7 @@ import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.petemc.undeadnights.UndeadNights;
@@ -26,18 +27,20 @@ public class StatusCommand {
 
     private static int status(CommandContext<ServerCommandSource> context) {
         String message = "DayCounter: " + UndeadNights.serverState.getDaysCounter() + " (max " + MainConfig.getDaysBetweenHordeNights() + ")\n" +
-                "HordeNight: " + UndeadNights.serverState.getHordeNight() + "\n" +
+                "Grace period: " + UndeadNights.serverState.getGracePeriod() + " (of " + MainConfig.getGracePeriodBeforeFirstHordeNight() + " days remaining)\n" +
+                "UndeadNights enabled: " + MainConfig.getUndeadNightsEnabled() + "\n" +
+                "Is it HordeNight: " + UndeadNights.serverState.getHordeNight() + "\n" +
                 "SpawnCounter: " + UndeadNights.globalSpawnCounter + " of max " + MainConfig.getHordeMobsSpawnCap() + "\n" +
                 "Block breaking: " + (HordeMobsCommand.hordeZombiesCanBreakBlocks ? ("enabled, tier: " + HordeMobsCommand.hordeZombiesBlockBreakingTier) : "disabled") + "\n" +
                 "Default Horde: " + UndeadSpawner.hordeToSpawn + ((UndeadSpawner.hordeToSpawn == 0) ? " (a horde will be chosen randomly)": "") + "\n";
-        Objects.requireNonNull(context.getSource().getEntity())
-                .sendMessage(Text.literal(message));
+                if (context.getSource().getEntity() instanceof ServerPlayerEntity serverPlayer) {
+                        serverPlayer.sendMessage(Text.literal(message));
+                    }
 
         if (HordeConfig.getReadingConfigFailed()) {
-            Objects.requireNonNull(context.getSource().getEntity())
-                    .sendMessage(Text.literal("Reading horde config failed!\nPlease check: https://github.com/MC-Mods-Pete/UndeadNights/wiki").formatted(Formatting.YELLOW));
-
-
+                        if (context.getSource().getEntity() instanceof ServerPlayerEntity serverPlayer) {
+                                serverPlayer.sendMessage(Text.literal("Reading horde config failed!\nPlease check: https://github.com/MC-Mods-Pete/UndeadNights/wiki").formatted(Formatting.YELLOW));
+                            }
         }
 
         message = message + " (spawnedHordeMobs: " + UndeadNights.serverState.spawnedHordeMobs.size() + ", hordeMobsToRemove: " + UndeadNights.serverState.hordeMobsToRemove.size() + ")";

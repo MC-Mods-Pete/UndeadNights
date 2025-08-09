@@ -1,16 +1,18 @@
 package net.petemc.undeadnights.entity;
 
+import net.fabricmc.fabric.api.biome.v1.BiomeModifications;
+import net.fabricmc.fabric.api.biome.v1.BiomeSelectors;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.*;
 import net.minecraft.entity.ai.goal.*;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
+import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.mob.HostileEntity;
 import net.minecraft.entity.mob.ZombieEntity;
 import net.minecraft.entity.passive.IronGolemEntity;
 import net.minecraft.entity.passive.MerchantEntity;
-import net.minecraft.entity.passive.TurtleEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -19,10 +21,9 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.random.Random;
-import net.minecraft.world.Difficulty;
-import net.minecraft.world.LocalDifficulty;
-import net.minecraft.world.ServerWorldAccess;
-import net.minecraft.world.World;
+import net.minecraft.world.*;
+import net.minecraft.world.biome.BiomeKeys;
+import net.petemc.undeadnights.UndeadNights;
 import net.petemc.undeadnights.config.MainConfig;
 import net.petemc.undeadnights.entity.ai.goal.TntIgniteAndThrowGoal;
 import org.jetbrains.annotations.Nullable;
@@ -38,30 +39,6 @@ public class DemolitionZombieEntity extends ZombieEntity {
         super(entityType, world);
     }
 
-    public static DefaultAttributeContainer.Builder createHordeZombieAttributes() {
-        return HostileEntity.createHostileAttributes()
-                .add(EntityAttributes.GENERIC_MAX_HEALTH, 40.0)       // default 20.0
-                .add(EntityAttributes.GENERIC_FOLLOW_RANGE, 128.0)    // default 35.0
-                .add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 0.30)  // default 0.23000000417232513
-                .add(EntityAttributes.GENERIC_ATTACK_DAMAGE, 5.0)     // default 3.0
-                .add(EntityAttributes.GENERIC_ARMOR, 4.0)             // default 2.0
-                .add(EntityAttributes.ZOMBIE_SPAWN_REINFORCEMENTS, 0.0);
-    }
-
-    @Override
-    protected void initCustomGoals() {
-        this.goalSelector.add(1, new SwimGoal(this));
-        this.goalSelector.add(2, new TntIgniteAndThrowGoal(this));
-        this.goalSelector.add(3, new ZombieAttackGoal(this, 1.0, false));
-        this.goalSelector.add(4, new DemolitionZombieEntity.ChasePlayerGoal(this));
-        this.goalSelector.add(6, new MoveThroughVillageGoal(this, 1.0, true, 4, this::canBreakDoors));
-        this.goalSelector.add(7, new WanderAroundFarGoal(this, 1.0));
-        this.targetSelector.add(1, new RevengeGoal(this, new Class[]{HordeZombieEntity.class, EliteZombieEntity.class, DemolitionZombieEntity.class}).setGroupRevenge(HordeZombieEntity.class));
-        this.targetSelector.add(2, new ActiveTargetGoal<>(this, PlayerEntity.class, false, false));
-        this.targetSelector.add(3, new ActiveTargetGoal<>(this, MerchantEntity.class, true));
-        this.targetSelector.add(3, new ActiveTargetGoal<>(this, IronGolemEntity.class, true));
-    }
-
     @Nullable
     @Override
     public EntityData initialize(
@@ -72,11 +49,11 @@ public class DemolitionZombieEntity extends ZombieEntity {
         float f = difficulty.getClampedLocalDifficulty();
         this.setCanPickUpLoot(random.nextFloat() < 0.55F * f);
         if (entityData == null) {
-            entityData = new ZombieEntity.ZombieData(false, false);
+            entityData = new ZombieData(false, false);
         }
 
         if (entityData instanceof ZombieData) {
-            this.setCanBreakDoors(this.shouldBreakDoors() && random.nextFloat() < f * 0.1F);
+            this.setCanBreakDoors(true);
             this.initEquipment(random, difficulty);
             this.updateEnchantments(random, difficulty);
         }
@@ -90,7 +67,36 @@ public class DemolitionZombieEntity extends ZombieEntity {
                 this.armorDropChances[EquipmentSlot.HEAD.getEntitySlotId()] = 0.0F;
             }
         }
+        Objects.requireNonNull(this.getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH)).addPersistentModifier(new EntityAttributeModifier("Horde zombie health bonus", MainConfig.getMaxHealthDemolitionZombies() - 20.0F, EntityAttributeModifier.Operation.ADDITION));
+
+        this.applyAttributeModifiers(f);
+        this.setHealth(this.getMaxHealth());
+        this.setBaby(false);
         return entityData;
+    }
+
+    public static DefaultAttributeContainer.Builder createHordeZombieAttributes() {
+        return HostileEntity.createHostileAttributes()
+                //.add(EntityAttributes.GENERIC_MAX_HEALTH, 40.0)       // default 20.0
+                .add(EntityAttributes.GENERIC_FOLLOW_RANGE, 128.0)    // default 35.0
+                .add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 0.30)   // default 0.23000000417232513
+                .add(EntityAttributes.GENERIC_ATTACK_DAMAGE, 5.0)     // default 3.0
+                .add(EntityAttributes.GENERIC_ARMOR, 4.0)             // default 2.0
+                .add(EntityAttributes.ZOMBIE_SPAWN_REINFORCEMENTS, 0.0);
+    }
+
+    @Override
+    protected void initCustomGoals() {
+        this.goalSelector.add(1, new SwimGoal(this));
+        this.goalSelector.add(2, new TntIgniteAndThrowGoal(this));
+        this.goalSelector.add(3, new ZombieAttackGoal(this, 1.0, false));
+        this.goalSelector.add(4, new ChasePlayerGoal(this));
+        this.goalSelector.add(6, new MoveThroughVillageGoal(this, 1.0, true, 4, this::canBreakDoors));
+        this.goalSelector.add(7, new WanderAroundFarGoal(this, 1.0));
+        this.targetSelector.add(1, new RevengeGoal(this, new Class[]{HordeZombieEntity.class, EliteZombieEntity.class, DemolitionZombieEntity.class}).setGroupRevenge(HordeZombieEntity.class));
+        this.targetSelector.add(2, new ActiveTargetGoal<>(this, PlayerEntity.class, false, false));
+        this.targetSelector.add(3, new ActiveTargetGoal<>(this, MerchantEntity.class, true));
+        this.targetSelector.add(3, new ActiveTargetGoal<>(this, IronGolemEntity.class, true));
     }
 
     @Override
@@ -184,6 +190,11 @@ public class DemolitionZombieEntity extends ZombieEntity {
     }
 
     @Override
+    protected float getBaseMovementSpeedMultiplier() {
+        return MainConfig.getHordeZombiesHaveIncreasedWaterMovementSpeed() ? 0.94F : 0.8F;
+    }
+
+    @Override
     protected void initAttributes() {
         Objects.requireNonNull(this.getAttributeInstance(EntityAttributes.ZOMBIE_SPAWN_REINFORCEMENTS)).setBaseValue(0.0F);
     }
@@ -194,6 +205,25 @@ public class DemolitionZombieEntity extends ZombieEntity {
 
     public int getNumberTnt() {
         return this.numberTnt;
+    }
+
+    public static void init() {
+        SpawnRestriction.register(ModEntities.DEMOLITION_ZOMBIE, SpawnRestriction.Location.ON_GROUND, Heightmap.Type.MOTION_BLOCKING_NO_LEAVES,
+                (entityType, world, reason, pos, random) ->
+                        MainConfig.getDemolitionZombiesSpawnNaturally()
+                                && UndeadNights.serverState.getIsNaturalSpawningOk()
+                                && !(world.getBiome(pos).matchesKey(BiomeKeys.MUSHROOM_FIELDS))
+                                && world.getDifficulty() != Difficulty.PEACEFUL
+                                && HostileEntity.isSpawnDark(world, pos, random)
+                                && HostileEntity.canMobSpawn(entityType, world, reason, pos, random));
+
+        BiomeModifications.addSpawn(BiomeSelectors.foundInOverworld(),
+                SpawnGroup.MONSTER, ModEntities.DEMOLITION_ZOMBIE, 10, 1, 2);
+    }
+
+    @Override
+    public void pushAwayFrom(Entity entity) {
+        super.pushAwayFrom(entity);
     }
 
     static class ChasePlayerGoal extends Goal {

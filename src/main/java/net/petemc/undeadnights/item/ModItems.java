@@ -16,6 +16,7 @@ public class ModItems {
     public static final Item HORDE_ZOMBIE_SPAWN_EGG = registerItem("horde_zombie_spawn_egg", new SpawnEggItem(ModEntities.HORDE_ZOMBIE, -9543745, -10987715, (new FabricItemSettings())));
     public static final Item ELITE_ZOMBIE_SPAWN_EGG = registerItem("elite_zombie_spawn_egg", new SpawnEggItem(ModEntities.ELITE_ZOMBIE, -10127264, -6685775, (new FabricItemSettings())));
     public static final Item DEMOLITION_ZOMBIE_SPAWN_EGG = registerItem("demolition_zombie_spawn_egg", new SpawnEggItem(ModEntities.DEMOLITION_ZOMBIE, -16765109, -16738748, (new FabricItemSettings())));
+    public static final Item SLIMY_ROTTEN_FLESH = registerItem("slimy_rotten_flesh", new Item(new FabricItemSettings()));
 
     private static void addItemsToFoodDrinkItemGroup(FabricItemGroupEntries entries) {
         entries.add(HORDE_ZOMBIE_SPAWN_EGG);

@@ -29,14 +29,34 @@ public class ModServerLifecycleEvents {
                 UndeadNights.serverState.setLastMaxDaysCounter(MainConfig.getDaysBetweenHordeNights());
             }
 
+            // check if the Grace Period in the config was changed
+            if (UndeadNights.serverState.getLastMaxGracePeriod() != MainConfig.getGracePeriodBeforeFirstHordeNight()) {
+                UndeadNights.serverState.setGracePeriod(MainConfig.getGracePeriodBeforeFirstHordeNight());
+                UndeadNights.serverState.setLastMaxGracePeriod(MainConfig.getGracePeriodBeforeFirstHordeNight());
+            }
+
+            // check if the maximum number of hordes per night in the config was changed
+            if (UndeadNights.serverState.getLastMaxHordesCounter() != MainConfig.getMaxHordesPerHordeNight()) {
+            if (MainConfig.getMaxHordesPerHordeNight() != 0) {
+                    UndeadNights.serverState.setHordesCounter(MainConfig.getMaxHordesPerHordeNight() + 1);
+                } else {
+                    UndeadNights.serverState.setHordesCounter(0);
+                }
+                UndeadNights.serverState.setLastMaxHordesCounter(MainConfig.getMaxHordesPerHordeNight());
+            }
+
+            if (!MainConfig.getNoNaturalSpawningBeforeFirstHordeNight()) {
+                UndeadNights.serverState.setIsNaturalSpawningOk(true);
+            }
+
             if (MainConfig.getPrintDebugMessages()) {
                 UndeadNights.LOGGER.info("INIT DaysCounter: {} LastMaxDaysCounter: {}", UndeadNights.serverState.getDaysCounter(), UndeadNights.serverState.getLastMaxDaysCounter());
                 UndeadNights.LOGGER.info("INIT HordeNight: {} SpawnZombies: {} RespawnZombies: {}", UndeadNights.serverState.getHordeNight(), UndeadNights.serverState.getSpawnZombies(), UndeadNights.serverState.getRespawnZombies());
             }
             UndeadSpawner.hordeToSpawn = HordeConfig.getDefaultHorde();
-            UndeadSpawner.prevNormalizedTimeOfDay = pServer.getOverworld().getTimeOfDay() - 1;
+            //UndeadSpawner.prevNormalizedTimeOfDay = pServer.getOverworld().getTimeOfDay() - 1;
             HordeMobsCommand.hordeZombiesCanBreakBlocks = MainConfig.getHordeZombiesCanBreakBlocks();
-            HordeMobsCommand.hordeZombiesBlockBreakingTier = MainConfig.getHordeZombiesBlockBreakTier();
+            HordeMobsCommand.hordeZombiesBlockBreakingTier = MainConfig.getZombiesBlockBreakTier();
         }
     }
 
