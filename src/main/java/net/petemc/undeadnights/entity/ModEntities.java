@@ -14,13 +14,13 @@ public class ModEntities {
             DeferredRegister.create(Registries.ENTITY_TYPE, UndeadNights.MOD_ID);
 
     public static final Supplier<EntityType<HordeZombieEntity>> HORDE_ZOMBIE =
-            ENTITY_TYPES.register("horde_zombie", () -> EntityType.Builder.of(HordeZombieEntity::new, MobCategory.CREATURE)
+            ENTITY_TYPES.register("horde_zombie", () -> EntityType.Builder.of(HordeZombieEntity::new, MobCategory.MONSTER)
                     .sized(0.6f, 1.95f).build("horde_zombie"));
     public static final Supplier<EntityType<DemolitionZombieEntity>> DEMOLITION_ZOMBIE =
-            ENTITY_TYPES.register("demolition_zombie", () -> EntityType.Builder.of(DemolitionZombieEntity::new, MobCategory.CREATURE)
+            ENTITY_TYPES.register("demolition_zombie", () -> EntityType.Builder.of(DemolitionZombieEntity::new, MobCategory.MONSTER)
                     .sized(0.6f, 1.95f).build("demolition_zombie"));
     public static final Supplier<EntityType<EliteZombieEntity>> ELITE_ZOMBIE =
-            ENTITY_TYPES.register("elite_zombie", () -> EntityType.Builder.of(EliteZombieEntity::new, MobCategory.CREATURE)
+            ENTITY_TYPES.register("elite_zombie", () -> EntityType.Builder.of(EliteZombieEntity::new, MobCategory.MONSTER)
                     .sized(0.6f, 1.95f).build("elite_zombie"));
     public static final Supplier<EntityType<DemolitionZombieProjectileEntity>> TNT_PROJECTILE =
             ENTITY_TYPES.register("tnt_projectile", () ->
@@ -30,6 +30,14 @@ public class ModEntities {
                             .setUpdateInterval(1)
                             .sized(0.5F, 0.5F)
                             .build("tnt_projectile"));
+
+    /*
+    public static void initModEntities() {
+        HordeZombieEntity.init();
+        EliteZombieEntity.init();
+        DemolitionZombieEntity.init();
+    }
+     */
 
     public static void register(IEventBus eventBus) {
         ENTITY_TYPES.register(eventBus);

@@ -1,15 +1,17 @@
 package net.petemc.undeadnights.item;
 
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.Item;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.common.DeferredSpawnEggItem;
 import net.neoforged.neoforge.registries.DeferredHolder;
+import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import net.petemc.undeadnights.UndeadNights;
 import net.petemc.undeadnights.entity.ModEntities;
 
 public class ModItems {
-    public static final DeferredRegister<Item> ITEMS =
+    public static final DeferredRegister.Items ITEMS =
             DeferredRegister.createItems(UndeadNights.MOD_ID);
 
     public static final DeferredHolder<Item, DeferredSpawnEggItem> HORDE_ZOMBIE_SPAWN_EGG = ITEMS.register("horde_zombie_spawn_egg",
@@ -21,9 +23,10 @@ public class ModItems {
     public static final DeferredHolder<Item, DeferredSpawnEggItem> DEMOLITION_ZOMBIE_SPAWN_EGG = ITEMS.register("demolition_zombie_spawn_egg",
             () -> new DeferredSpawnEggItem(ModEntities.DEMOLITION_ZOMBIE, -16765109, -16738748, (new Item.Properties())));
 
+    public static final DeferredItem<Item> SLIMY_ROTTEN_FLESH = ITEMS.register("slimy_rotten_flesh",
+            () -> new Item(new Item.Properties()));
+
     public static void register(IEventBus eventBus) {
         ITEMS.register(eventBus);
     }
-
 }
-
