@@ -5,7 +5,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.SpawnEggItem;
-import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.eventbus.api.bus.BusGroup;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
@@ -28,8 +28,8 @@ public class ModItems {
             () -> new SpawnEggItem(ModEntities.DEMOLITION_ZOMBIE.get(), (new Item.Properties())
                     .setId(ResourceKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath(UndeadNights.MOD_ID, "demolition_zombie_spawn_egg")))));
 
-    public static void register(IEventBus eventBus) {
-        ITEMS.register(eventBus);
+    public static void register(BusGroup modBusGroup) {
+        ITEMS.register(modBusGroup);
     }
 
 }

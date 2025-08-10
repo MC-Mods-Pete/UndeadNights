@@ -1,12 +1,12 @@
 package net.petemc.undeadnights.event;
 
 import net.minecraft.world.entity.Entity;
+import net.minecraftforge.common.util.Result;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.event.entity.EntityLeaveLevelEvent;
 import net.minecraftforge.event.entity.living.ZombieEvent;
-import net.minecraftforge.eventbus.api.Event;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.eventbus.api.listener.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.server.command.ConfigCommand;
 import net.petemc.undeadnights.UndeadNights;
@@ -30,7 +30,7 @@ public class ModEvents {
                 //if (MainConfig.getPrintDebugMessages()) {
                 //    UndeadNights.LOGGER.info("Reinforcement denied for {}", event.getEntity().getName().getString());
                 //}
-                event.setResult(Event.Result.DENY);
+                event.setResult(Result.DENY);
             }
         }
 
@@ -41,7 +41,7 @@ public class ModEvents {
                     if (UndeadNights.serverState.spawnedHordeMobs.containsKey(event.getEntity().getUUID())) {
                         if (UndeadNights.serverState.hordeMobsToRemove.containsKey(event.getEntity().getUUID())) {
                             UndeadNights.serverState.hordeMobsToRemove.remove(event.getEntity().getUUID());
-                            event.setCanceled(true);
+                            event.getEntity().remove(Entity.RemovalReason.DISCARDED);
                             UndeadNights.LOGGER.info("LOAD canceled, Entity marked for removal: {}", event.getEntity().getUUID());
                         } else {
                             UndeadNights.globalSpawnCounter++;

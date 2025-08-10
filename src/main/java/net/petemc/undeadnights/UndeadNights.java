@@ -4,11 +4,9 @@ import com.mojang.logging.LogUtils;
 import net.minecraft.client.renderer.entity.EntityRenderers;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
 import net.minecraftforge.event.server.ServerStartingEvent;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.eventbus.api.listener.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
@@ -37,16 +35,21 @@ public class UndeadNights {
 	public static int globalSpawnCounter = 0;
 
 	public UndeadNights(FMLJavaModLoadingContext context) {
-		IEventBus modEventBus = context.getModEventBus();
+		var modBusGroup = context.getModBusGroup();
 
-		UndeadNightsSounds.register(modEventBus);
-		ModEntities.register(modEventBus);
-		ModItems.register(modEventBus);
+		// Register the commonSetup method for modloading
+		FMLCommonSetupEvent.getBus(modBusGroup).addListener(this::commonSetup);
+		FMLClientSetupEvent.getBus(modBusGroup).addListener(ClientModEvents::onClientSetup);
 
-		modEventBus.addListener(this::commonSetup);
+		ServerStartingEvent.BUS.addListener(this::onServerStarting);
 
-		MinecraftForge.EVENT_BUS.register(this);
-		modEventBus.addListener(this::addCreative);
+		// Register the item to a creative tab
+		BuildCreativeModeTabContentsEvent.getBus(modBusGroup).addListener(this::addCreative);
+
+		UndeadNightsSounds.register(modBusGroup);
+		ModEntities.register(modBusGroup);
+		ModItems.register(modBusGroup);
+
 		context.registerConfig(ModConfig.Type.SERVER, MainConfig.SPEC_SERVER);
 		HordeConfig.loadConfig();
 	}
@@ -89,7 +92,7 @@ public class UndeadNights {
 	}
 
 	// You can use EventBusSubscriber to automatically register all static methods in the class annotated with @SubscribeEvent
-	@Mod.EventBusSubscriber(modid = MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
+	@Mod.EventBusSubscriber(modid = MOD_ID, value = Dist.CLIENT)
 	public static class ClientModEvents {
 		@SubscribeEvent
 		public static void onClientSetup(FMLClientSetupEvent event) {
