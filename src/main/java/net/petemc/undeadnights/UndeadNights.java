@@ -21,8 +21,11 @@ import net.petemc.undeadnights.client.render.HordeZombieRenderer;
 import net.petemc.undeadnights.command.HordeMobsCommand;
 import net.petemc.undeadnights.config.HordeConfig;
 import net.petemc.undeadnights.config.MainConfig;
+import net.petemc.undeadnights.effect.ModEffects;
 import net.petemc.undeadnights.entity.ModEntities;
+import net.petemc.undeadnights.item.ModCreativeModeTabs;
 import net.petemc.undeadnights.item.ModItems;
+import net.petemc.undeadnights.potion.ModPotions;
 import net.petemc.undeadnights.sound.UndeadNightsSounds;
 import net.petemc.undeadnights.util.StateSaverAndLoader;
 import net.petemc.undeadnights.world.spawner.UndeadSpawner;
@@ -41,9 +44,12 @@ public class UndeadNights {
 	public UndeadNights(IEventBus modEventBus, ModContainer modContainer) {
 		UndeadNightsSounds.register(modEventBus);
 		ModEntities.register(modEventBus);
+		ModEffects.register(modEventBus);
 		ModItems.register(modEventBus);
+		ModPotions.register(modEventBus);
+		ModCreativeModeTabs.register(modEventBus);
 
-		// Register the commonSetup method for modloading
+		// Register the commonSetup method for loading the mod
 		modEventBus.addListener(this::commonSetup);
 
 		// Register ourselves for server and other game events we are interested in.
@@ -58,7 +64,8 @@ public class UndeadNights {
 	private void commonSetup(final FMLCommonSetupEvent event) {
 		LOGGER.info("Initializing the {} Mod", MOD_NAME);
 		event.enqueueWork(() -> {
-
+			//ModEntities.initModEntities();
+			//PotionBrewing.addMix(Potions.AWKWARD, ModItems.SLIMY_ROTTEN_FLESH.get(), ModPotions.LURE_HORDE_POTION.get());
 		});
 	}
 
@@ -83,14 +90,34 @@ public class UndeadNights {
 				UndeadNights.serverState.setLastMaxDaysCounter(MainConfig.getDaysBetweenHordeNights());
 			}
 
+			// check if the Grace Period in the config was changed
+			if (UndeadNights.serverState.getLastMaxGracePeriod() != MainConfig.getGracePeriodBeforeFirstHordeNight()) {
+				UndeadNights.serverState.setGracePeriod(MainConfig.getGracePeriodBeforeFirstHordeNight());
+				UndeadNights.serverState.setLastMaxGracePeriod(MainConfig.getGracePeriodBeforeFirstHordeNight());
+			}
+
+			// check if the maximum number of hordes per night in the config was changed
+			if (UndeadNights.serverState.getLastMaxHordesCounter() != MainConfig.getMaxHordesPerHordeNight()) {
+				if (MainConfig.getMaxHordesPerHordeNight() != 0) {
+					UndeadNights.serverState.setHordesCounter(MainConfig.getMaxHordesPerHordeNight() + 1);
+				} else {
+					UndeadNights.serverState.setHordesCounter(0);
+				}
+				UndeadNights.serverState.setLastMaxHordesCounter(MainConfig.getMaxHordesPerHordeNight());
+			}
+
+			if (!MainConfig.getNoNaturalSpawningBeforeFirstHordeNight()) {
+				UndeadNights.serverState.setIsNaturalSpawningOk(true);
+			}
+
 			if (MainConfig.getPrintDebugMessages()) {
 				UndeadNights.LOGGER.info("INIT DaysCounter: {} LastMaxDaysCounter: {}", UndeadNights.serverState.getDaysCounter(), UndeadNights.serverState.getLastMaxDaysCounter());
 				UndeadNights.LOGGER.info("INIT HordeNight: {} SpawnZombies: {} RespawnZombies: {}", UndeadNights.serverState.getHordeNight(), UndeadNights.serverState.getSpawnZombies(), UndeadNights.serverState.getRespawnZombies());
 			}
 			UndeadSpawner.hordeToSpawn = HordeConfig.getDefaultHorde();
-			UndeadSpawner.prevNormalizedTimeOfDay = event.getServer().overworld().getDayTime() - 1;
+			//UndeadSpawner.prevNormalizedTimeOfDay = event.getServer().overworld().getDayTime() - 1;
 			HordeMobsCommand.hordeZombiesCanBreakBlocks = MainConfig.getHordeZombiesCanBreakBlocks();
-			HordeMobsCommand.hordeZombiesBlockBreakingTier = MainConfig.getHordeZombiesBlockBreakTier();
+			HordeMobsCommand.hordeZombiesBlockBreakingTier = MainConfig.getZombiesBlockBreakTier();
 		}
 	}
 

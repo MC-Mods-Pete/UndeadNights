@@ -14,6 +14,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.DoorBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.petemc.undeadnights.UndeadNights;
+import net.petemc.undeadnights.casts.BlockBreakingZombie;
 import net.petemc.undeadnights.command.HordeMobsCommand;
 import net.petemc.undeadnights.config.MainConfig;
 import net.petemc.undeadnights.entity.EliteZombieEntity;
@@ -60,6 +61,9 @@ public class BreakBlockGoal extends Goal {
         if (this.mob instanceof EliteZombieEntity eliteZombie) {
             eliteZombie.setBreakingBlock(true);
         }
+        if (this.mob instanceof BlockBreakingZombie zombie) {
+            zombie.setBreakingBlock(true);
+        }
     }
 
     @Override
@@ -103,6 +107,10 @@ public class BreakBlockGoal extends Goal {
             return false;
         }
 
+        if (this.mob.getRandom().nextFloat() < 0.5F) {
+            return false;
+        }
+
         final Level world = mob.level();
         final Direction direction = mob.getDirection();
 
@@ -136,7 +144,7 @@ public class BreakBlockGoal extends Goal {
         float destroyTime = world.getBlockState(targetBlock).getBlock().defaultDestroyTime();
         scaledTargetDestroyTime = destroyTime * 2;
         if (MainConfig.getPrintDebugMessages()) {
-            UndeadNights.LOGGER.info("Block {} time {} stage {}", world.getBlockState(targetBlock).getBlock(), world.getBlockState(targetBlock).getBlock().defaultDestroyTime(), MainConfig.getHordeZombiesBlockBreakTier());
+            UndeadNights.LOGGER.info("Block: {} destroyTime: {} Stage: {}", world.getBlockState(targetBlock).getBlock(), world.getBlockState(targetBlock).getBlock().defaultDestroyTime(), MainConfig.getZombiesBlockBreakTier());
         }
 
         if (block instanceof DoorBlock) {
@@ -160,8 +168,15 @@ public class BreakBlockGoal extends Goal {
         if ((destroyTime > 3.0f) && (HordeMobsCommand.hordeZombiesBlockBreakingTier == 2)) {
             return false;
         }
-        if (destroyTime > 20.0f) {
+        if ((destroyTime > 20.0f) && (HordeMobsCommand.hordeZombiesBlockBreakingTier == 3)) {
             return false;
+        }
+        if (destroyTime > 75.0f) {
+            return false;
+        }
+
+        if (destroyTime >= 50.0f) {
+            scaledTargetDestroyTime = 25.0f;
         }
 
         ratio = 10 / scaledTargetDestroyTime;
