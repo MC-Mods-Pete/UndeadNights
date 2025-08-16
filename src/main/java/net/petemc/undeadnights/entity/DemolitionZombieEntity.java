@@ -1,6 +1,7 @@
 package net.petemc.undeadnights.entity;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Difficulty;
@@ -8,6 +9,7 @@ import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.*;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.*;
@@ -23,7 +25,9 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
+import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.block.Blocks;
+import net.petemc.undeadnights.UndeadNights;
 import net.petemc.undeadnights.config.MainConfig;
 import net.petemc.undeadnights.entity.ai.goal.TntIgniteAndThrowGoal;
 import org.jetbrains.annotations.NotNull;
@@ -65,15 +69,17 @@ public class DemolitionZombieEntity extends Zombie  {
                 this.setDropChance(EquipmentSlot.HEAD, 0.0F);
             }
         }
+        Objects.requireNonNull(this.getAttribute(Attributes.MAX_HEALTH)).addPermanentModifier(new AttributeModifier(ResourceLocation.fromNamespaceAndPath(UndeadNights.MOD_ID, "demolition_zombie_health_bonus"), MainConfig.getMaxHealthDemolitionZombies() - 20.0F, AttributeModifier.Operation.ADD_VALUE));
 
         this.handleAttributes(f);
+        this.setHealth(this.getMaxHealth());
         this.setBaby(false);
         return spawnGroupData;
     }
 
     public static AttributeSupplier.@NotNull Builder createAttributes() {
         return Monster.createMonsterAttributes()
-                .add(Attributes.MAX_HEALTH, 40.0D)          // default 20.F
+                //.add(Attributes.MAX_HEALTH, 40.0D)          // default 20.F
                 .add(Attributes.FOLLOW_RANGE, 128.0D)       // default 35.0D
                 .add(Attributes.MOVEMENT_SPEED, 0.30D)      // default 0.23F
                 .add(Attributes.ATTACK_DAMAGE, 5.0D)        // default 3.0
@@ -184,6 +190,11 @@ public class DemolitionZombieEntity extends Zombie  {
     }
 
     @Override
+    protected float getWaterSlowDown() {
+        return MainConfig.getHordeZombiesHaveIncreasedWaterMovementSpeed() ? 0.94F : 0.8F;
+    }
+
+    @Override
     public void randomizeReinforcementsChance() {
         Objects.requireNonNull(this.getAttribute(Attributes.SPAWN_REINFORCEMENTS_CHANCE)).setBaseValue((double)0.0F);
     }
@@ -194,6 +205,33 @@ public class DemolitionZombieEntity extends Zombie  {
 
     public int getNumberTnt() {
         return this.numberTnt;
+    }
+
+    /*
+    public static void init() {
+        SpawnPlacements.register(ModEntities.DEMOLITION_ZOMBIE.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+                (entityType, serverLevel, reason, pos, random) ->
+                        MainConfig.getDemolitionZombiesSpawnNaturally()
+                                && UndeadNights.serverState.getIsNaturalSpawningOk()
+                                && !(serverLevel.getBiome(pos).is(Biomes.MUSHROOM_FIELDS))
+                                && serverLevel.getDifficulty() != Difficulty.PEACEFUL
+                                && Monster.isDarkEnoughToSpawn(serverLevel, pos, random)
+                                && Mob.checkMobSpawnRules(entityType, serverLevel, reason, pos, random));
+    }
+     */
+
+    public static boolean checkDemolitionZombieSpawnRules(EntityType<DemolitionZombieEntity> demolitionZombieEntityType, ServerLevelAccessor serverLevel, EntitySpawnReason spawnType, BlockPos pos, RandomSource random) {
+        return MainConfig.getDemolitionZombiesSpawnNaturally()
+                && UndeadNights.serverState.getIsNaturalSpawningOk()
+                && !(serverLevel.getBiome(pos).is(Biomes.MUSHROOM_FIELDS))
+                && serverLevel.getDifficulty() != Difficulty.PEACEFUL
+                && Monster.isDarkEnoughToSpawn(serverLevel, pos, random)
+                && Mob.checkMobSpawnRules(demolitionZombieEntityType, serverLevel, spawnType, pos, random);
+    }
+
+    @Override
+    public void push(Entity entity) {
+        super.push(entity);
     }
 
     static class ChasePlayerGoal extends Goal {

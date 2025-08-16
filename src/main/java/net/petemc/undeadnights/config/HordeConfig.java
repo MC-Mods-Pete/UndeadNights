@@ -125,7 +125,11 @@ public class HordeConfig {
                     numberOfHordes = 1;
                     defaultHorde = 1;
                 } else {
-                    defaultHorde = json.get("defaultHordeId").getAsInt();
+                    try {
+                        defaultHorde = json.get("defaultHordeId").getAsInt();
+                    } catch (Exception e) {
+                        defaultHorde = 1;
+                    }
                     JsonArray hordesArray = json.getAsJsonArray("hordes");
                     numberOfHordes = hordesArray.size();
                     for (int j = 0; j < hordesArray.size(); j++) {

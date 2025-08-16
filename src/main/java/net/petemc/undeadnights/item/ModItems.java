@@ -28,9 +28,11 @@ public class ModItems {
             () -> new SpawnEggItem(ModEntities.DEMOLITION_ZOMBIE.get(), (new Item.Properties())
                     .setId(ResourceKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath(UndeadNights.MOD_ID, "demolition_zombie_spawn_egg")))));
 
+    public static final RegistryObject<Item> SLIMY_ROTTEN_FLESH = ITEMS.register("slimy_rotten_flesh",
+            () -> new Item(new Item.Properties()
+                    .setId(ResourceKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath(UndeadNights.MOD_ID, "slimy_rotten_flesh")))));
+
     public static void register(BusGroup modBusGroup) {
         ITEMS.register(modBusGroup);
     }
-
 }
-
