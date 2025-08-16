@@ -76,7 +76,7 @@ public class HordeZombieEntity extends ZombieEntity {
         return entityData;
     }
 
-    public static DefaultAttributeContainer.Builder createHordeZombieAttributes() {
+    public static DefaultAttributeContainer.Builder createAttributes() {
         return HostileEntity.createHostileAttributes()
                 //.add(EntityAttributes.GENERIC_MAX_HEALTH, 40.0)       // default 20.0
                 .add(EntityAttributes.GENERIC_FOLLOW_RANGE, 128.0)    // default 35.0

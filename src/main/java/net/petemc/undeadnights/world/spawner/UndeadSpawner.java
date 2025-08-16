@@ -292,8 +292,8 @@ public class UndeadSpawner implements Spawner {
                                 randomValue = randomSource.nextBetween(1, 100);
                                 if (spawnHordeMob(world, randomSource, pos, player, (randomValue > (100 - mobSpawnData.chance())) ? mobSpawnData : HordeConfig.getDefaultHordeMob()) == 0) {
                                     spawnCounter++;
-                                    waveMobCounter++;
                                 }
+                                waveMobCounter++;
                                 if (waveMobCounter >= HordeConfig.getMaxWaveSize()) {
                                     d = 0;
                                     break;
@@ -309,8 +309,8 @@ public class UndeadSpawner implements Spawner {
                     } else {
                         if (spawnHordeMob(world, randomSource, pos, player, HordeConfig.getDefaultHordeMob()) == 0) {
                             spawnCounter++;
-                            waveMobCounter++;
                         }
+                        waveMobCounter++;
                     }
                 }
             }

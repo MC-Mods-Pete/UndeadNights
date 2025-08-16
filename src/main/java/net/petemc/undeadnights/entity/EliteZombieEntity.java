@@ -69,7 +69,7 @@ public class EliteZombieEntity extends ZombieEntity {
                 this.armorDropChances[EquipmentSlot.HEAD.getEntitySlotId()] = 0.0F;
             }
         }
-        Objects.requireNonNull(this.getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH)).addPersistentModifier(new EntityAttributeModifier("Horde zombie health bonus", MainConfig.getMaxHealthEliteZombies() - 20.0F, EntityAttributeModifier.Operation.ADDITION));
+        Objects.requireNonNull(this.getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH)).addPersistentModifier(new EntityAttributeModifier("Elite zombie health bonus", MainConfig.getMaxHealthEliteZombies() - 20.0F, EntityAttributeModifier.Operation.ADDITION));
 
         this.applyAttributeModifiers(f);
         this.setHealth(this.getMaxHealth());
@@ -77,7 +77,7 @@ public class EliteZombieEntity extends ZombieEntity {
         return entityData;
     }
 
-    public static DefaultAttributeContainer.Builder createHordeZombieAttributes() {
+    public static DefaultAttributeContainer.Builder createAttributes() {
         return HostileEntity.createHostileAttributes()
                 //.add(EntityAttributes.GENERIC_MAX_HEALTH, 40.0)       // default 20.0
                 .add(EntityAttributes.GENERIC_FOLLOW_RANGE, 128.0)    // default 35.0
