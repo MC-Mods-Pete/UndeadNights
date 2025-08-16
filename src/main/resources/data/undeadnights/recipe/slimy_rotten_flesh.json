@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+      "minecraft:rotten_flesh",
+      "minecraft:slime_ball"
+  ],
+  "result": {
+    "count": 1,
+    "id": "undeadnights:slimy_rotten_flesh"
+  }
+}

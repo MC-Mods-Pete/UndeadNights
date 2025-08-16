@@ -23,6 +23,8 @@ public class ModItems {
     public static final Item DEMOLITION_ZOMBIE_SPAWN_EGG = registerItem("demolition_zombie_spawn_egg",
             new SpawnEggItem(ModEntities.DEMOLITION_ZOMBIE, (new Item.Settings()
                     .registryKey(RegistryKey.of(RegistryKeys.ITEM, Identifier.of(UndeadNights.MOD_ID, "demolition_zombie_spawn_egg"))))));
+    public static final Item SLIMY_ROTTEN_FLESH = registerItem("slimy_rotten_flesh", new Item(new Item.Settings()
+            .registryKey(RegistryKey.of(RegistryKeys.ITEM, Identifier.of(UndeadNights.MOD_ID, "slimy_rotten_flesh")))));
 
     private static void addItemsToFoodDrinkItemGroup(FabricItemGroupEntries entries) {
         entries.add(HORDE_ZOMBIE_SPAWN_EGG);

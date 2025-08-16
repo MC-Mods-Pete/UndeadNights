@@ -39,4 +39,10 @@ public class ModEntities {
                     .trackingTickInterval(1)
                     .dimensions(0.5f, 0.5f)
                     .build(keyTntProjectile));
+
+    public static void initModEntities() {
+        HordeZombieEntity.init();
+        EliteZombieEntity.init();
+        DemolitionZombieEntity.init();
+    }
 }
