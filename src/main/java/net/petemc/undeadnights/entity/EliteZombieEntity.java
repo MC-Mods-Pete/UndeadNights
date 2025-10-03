@@ -77,7 +77,6 @@ public class EliteZombieEntity extends ZombieEntity {
 
     public static DefaultAttributeContainer.Builder createHordeZombieAttributes() {
         return HostileEntity.createHostileAttributes()
-                //.add(EntityAttributes.MAX_HEALTH, 40.0)       // default 20.0
                 .add(EntityAttributes.FOLLOW_RANGE, 128.0)    // default 35.0
                 .add(EntityAttributes.MOVEMENT_SPEED, 0.32)   // default 0.23000000417232513
                 .add(EntityAttributes.ATTACK_DAMAGE, 6.0)     // default 3.0
@@ -126,7 +125,7 @@ public class EliteZombieEntity extends ZombieEntity {
                 if (equipmentSlot.getType() == EquipmentSlot.Type.HUMANOID_ARMOR) {
                     ItemStack itemStack = this.getEquippedStack(equipmentSlot);
                     if (itemStack.isEmpty()) {
-                        Item item = getEquipmentForSlot(equipmentSlot, 4);
+                        Item item = getEquipmentForSlot(equipmentSlot, 5);
                         if (item != null) {
                             this.equipStack(equipmentSlot, new ItemStack(item));
                         }

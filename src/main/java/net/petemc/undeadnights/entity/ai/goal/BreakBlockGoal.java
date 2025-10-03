@@ -76,15 +76,15 @@ public class BreakBlockGoal extends Goal {
         breakProgress += breakProgressPerTick;
         mob.swingHand(Hand.MAIN_HAND);
         if (breakProgress >= scaledTargetDestroyTime) {
-            mob.getWorld().breakBlock(this.targetBlock, true);
+            mob.getEntityWorld().breakBlock(this.targetBlock, true);
             return;
         }
-        mob.getWorld().setBlockBreakingInfo(mob.getId(), targetBlock, (int) (breakProgress * ratio));
+        mob.getEntityWorld().setBlockBreakingInfo(mob.getId(), targetBlock, (int) (breakProgress * ratio));
     }
 
     @Override
     public void stop() {
-        mob.getWorld().setBlockBreakingInfo(mob.getId(), targetBlock, 0);
+        mob.getEntityWorld().setBlockBreakingInfo(mob.getId(), targetBlock, 0);
         breakProgress = 0;
         targetBlock = null;
         scaledTargetDestroyTime = 0;
@@ -111,7 +111,7 @@ public class BreakBlockGoal extends Goal {
             return false;
         }
 
-        final World world = mob.getWorld();
+        final World world = mob.getEntityWorld();
         final Direction direction = mob.getHorizontalFacing();
 
         BlockPos blockPos = mob.getBlockPos();

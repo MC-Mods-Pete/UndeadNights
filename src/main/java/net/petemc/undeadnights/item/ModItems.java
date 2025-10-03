@@ -15,13 +15,13 @@ import net.petemc.undeadnights.entity.ModEntities;
 
 public class ModItems {
     public static final Item HORDE_ZOMBIE_SPAWN_EGG = registerItem("horde_zombie_spawn_egg",
-            new SpawnEggItem(ModEntities.HORDE_ZOMBIE, (new Item.Settings()
-                    .registryKey(RegistryKey.of(RegistryKeys.ITEM, Identifier.of(UndeadNights.MOD_ID, "horde_zombie_spawn_egg"))))));
+            new SpawnEggItem(new Item.Settings().spawnEgg(ModEntities.HORDE_ZOMBIE)
+                    .registryKey(RegistryKey.of(RegistryKeys.ITEM, Identifier.of(UndeadNights.MOD_ID, "horde_zombie_spawn_egg")))));
     public static final Item ELITE_ZOMBIE_SPAWN_EGG = registerItem("elite_zombie_spawn_egg",
-            new SpawnEggItem(ModEntities.ELITE_ZOMBIE, (new Item.Settings()
+            new SpawnEggItem((new Item.Settings().spawnEgg(ModEntities.ELITE_ZOMBIE)
                     .registryKey(RegistryKey.of(RegistryKeys.ITEM, Identifier.of(UndeadNights.MOD_ID, "elite_zombie_spawn_egg"))))));
     public static final Item DEMOLITION_ZOMBIE_SPAWN_EGG = registerItem("demolition_zombie_spawn_egg",
-            new SpawnEggItem(ModEntities.DEMOLITION_ZOMBIE, (new Item.Settings()
+            new SpawnEggItem((new Item.Settings().spawnEgg(ModEntities.DEMOLITION_ZOMBIE)
                     .registryKey(RegistryKey.of(RegistryKeys.ITEM, Identifier.of(UndeadNights.MOD_ID, "demolition_zombie_spawn_egg"))))));
     public static final Item SLIMY_ROTTEN_FLESH = registerItem("slimy_rotten_flesh", new Item(new Item.Settings()
             .registryKey(RegistryKey.of(RegistryKeys.ITEM, Identifier.of(UndeadNights.MOD_ID, "slimy_rotten_flesh")))));

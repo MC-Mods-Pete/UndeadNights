@@ -24,9 +24,9 @@ public class LureHordeMobsEffect extends StatusEffect {
 
     @Override
     public boolean applyUpdateEffect(ServerWorld pWorld, LivingEntity pLivingEntity, int pAmplifier) {
-        if (!pLivingEntity.getWorld().isClient()) {
+        if (!pLivingEntity.getEntityWorld().isClient()) {
             if (pLivingEntity instanceof PlayerEntity pPlayer) {
-                WorldAccess world = pPlayer.getWorld();
+                WorldAccess world = pPlayer.getEntityWorld();
                 Random randomSource = pPlayer.getRandom();
                 if (MainConfig.getLureHordeEffectSpawnsHorde()) {
                     if (!UndeadNights.serverState.entitiesWithReceivedHorde.containsKey(pPlayer.getUuid())) {
@@ -38,7 +38,7 @@ public class LureHordeMobsEffect extends StatusEffect {
                     }
                 }
 
-                final Vec3d entityPosition = pPlayer.getPos();
+                final Vec3d entityPosition = pPlayer.getEntityPos();
                 final Box entitySearchArea = new Box(entityPosition, entityPosition).expand(15d);
 
                 if (randomSource.nextDouble() < 0.03D) {

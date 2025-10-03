@@ -47,7 +47,7 @@ public class LivingEntityMixin
                 boolean isZombie = (((Entity)(Object) this) instanceof ZombieEntity);
                 boolean flag = (MainConfig.getNonHordeZombiesCanCauseLureHordeEffect() && isZombie);
                 if ((UndeadNights.serverState.spawnedHordeMobs.containsKey(((Entity)(Object) this).getUuid())) || flag) {
-                    Random randomSource = player.getWorld().random;
+                    Random randomSource = player.getEntityWorld().random;
                     double rand = randomSource.nextDouble();
                     if (rand < MainConfig.getChanceForLureHordeEffect()) {
                         if (!player.hasStatusEffect(ModEffects.LURE_HORDE)) {
@@ -62,7 +62,7 @@ public class LivingEntityMixin
     @Inject(method = "tick", at = @At("TAIL"), cancellable = true)
     public void tick(CallbackInfo ci) {
         Entity entity = (Entity) (Object) this;
-        WorldAccess world = entity.getWorld();
+        WorldAccess world = entity.getEntityWorld();
         if (entity == null) {
             ci.cancel();
         }
@@ -87,7 +87,7 @@ public class LivingEntityMixin
             }
 
             if (MainConfig.getHordeZombiesCanPushEachOtherUp()) {
-                final Vec3d entityPosition = entity.getPos();
+                final Vec3d entityPosition = entity.getEntityPos();
                 final Box entitySearchArea = new Box(entityPosition, entityPosition).expand(0.45 / 2d);
                 List<Entity> sortedEntityList = world.getEntitiesByClass(Entity.class, entitySearchArea, entityTagCheck ->
                                 entityTagCheck.getType().isIn(ModTags.EntityTypes.HORDE_MOBS))

@@ -366,10 +366,11 @@ public class UndeadSpawner implements SpecialSpawner {
                 }
             }
 
+            d = 0;
             if (currentHordeCounter != UndeadNights.globalSpawnCounter) {
                 if (spawnCounter != 0) {
                     if (MainConfig.getHordeSpawnedMessageAndSound()) {
-                        player.getWorld().playSound(null, player.getX(), player.getY(), player.getZ(), UndeadNightsSounds.HORDE_SCREAM, SoundCategory.HOSTILE, 4.0F, 1);
+                        player.getEntityWorld().playSound(null, player.getX(), player.getY(), player.getZ(), UndeadNightsSounds.HORDE_SCREAM, SoundCategory.HOSTILE, 4.0F, 1);
                         player.sendMessage(Text.translatable("message.undeadnights.horde_spawned").formatted(Formatting.RED));
                     }
                     if (MainConfig.getPrintDebugMessages()) {
@@ -377,14 +378,10 @@ public class UndeadSpawner implements SpecialSpawner {
                     }
                     return 0;
                 } else {
-                    d = 0;
-                    x = 0;
-                    z = 0;
                     continue;
                 }
             }
 
-            d = 0;
             if (spawnCapReached) {
                 UndeadNights.LOGGER.info("Spawn cap reached, {} Horde Zombies are already loaded into this world.", MainConfig.getHordeMobsSpawnCap());
                 return -1;
@@ -400,7 +397,7 @@ public class UndeadSpawner implements SpecialSpawner {
 
 
     @Override
-    public void spawn(ServerWorld world, boolean spawnMonsters, boolean spawnAnimals) {
+    public void spawn(ServerWorld world, boolean spawnMonsters) {
         // check if Horde Nights and monster spawning are enabled
         if (!spawnMonsters || !MainConfig.getUndeadNightsEnabled()) {
             return;

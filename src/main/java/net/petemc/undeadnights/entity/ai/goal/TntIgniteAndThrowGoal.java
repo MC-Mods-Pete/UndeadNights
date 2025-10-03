@@ -55,7 +55,7 @@ public class TntIgniteAndThrowGoal extends Goal {
 				&& (this.demolitionZombie.squaredDistanceTo(this.target) > 5.0)
 						&& this.demolitionZombie.getVisibilityCache().canSee(this.target)
 						&& this.demolitionZombie.getMainHandStack().getCount() > 0) {
-					TntEntity tntEntity = new TntEntity(this.demolitionZombie.getWorld(), (double) pos.getX() + 0.5, pos.getY() + 0.5, (double) pos.getZ() + 0.5, this.demolitionZombie);
+					TntEntity tntEntity = new TntEntity(this.demolitionZombie.getEntityWorld(), (double) pos.getX() + 0.5, pos.getY() + 0.5, (double) pos.getZ() + 0.5, this.demolitionZombie);
 
 					Random random = Random.create();
 					double d0 = target.getY() + (double)target.getStandingEyeHeight() - 1.1;
@@ -74,8 +74,8 @@ public class TntIgniteAndThrowGoal extends Goal {
 					tntEntity.lastYaw = tntEntity.getYaw();
 					tntEntity.lastPitch = tntEntity.getPitch();
 
-					this.demolitionZombie.getWorld().spawnEntity(tntEntity);
-					this.demolitionZombie.getWorld().playSound(null, tntEntity.getX(), tntEntity.getY(), tntEntity.getZ(), SoundEvents.ENTITY_TNT_PRIMED, SoundCategory.BLOCKS, 1.0F, 1.0F);
+					this.demolitionZombie.getEntityWorld().spawnEntity(tntEntity);
+					this.demolitionZombie.getEntityWorld().playSound(null, tntEntity.getX(), tntEntity.getY(), tntEntity.getZ(), SoundEvents.ENTITY_TNT_PRIMED, SoundCategory.BLOCKS, 1.0F, 1.0F);
 					if (this.demolitionZombie.getNumberTnt() != 0) {
 						this.demolitionZombie.getMainHandStack().decrement(1);
 					}

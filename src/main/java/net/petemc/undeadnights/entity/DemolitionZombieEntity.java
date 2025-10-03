@@ -76,7 +76,6 @@ public class DemolitionZombieEntity extends ZombieEntity {
 
     public static DefaultAttributeContainer.Builder createHordeZombieAttributes() {
         return HostileEntity.createHostileAttributes()
-                //.add(EntityAttributes.MAX_HEALTH, 40.0)       // default 20.0
                 .add(EntityAttributes.FOLLOW_RANGE, 128.0)    // default 35.0
                 .add(EntityAttributes.MOVEMENT_SPEED, 0.30)   // default 0.23000000417232513
                 .add(EntityAttributes.ATTACK_DAMAGE, 5.0)     // default 3.0
@@ -137,7 +136,7 @@ public class DemolitionZombieEntity extends ZombieEntity {
     protected void initCustomEquipment(Random random, LocalDifficulty localDifficulty) {
         if (random.nextFloat() < 0.15F * localDifficulty.getClampedLocalDifficulty()) {
             int i = random.nextInt(2);
-            float f = this.getWorld().getDifficulty() == Difficulty.HARD ? 0.1F : 0.25F;
+            float f = this.getEntityWorld().getDifficulty() == Difficulty.HARD ? 0.1F : 0.25F;
             if (random.nextFloat() < 0.095F) {
                 i++;
             }
