@@ -79,7 +79,6 @@ public class DemolitionZombieEntity extends Zombie  {
 
     public static AttributeSupplier.@NotNull Builder createAttributes() {
         return Monster.createMonsterAttributes()
-                //.add(Attributes.MAX_HEALTH, 40.0D)          // default 20.F
                 .add(Attributes.FOLLOW_RANGE, 128.0D)       // default 35.0D
                 .add(Attributes.MOVEMENT_SPEED, 0.30D)      // default 0.23F
                 .add(Attributes.ATTACK_DAMAGE, 5.0D)        // default 3.0

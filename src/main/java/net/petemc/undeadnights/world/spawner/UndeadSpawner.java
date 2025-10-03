@@ -366,6 +366,7 @@ public class UndeadSpawner implements CustomSpawner {
                 }
             }
 
+            d = 0;
             if (currentHordeCounter != UndeadNights.globalSpawnCounter) {
                 if (spawnCounter != 0) {
                     if (MainConfig.getHordeSpawnedMessageAndSound()) {
@@ -377,14 +378,10 @@ public class UndeadSpawner implements CustomSpawner {
                     }
                     return 0;
                 } else {
-                    d = 0;
-                    x = 0;
-                    z = 0;
                     continue;
                 }
             }
 
-            d = 0;
             if (spawnCapReached) {
                 UndeadNights.LOGGER.info("Spawn cap reached, {} Horde Zombies are already loaded into this world.", MainConfig.getHordeMobsSpawnCap());
                 return -1;
@@ -399,7 +396,7 @@ public class UndeadSpawner implements CustomSpawner {
 
 
     @Override
-    public void tick(@NotNull ServerLevel level, boolean spawnMonsters, boolean spawnAnimals) {
+    public void tick(@NotNull ServerLevel level, boolean spawnMonsters) {
         // check if Horde Nights and monster spawning are enabled
         if (!spawnMonsters || !MainConfig.getUndeadNightsEnabled()) {
             return;

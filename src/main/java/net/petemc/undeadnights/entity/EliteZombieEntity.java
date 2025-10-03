@@ -80,7 +80,6 @@ public class EliteZombieEntity extends Zombie {
 
     public static AttributeSupplier.@NotNull Builder createAttributes() {
         return Monster.createMonsterAttributes()
-                //.add(Attributes.MAX_HEALTH, 40.0D)          // default 20.F
                 .add(Attributes.FOLLOW_RANGE, 128.0D)       // default 35.0D
                 .add(Attributes.MOVEMENT_SPEED, 0.32D)      // default 0.23F
                 .add(Attributes.ATTACK_DAMAGE, 6.0D)        // default 3.0
@@ -102,7 +101,7 @@ public class EliteZombieEntity extends Zombie {
         this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, IronGolem.class, true));
     }
 
-    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+    protected void defineSynchedData(SynchedEntityData.@NotNull Builder builder) {
         super.defineSynchedData(builder);
         builder.define(DATA_FLAGS_ID, (byte)0);
     }
