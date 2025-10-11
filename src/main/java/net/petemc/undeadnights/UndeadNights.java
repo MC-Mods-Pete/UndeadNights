@@ -2,6 +2,8 @@ package net.petemc.undeadnights;
 
 import com.mojang.logging.LogUtils;
 import net.minecraft.client.renderer.entity.EntityRenderers;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
@@ -12,6 +14,7 @@ import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.registries.DeferredRegister;
 import net.petemc.undeadnights.client.render.DemolitionZombieRenderer;
 import net.petemc.undeadnights.client.render.EliteZombieRenderer;
 import net.petemc.undeadnights.client.render.HordeZombieRenderer;
@@ -33,6 +36,7 @@ public class UndeadNights {
 	public static final String MOD_ID = "undeadnights";
 	public static final String MOD_NAME = "UndeadNights";
 	public static final Logger LOGGER = LogUtils.getLogger();
+    public static final DeferredRegister<CreativeModeTab> CREATIVE_MODE_TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, MOD_ID);
 
 	public static StateSaverAndLoader serverState = null;
 
@@ -47,8 +51,11 @@ public class UndeadNights {
 
 		ServerStartingEvent.BUS.addListener(this::onServerStarting);
 
-		// Register the item to a creative tab
-		BuildCreativeModeTabContentsEvent.getBus(modBusGroup).addListener(this::addCreative);
+        // Register the Deferred Register to the mod event bus so tabs get registered
+        CREATIVE_MODE_TABS.register(modBusGroup);
+
+        // Register the items to a creative tab
+        BuildCreativeModeTabContentsEvent.BUS.addListener(UndeadNights::addCreative);
 
 		UndeadNightsSounds.register(modBusGroup);
 		ModEntities.register(modBusGroup);
@@ -70,7 +77,7 @@ public class UndeadNights {
 	}
 
 	// Add the example block item to the building blocks tab
-	private void addCreative(BuildCreativeModeTabContentsEvent event) {
+	private static void addCreative(BuildCreativeModeTabContentsEvent event) {
 		if (event.getTabKey() == CreativeModeTabs.SPAWN_EGGS) {
 			event.accept(ModItems.HORDE_ZOMBIE_SPAWN_EGG);
 			event.accept(ModItems.ELITE_ZOMBIE_SPAWN_EGG);

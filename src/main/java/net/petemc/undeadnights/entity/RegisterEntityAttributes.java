@@ -6,7 +6,7 @@ import net.minecraftforge.fml.common.Mod;
 import net.petemc.undeadnights.UndeadNights;
 
 public class RegisterEntityAttributes {
-    @Mod.EventBusSubscriber(modid = UndeadNights.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD)
+    @Mod.EventBusSubscriber(modid = UndeadNights.MOD_ID)
     public static class ForgeEvents {
         @SubscribeEvent
         public static void registerAttributes(EntityAttributeCreationEvent event) {
