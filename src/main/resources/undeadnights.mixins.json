@@ -10,7 +10,8 @@
 		"PlayerEntityMixin",
 		"ZombieEntityMixin",
 		"PersistentEntitySectionManagerMixin",
-		"LivingEntityMixin"
+		"LivingEntityMixin",
+        "BaseComfortBlocksMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

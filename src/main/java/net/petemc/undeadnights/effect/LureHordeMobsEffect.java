@@ -28,9 +28,9 @@ public class LureHordeMobsEffect extends MobEffect {
             if (pLivingEntity instanceof Player pPlayer) {
                 LevelAccessor world = pPlayer.level();
                 RandomSource randomSource = pPlayer.getRandom();
-                if (MainConfig.getLureHordeEffectSpawnsHorde()) {
+                if (UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsLureEffect().isLureHordeEffectSpawnsHorde()) {
                     if (!UndeadNights.serverState.entitiesWithReceivedHorde.contains(pPlayer.getUUID())) {
-                        if (randomSource.nextDouble() < MainConfig.getChanceForLureEffectToSpawnHorde()) {
+                        if (randomSource.nextDouble() < UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsLureEffect().getChanceForLureEffectToSpawnHorde()) {
                             UndeadNights.serverState.entitiesWithPendingHorde.add(pPlayer.getUUID());
                         } else {
                             UndeadNights.serverState.entitiesWithReceivedHorde.add(pPlayer.getUUID());

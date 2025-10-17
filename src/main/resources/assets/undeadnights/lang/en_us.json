@@ -26,6 +26,7 @@
   "message.undeadnights.command_spawn_horde": "Trying to spawn hordes for given players.",
   "message.undeadnights.command_spawn_horde_failed": "Spawning horde failed (e.g. could not find a spawn location)!",
   "message.undeadnights.command_remove_horde_mobs": "Removing all horde mobs from this world.",
+  "message.undeadnights.difficulty_level_changed": "The difficulty level has changed.",
 
   "sounds.undeadnights.horde_scream": "Horde Scream",
 

@@ -15,14 +15,6 @@ public class MainConfig
 
     public static int getGracePeriodBeforeFirstHordeNight() { return gracePeriodBeforeFirstHordeNight; }
 
-    public static int getDaysBetweenHordeNights() {
-        return daysBetweenHordeNights;
-    }
-
-    public static int getChanceForHordeNight() {
-        return chanceForHordeNight;
-    }
-
     public static int getMaxHordesPerHordeNight() {
         return maxHordesPerHordeNight;
     }
@@ -45,18 +37,6 @@ public class MainConfig
         return hordeMobsSpawnCap;
     }
 
-    public static boolean getSpawnAdditionalWaves() {
-        return spawnAdditionalWaves;
-    }
-
-    public static int getCooldownBetweenWaves() {
-        return cooldownBetweenWaves;
-    }
-
-    public static int getChanceForAdditionalWaves() {
-        return chanceForAdditionalWaves;
-    }
-
     public static boolean getHordeWavesCanSpawnInWater() {
         return hordeWavesCanSpawnInWater;
     }
@@ -77,62 +57,14 @@ public class MainConfig
         return hordeNightsDisableSleeping;
     }
 
+    public static boolean getEnableAutomaticDifficultyProgression() { return enableAutomaticDifficultyProgression; }
+
     public static boolean getPersistentMobs() {
         return persistentMobs;
     }
 
-    public static boolean getHordeZombiesBurnInDaylight() {
-        return hordeZombiesBurnInDaylight;
-    }
-
-    public static boolean getVanillaZombiesBurnInDaylight() {
-        return vanillaZombiesBurnInDaylight;
-    }
-
-    public static boolean getHordeZombiesCanPushEachOtherUp() {
-        return hordeZombiesCanPushEachOtherUp;
-    }
-
-    public static boolean getHordeZombiesCanBreakBlocks() {
-        return hordeZombiesCanBreakBlocks;
-    }
-
-    public static int getZombiesBlockBreakTier() {
-        return zombiesBlockBreakTier;
-    }
-
-    public static boolean getHordeZombiesHaveIncreasedWaterMovementSpeed() { return hordeZombiesHaveIncreasedWaterMovementSpeed; }
-
     public static boolean getSecurityCraftCompatibility() {
         return securityCraftCompatibility;
-    }
-
-    public static boolean getEnableRandomHordes() {
-        return enableRandomHordes;
-    }
-
-    public static int getChanceForRandomHordes() {
-        return chanceForRandomHordes;
-    }
-
-    public static boolean getEnableLureHordeEffect() {
-        return enableLureHordeEffect;
-    }
-
-    public static boolean getNonHordeZombiesCanCauseLureHordeEffect() { return nonHordeZombiesCanCauseLureHordeEffect; }
-
-    public static double getChanceForLureHordeEffect() {
-        return chanceForLureHordeEffect;
-    }
-
-    public static int getDurationForLureHordeEffect() {
-        return durationForLureHordeEffect;
-    }
-
-    public static boolean getLureHordeEffectSpawnsHorde() { return lureHordeEffectSpawnsHorde; }
-
-    public static double getChanceForLureEffectToSpawnHorde() {
-        return chanceForLureEffectToSpawnHorde;
     }
 
     public static boolean getHordeZombiesSpawnNaturally() {
@@ -245,6 +177,10 @@ public class MainConfig
             .comment("If true, Players can't sleep through horde nights | default: true")
             .define("hordeNightsDisableSleeping", true);
 
+    private static final ForgeConfigSpec.BooleanValue ENABLE_AUTOMATIC_DIFFICULTY_PROGRESSION = BUILDER_SERVER
+            .comment("If true, the difficulty level will automatically progress over time | default: false")
+            .define("enableAutomaticDifficultyProgression", true);
+
     private static final ForgeConfigSpec.BooleanValue PERSISTENT_MOBS = BUILDER_SERVER
             .comment("If true, the horde zombies will be persistent and not despawn | default: false")
             .define("persistentMobs", false);
@@ -352,38 +288,20 @@ public class MainConfig
 
     private static boolean undeadNightsEnabled = true;
     private static int gracePeriodBeforeFirstHordeNight = 0;
-    private static int daysBetweenHordeNights = 5;
-    private static int chanceForHordeNight = 100;
     private static int maxHordesPerHordeNight = 0;
     private static boolean sendHordeNightsCountdownMessage = false;
     private static boolean hordeSpawnedMessageAndSound = true;
     private static int distanceMin = 70;
     private static int distanceMax = 75;
-    private static int hordeMobsSpawnCap = 80;
-    private static boolean spawnAdditionalWaves = true;
-    private static int cooldownBetweenWaves = 45;
-    private static int chanceForAdditionalWaves = 7;
+    private static int hordeMobsSpawnCap = 100;
     private static boolean hordeWavesCanSpawnInWater = false;
     private static boolean hordeWavesCanSpawnOnTrees = false;
     private static boolean blockLightLevelsInfluenceMonsterSpawns = false;
     private static int maxBlockLightLevelForMonsterSpawns = 0;
     private static boolean hordeNightsDisableSleeping = true;
+    private static boolean enableAutomaticDifficultyProgression = true;
     private static boolean persistentMobs = false;
-    private static boolean hordeZombiesBurnInDaylight = false;
-    private static boolean vanillaZombiesBurnInDaylight = true;
-    private static boolean hordeZombiesCanPushEachOtherUp = true;
-    private static boolean hordeZombiesCanBreakBlocks = false;
-    private static int zombiesBlockBreakTier = 2;
-    private static boolean hordeZombiesHaveIncreasedWaterMovementSpeed = false;
     private static boolean securityCraftCompatibility = false;
-    private static boolean enableRandomHordes = true;
-    private static int chanceForRandomHordes = 15;
-    private static boolean enableLureHordeEffect = true;
-    private static boolean nonHordeZombiesCanCauseLureHordeEffect = true;
-    private static double chanceForLureHordeEffect = 0.07;
-    private static int durationForLureHordeEffect = 60;
-    private static boolean lureHordeEffectSpawnsHorde = true;
-    private static double chanceForLureEffectToSpawnHorde = 0.2;
     private static boolean hordeZombiesSpawnNaturally = true;
     private static boolean eliteZombiesSpawnNaturally = true;
     private static boolean demolitionZombiesSpawnNaturally = true;
@@ -400,38 +318,20 @@ public class MainConfig
             UndeadNights.LOGGER.info("Loading {} server config", UndeadNights.MOD_ID);
             undeadNightsEnabled = UNDEAD_NIGHTS_ENABLED.get();
             gracePeriodBeforeFirstHordeNight = GRACE_PERIOD.get();
-            daysBetweenHordeNights = DAYS_BETWEEN_HORDE_NIGHTS.get();
-            chanceForHordeNight = CHANCE_FOR_HORDE_NIGHTS.get();
             maxHordesPerHordeNight = MAX_HORDES_PER_HORDE_NIGHTS.get();
             sendHordeNightsCountdownMessage = SEND_HORDE_NIGHTS_COUNTDOWN_MESSAGE.get();
             hordeSpawnedMessageAndSound = HORDE_SPAWNED_MESSAGE_AND_SOUND.get();
             distanceMin = DISTANCE_MIN.get();
             distanceMax = DISTANCE_MAX.get();
             hordeMobsSpawnCap = HORDE_MOBS_SPAWN_CAP.get();
-            spawnAdditionalWaves = SPAWN_ADDITIONAL_WAVES.get();
-            cooldownBetweenWaves = COOLDOWN_BETWEEN_WAVES.get();
-            chanceForAdditionalWaves = CHANCE_FOR_ADDITIONAL_WAVES.get();
             hordeWavesCanSpawnInWater = HORDE_WAVES_CAN_SPAWN_IN_WATER.get();
             hordeWavesCanSpawnOnTrees = HORDE_WAVES_CAN_SPAWN_ON_TREES.get();
             blockLightLevelsInfluenceMonsterSpawns = BLOCK_LIGHT_LEVELS_INFLUENCE_MONSTER_SPAWNS.get();
             maxBlockLightLevelForMonsterSpawns = MAX_BLOCK_LIGHT_LEVEL_FOR_MONSTER_SPAWNS.get();
             hordeNightsDisableSleeping = HORDE_NIGHTS_DISABLE_SLEEPING.get();
+            enableAutomaticDifficultyProgression = ENABLE_AUTOMATIC_DIFFICULTY_PROGRESSION.get();
 	        persistentMobs = PERSISTENT_MOBS.get();
-            hordeZombiesBurnInDaylight = HORDE_ZOMBIES_BURN_IN_DAYLIGHT.get();
-            vanillaZombiesBurnInDaylight = VANILLA_ZOMBIES_BURN_IN_DAYLIGHT.get();
-            hordeZombiesCanPushEachOtherUp = HORDE_ZOMBIES_CAN_PUSH_EACH_OTHER_UP.get();
-            hordeZombiesCanBreakBlocks = HORDE_ZOMBIES_CAN_BREAK_BLOCKS.get();
-            zombiesBlockBreakTier = ZOMBIES_BLOCK_BREAK_TIER.get();
-            hordeZombiesHaveIncreasedWaterMovementSpeed = HORDE_ZOMBIES_HAVE_INCREASED_WATER_MOVEMENT_SPEED.get();
             securityCraftCompatibility = SECURITY_CRAFT_COMPATIBILITY.get();
-            enableRandomHordes = ENABLE_RANDOM_HORDES.get();
-            chanceForRandomHordes = CHANCE_FOR_RANDOM_HORDES.get();
-            enableLureHordeEffect = ENABLE_LURE_HORDE_EFFECT.get();
-            nonHordeZombiesCanCauseLureHordeEffect = NON_HORDE_ZOMBIES_CAN_CAUSE_LURE_HORDE_EFFECT.get();
-            chanceForLureHordeEffect = CHANCE_FOR_LURE_HORDE_EFFECT.get();
-            durationForLureHordeEffect = DURATION_FOR_LURE_HORDE_EFFECT.get();
-            lureHordeEffectSpawnsHorde = LURE_HORDE_EFFECT_SPAWNS_HORDE.get();
-            chanceForLureEffectToSpawnHorde = CHANCE_FOR_LURE_EFFECT_HORDE.get();
             hordeZombiesSpawnNaturally = HORDE_ZOMBIES_SPAWN_NATURALLY.get();
             eliteZombiesSpawnNaturally = ELITE_ZOMBIES_SPAWN_NATURALLY.get();
             demolitionZombiesSpawnNaturally = DEMOLITION_ZOMBIES_SPAWN_NATURALLY.get();

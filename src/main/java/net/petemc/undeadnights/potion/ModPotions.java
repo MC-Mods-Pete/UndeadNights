@@ -15,7 +15,7 @@ public class ModPotions {
             DeferredRegister.create(ForgeRegistries.POTIONS, UndeadNights.MOD_ID);
 
     public static final RegistryObject<Potion> LURE_HORDE_POTION = POTIONS.register("lure_horde_potion",
-            () -> new Potion(new MobEffectInstance(ModEffects.LURE_HORDE.get(), MainConfig.getDurationForLureHordeEffect() * 20, 0)));
+            () -> new Potion(new MobEffectInstance(ModEffects.LURE_HORDE.get(), UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsLureEffect().getDurationForLureHordeEffect() * 20, 0)));
 
     public static void register(IEventBus eventBus) {
         POTIONS.register(eventBus);

@@ -11,33 +11,42 @@ import java.util.HashSet;
 import java.util.UUID;
 
 public class StateSaverAndLoader extends SavedData {
-    private int daysCounter = MainConfig.getDaysBetweenHordeNights();
-    private int lastMaxDaysCounter = MainConfig.getDaysBetweenHordeNights();
+    private int daysCounter = UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeNights().getDaysBetweenHordeNights();
+    private int lastMaxDaysCounter = UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeNights().getDaysBetweenHordeNights();
     private int gracePeriod = MainConfig.getGracePeriodBeforeFirstHordeNight();
     private int lastMaxGracePeriod = MainConfig.getGracePeriodBeforeFirstHordeNight();
-    private int hordesCounter = MainConfig.getDaysBetweenHordeNights() + 1;
-    private int lastMaxHordesCounter = MainConfig.getDaysBetweenHordeNights();
+    private int hordesCounter = 0;
+    private int lastMaxHordesCounter = 0;
     private int tickCounter = 60;
+    private int possibleHordesIndex = -1;
+    private int currentDifficultyLevelIndex = 0;
+    private int currentDayScaleCounter = 0;
     private boolean hordeNight = false;
     private boolean nightIsStarting = false;
     private boolean firstWaveHasSpawned = false;
     private boolean spawnZombies = true;
     private boolean respawnZombies = false;
     private boolean tryToSpawnRandomHorde = true;
+    private boolean firstDifficultyLevelPrinted = false;
+    private boolean performDifficultySwitchCheck = true;
     private boolean isNaturalSpawningOk = false;
     private boolean firstEliteZombieHasSpawned = false;
     private boolean firstDemolitionZombieHasSpawned = false;
     private long prevNormalizedTimeOfDay = 0;
+    private double currentHealthScale = 0.0;
+    private double currentSpeedScale = 0.0;
+    private double currentDamageScale = 0.0;
+    private double currentArmorScale = 0.0;
     public HashSet<UUID> spawnedHordeMobs = new HashSet<UUID>();
     public HashSet<UUID> hordeMobsToRemove = new HashSet<UUID>();
     public HashSet<UUID> entitiesWithPendingHorde = new HashSet<UUID>();
     public HashSet<UUID> entitiesWithReceivedHorde = new HashSet<UUID>();
 
+
     // Setter and Getter functions
     public int getDaysCounter() {
         return this.daysCounter;
     }
-
     public void setDaysCounter(int val) {
         this.daysCounter = val;
         this.setDirty();
@@ -46,7 +55,6 @@ public class StateSaverAndLoader extends SavedData {
     public int getLastMaxDaysCounter() {
         return this.lastMaxDaysCounter;
     }
-
     public void setLastMaxDaysCounter(int val) {
         this.lastMaxDaysCounter = val;
         this.setDirty();
@@ -55,7 +63,6 @@ public class StateSaverAndLoader extends SavedData {
     public int getGracePeriod() {
         return this.gracePeriod;
     }
-
     public void setGracePeriod(int val) {
         this.gracePeriod = val;
         this.setDirty();
@@ -64,7 +71,6 @@ public class StateSaverAndLoader extends SavedData {
     public int getLastMaxGracePeriod() {
         return this.lastMaxGracePeriod;
     }
-
     public void setLastMaxGracePeriod(int val) {
         this.lastMaxGracePeriod = val;
         this.setDirty();
@@ -73,7 +79,6 @@ public class StateSaverAndLoader extends SavedData {
     public int getHordesCounter() {
         return this.hordesCounter;
     }
-
     public void setHordesCounter(int val) {
         this.hordesCounter = val;
         this.setDirty();
@@ -82,7 +87,6 @@ public class StateSaverAndLoader extends SavedData {
     public int getLastMaxHordesCounter() {
         return this.lastMaxHordesCounter;
     }
-
     public void setLastMaxHordesCounter(int val) {
         this.lastMaxHordesCounter = val;
         this.setDirty();
@@ -91,16 +95,32 @@ public class StateSaverAndLoader extends SavedData {
     public int getTickCounter() {
         return this.tickCounter;
     }
-
     public void setTickCounter(int val) {
         this.tickCounter = val;
+        this.setDirty();
+    }
+
+    public int getPossibleHordesIndex() { return possibleHordesIndex; }
+    public void setPossibleHordesIndex(int possibleHordesIndex) {
+        this.possibleHordesIndex = possibleHordesIndex;
+        this.setDirty();
+    }
+
+    public int getCurrentDifficultyLevelIndex() { return currentDifficultyLevelIndex; }
+    public void setCurrentDifficultyLevelIndex(int currentDifficultyLevelIndex) {
+        this.currentDifficultyLevelIndex = currentDifficultyLevelIndex;
+        this.setDirty();
+    }
+
+    public int getCurrentDayScaleCounter() { return currentDayScaleCounter; }
+    public void setCurrentDayScaleCounter(int currentDayScaleCounter) {
+        this.currentDayScaleCounter = currentDayScaleCounter;
         this.setDirty();
     }
 
     public boolean getHordeNight() {
         return this.hordeNight;
     }
-
     public void setHordeNight(boolean val) {
         this.hordeNight = val;
         this.setDirty();
@@ -109,7 +129,6 @@ public class StateSaverAndLoader extends SavedData {
     public boolean getNightIsStarting() {
         return this.nightIsStarting;
     }
-
     public void setNightIsStarting(boolean val) {
         this.nightIsStarting = val;
         this.setDirty();
@@ -118,7 +137,6 @@ public class StateSaverAndLoader extends SavedData {
     public boolean getFirstWaveHasSpawned() {
         return this.firstWaveHasSpawned;
     }
-
     public void setFirstWaveHasSpawned(boolean val) {
         this.firstWaveHasSpawned = val;
         this.setDirty();
@@ -127,7 +145,6 @@ public class StateSaverAndLoader extends SavedData {
     public boolean getSpawnZombies() {
         return this.spawnZombies;
     }
-
     public void setSpawnZombies(boolean val) {
         this.spawnZombies = val;
         this.setDirty();
@@ -136,7 +153,6 @@ public class StateSaverAndLoader extends SavedData {
     public boolean getRespawnZombies() {
         return this.respawnZombies;
     }
-
     public void setRespawnZombies(boolean val) {
         this.respawnZombies = val;
         this.setDirty();
@@ -145,16 +161,30 @@ public class StateSaverAndLoader extends SavedData {
     public boolean getTryToSpawnRandomHorde() {
         return this.tryToSpawnRandomHorde;
     }
-
     public void setTryToSpawnRandomHorde(boolean val) {
         this.tryToSpawnRandomHorde = val;
+        this.setDirty();
+    }
+
+    public boolean isFirstDifficultyLevelPrinted() {
+        return firstDifficultyLevelPrinted;
+    }
+    public void setFirstDifficultyLevelPrinted(boolean firstDifficultyLevelPrinted) {
+        this.firstDifficultyLevelPrinted = firstDifficultyLevelPrinted;
+        this.setDirty();
+    }
+
+    public boolean isPerformDifficultySwitchCheck() {
+        return performDifficultySwitchCheck;
+    }
+    public void setPerformDifficultySwitchCheck(boolean performDifficultySwitchCheck) {
+        this.performDifficultySwitchCheck = performDifficultySwitchCheck;
         this.setDirty();
     }
 
     public boolean getIsNaturalSpawningOk() {
         return this.isNaturalSpawningOk;
     }
-
     public void setIsNaturalSpawningOk(boolean val) {
         this.isNaturalSpawningOk = val;
         this.setDirty();
@@ -163,7 +193,6 @@ public class StateSaverAndLoader extends SavedData {
     public boolean getFirstEliteZombieHasSpawned() {
         return this.firstEliteZombieHasSpawned;
     }
-
     public void setFirstEliteZombieHasSpawned(boolean val) {
         this.firstEliteZombieHasSpawned = val;
         this.setDirty();
@@ -172,7 +201,6 @@ public class StateSaverAndLoader extends SavedData {
     public boolean getFirstDemolitionZombieHasSpawned() {
         return this.firstDemolitionZombieHasSpawned;
     }
-
     public void setFirstDemolitionZombieHasSpawned(boolean val) {
         this.firstDemolitionZombieHasSpawned = val;
         this.setDirty();
@@ -181,10 +209,37 @@ public class StateSaverAndLoader extends SavedData {
     public long getPrevNormalizedTimeOfDay() {
         return this.prevNormalizedTimeOfDay;
     }
-
     public void setPrevNormalizedTimeOfDay(long val) {
         this.prevNormalizedTimeOfDay = val;
         this.setDirty();
+    }
+
+    public double getCurrentHealthScale() { return currentHealthScale; }
+    public void setCurrentHealthScale(double currentHealthScale) {
+        this.currentHealthScale = currentHealthScale;
+        this.setDirty();
+    }
+
+    public double getCurrentSpeedScale() { return currentSpeedScale; }
+    public void setCurrentSpeedScale(double currentSpeedScale) {
+        this.currentSpeedScale = currentSpeedScale;
+        this.setDirty();
+    }
+
+    public double getCurrentDamageScale() { return currentDamageScale; }
+    public void setCurrentDamageScale(double currentDamageScale) {
+        this.currentDamageScale = currentDamageScale;
+        this.setDirty();
+    }
+
+    public double getCurrentArmorScale() { return currentArmorScale; }
+    public void setCurrentArmorScale(double currentArmorScale) {
+        this.currentArmorScale = currentArmorScale;
+        this.setDirty();
+    }
+
+    public static StateSaverAndLoader getServerState(MinecraftServer server) {
+        return server.overworld().getDataStorage().computeIfAbsent(StateSaverAndLoader::load, StateSaverAndLoader::new, UndeadNights.MOD_ID);
     }
 
     public static StateSaverAndLoader load(CompoundTag tag) {
@@ -196,16 +251,25 @@ public class StateSaverAndLoader extends SavedData {
         state.hordesCounter = tag.getInt("hordesCounter");
         state.lastMaxHordesCounter = tag.getInt("lastMaxHordesCounter");
         state.tickCounter = tag.getInt("tickCounter");
+        state.possibleHordesIndex = tag.getInt("lastHordeIndex");
+        state.currentDifficultyLevelIndex = tag.getInt("currentDifficultyLevel");
+        state.currentDayScaleCounter = tag.getInt("currentDayScaleCounter");
         state.hordeNight = tag.getBoolean("hordeNight");
         state.nightIsStarting = tag.getBoolean("nightIsStarting");
         state.firstWaveHasSpawned = tag.getBoolean("firstWaveHasSpawned");
         state.spawnZombies = tag.getBoolean("spawnZombies");
         state.respawnZombies = tag.getBoolean("respawnZombies");
         state.tryToSpawnRandomHorde = tag.getBoolean("tryToSpawnRandomHorde");
+        state.performDifficultySwitchCheck = tag.getBoolean("performDifficultySwitchCheck");
+        state.firstDifficultyLevelPrinted = tag.getBoolean("firstDifficultyLevelPrinted");
         state.isNaturalSpawningOk = tag.getBoolean("isNaturalSpawningOk");
         state.firstEliteZombieHasSpawned = tag.getBoolean("firstEliteZombieHasSpawned");
         state.firstDemolitionZombieHasSpawned = tag.getBoolean("firstDemolitionZombieHasSpawned");
         state.prevNormalizedTimeOfDay = tag.getLong("prevNormalizedTimeOfDay");
+        state.currentHealthScale = tag.getDouble("currentHealthScale");
+        state.currentSpeedScale = tag.getDouble("currentSpeedScale");
+        state.currentDamageScale = tag.getDouble("currentDamageScale");
+        state.currentArmorScale = tag.getDouble("currentArmorScale");
 
         CompoundTag mobUUIDs = tag.getCompound("spawnedHordeMobs");
         mobUUIDs.getAllKeys().forEach(key -> {
@@ -244,16 +308,25 @@ public class StateSaverAndLoader extends SavedData {
         tag.putInt("hordesCounter", hordesCounter);
         tag.putInt("lastMaxHordesCounter", lastMaxHordesCounter);
         tag.putInt("tickCounter", tickCounter);
+        tag.putInt("lastHordeIndex", possibleHordesIndex);
+        tag.putInt("currentDifficultyLevel", currentDifficultyLevelIndex);
+        tag.putInt("currentDayScaleCounter", currentDayScaleCounter);
         tag.putBoolean("hordeNight", hordeNight);
         tag.putBoolean("nightIsStarting", nightIsStarting);
         tag.putBoolean("firstWaveHasSpawned", firstWaveHasSpawned);
         tag.putBoolean("spawnZombies", spawnZombies);
         tag.putBoolean("respawnZombies", respawnZombies);
         tag.putBoolean("tryToSpawnRandomHorde", tryToSpawnRandomHorde);
+        tag.putBoolean("performDifficultySwitchCheck", performDifficultySwitchCheck);
+        tag.putBoolean("firstDifficultyLevelPrinted", firstDifficultyLevelPrinted);
         tag.putBoolean("isNaturalSpawningOk", isNaturalSpawningOk);
         tag.putBoolean("firstEliteZombieHasSpawned", firstEliteZombieHasSpawned);
         tag.putBoolean("firstDemolitionZombieHasSpawned", firstDemolitionZombieHasSpawned);
         tag.putLong("prevNormalizedTimeOfDay", prevNormalizedTimeOfDay);
+        tag.putDouble("currentHealthScale", currentHealthScale);
+        tag.putDouble("currentSpeedScale", currentSpeedScale);
+        tag.putDouble("currentDamageScale", currentDamageScale);
+        tag.putDouble("currentArmorScale", currentArmorScale);
 
         CompoundTag mobUUIDs = new CompoundTag();
         spawnedHordeMobs.forEach((uuid) -> {
@@ -280,9 +353,5 @@ public class StateSaverAndLoader extends SavedData {
         tag.put("entitiesWithReceivedHorde", receivedHordeUUIDs);
 
         return tag;
-    }
-
-    public static StateSaverAndLoader getServerState(MinecraftServer server) {
-        return server.overworld().getDataStorage().computeIfAbsent(StateSaverAndLoader::load, StateSaverAndLoader::new, UndeadNights.MOD_ID);
     }
 }

@@ -14,6 +14,7 @@ import net.minecraft.tags.FluidTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.entity.*;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.FloatGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
@@ -47,7 +48,7 @@ import java.util.Objects;
 
 public class UndeadSpawner implements CustomSpawner {
     public static boolean invalidHordeMobEntry = false;
-    public static int hordeToSpawn = 1;
+    public static int hordeIdFromHordesConfig = 1;
 
     private double x = 0;
     private double z = 0;
@@ -188,6 +189,7 @@ public class UndeadSpawner implements CustomSpawner {
                 mob.finalizeSpawn(level, localDifficulty, MobSpawnType.NATURAL, null, null);
                 mob.setTarget(player);
 
+                // make vanilla zombies in hordes float on water and give ability to break blocks
                 if (mobSpawnData.mobId().equals("minecraft:zombie")) {
                     mob.goalSelector.addGoal(1, new FloatGoal(mob));
                     mob.goalSelector.addGoal(1, new BreakBlockGoal((Zombie) mob));
@@ -196,8 +198,52 @@ public class UndeadSpawner implements CustomSpawner {
                 if ((!mobSpawnData.mobId().equals("undeadnights:horde_zombie")) &&
                         (!mobSpawnData.mobId().equals("undeadnights:elite_zombie")) &&
                         (!mobSpawnData.mobId().equals("undeadnights:demolition_zombie"))) {
-                    Objects.requireNonNull(mob.getAttribute(Attributes.FOLLOW_RANGE)).setBaseValue(128.0f);
                     mob.targetSelector.addGoal(1, new NearestAttackableTargetGoal<>(mob, Player.class, false, false));
+                    Objects.requireNonNull(mob.getAttribute(Attributes.FOLLOW_RANGE)).setBaseValue(128.0f);
+
+                    int playerCount = 1;
+                    if (!mob.level().isClientSide) {
+                        playerCount = mob.level().players().size();
+                    }
+
+                    double healthScaleFactor = 0.0;
+                    double damageScaleFactor = 0.0;
+                    double speedScaleFactor = 0.0;
+                    double armorScaleFactor = 0.0;
+
+                    if (UndeadNights.difficultyConfig.getDynamicScaling().isDynamicScalingEnabled() && (playerCount > 1)) {
+                        healthScaleFactor = UndeadNights.difficultyConfig.getDynamicScaling().getHealthScalePerPlayer() * (playerCount - 1);
+                        damageScaleFactor = UndeadNights.difficultyConfig.getDynamicScaling().getDamageScalePerPlayer() * (playerCount - 1);
+                        speedScaleFactor = UndeadNights.difficultyConfig.getDynamicScaling().getSpeedScalePerPlayer() * (playerCount - 1);
+                        armorScaleFactor = UndeadNights.difficultyConfig.getDynamicScaling().getArmorScalePerPlayer() * (playerCount - 1);
+
+                        healthScaleFactor = healthScaleFactor + UndeadNights.serverState.getCurrentHealthScale();
+                        damageScaleFactor = damageScaleFactor + UndeadNights.serverState.getCurrentDayScaleCounter();
+                        speedScaleFactor = speedScaleFactor + UndeadNights.serverState.getCurrentSpeedScale();
+                        armorScaleFactor = armorScaleFactor + UndeadNights.serverState.getCurrentArmorScale();
+
+                        if (healthScaleFactor > UndeadNights.difficultyConfig.getDynamicScaling().getMaxHealthScale()) {
+                            healthScaleFactor = UndeadNights.difficultyConfig.getDynamicScaling().getMaxHealthScale();
+                        }
+                        if (damageScaleFactor > UndeadNights.difficultyConfig.getDynamicScaling().getMaxDamageScale()) {
+                            damageScaleFactor = UndeadNights.difficultyConfig.getDynamicScaling().getMaxDamageScale();
+                        }
+                        if (speedScaleFactor > UndeadNights.difficultyConfig.getDynamicScaling().getMaxSpeedScale()) {
+                            speedScaleFactor = UndeadNights.difficultyConfig.getDynamicScaling().getMaxSpeedScale();
+                        }
+                        if (armorScaleFactor > UndeadNights.difficultyConfig.getDynamicScaling().getMaxArmorScale()) {
+                            armorScaleFactor = UndeadNights.difficultyConfig.getDynamicScaling().getMaxArmorScale();
+                        }
+                    }
+
+                    if (UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeMobs().isUpdateAttributesOfThirdPartyMobs() ||
+                            (mobSpawnData.mobId().equals("minecraft:zombie"))) {
+                        Objects.requireNonNull(mob.getAttribute(Attributes.MAX_HEALTH)).addPermanentModifier(new AttributeModifier("Monster difficulty health bonus", UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeMobs().getHealthAttributeScaleFactor() - 1.0 + healthScaleFactor, AttributeModifier.Operation.MULTIPLY_BASE));
+                        Objects.requireNonNull(mob.getAttribute(Attributes.MOVEMENT_SPEED)).addPermanentModifier(new AttributeModifier("Monster difficulty speed bonus", UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeMobs().getSpeedAttributeScaleFactor() - 1.0 + speedScaleFactor, AttributeModifier.Operation.MULTIPLY_BASE));
+                        Objects.requireNonNull(mob.getAttribute(Attributes.ATTACK_DAMAGE)).addPermanentModifier(new AttributeModifier("Monster difficulty attack damage bonus", UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeMobs().getDamageAttributeScaleFactor() - 1.0 + damageScaleFactor, AttributeModifier.Operation.MULTIPLY_BASE));
+                        Objects.requireNonNull(mob.getAttribute(Attributes.ARMOR)).addPermanentModifier(new AttributeModifier("Monster difficulty armor bonus", UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeMobs().getArmorAttributeScaleFactor() - 1.0 + armorScaleFactor, AttributeModifier.Operation.MULTIPLY_BASE));
+                        mob.setHealth(mob.getMaxHealth());
+                    }
                 }
             }
             assert entity != null;
@@ -285,7 +331,12 @@ public class UndeadSpawner implements CustomSpawner {
                     UndeadNights.LOGGER.info("Horde config variant 1 detected.");
                 }
                 int waveMobCounter = 0;
-                while (waveMobCounter < (HordeConfig.getMaxWaveSize())) {
+
+                int scaledHordeSize = (int) Math.round(HordeConfig.getMaxWaveSize() * UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordes().getHordeSizeScaleFactor());
+                if (MainConfig.getPrintDebugMessages()) {
+                    UndeadNights.LOGGER.info("Scaled horde size: {}", scaledHordeSize);
+                }
+                while (waveMobCounter < (scaledHordeSize)) {
                     if (!HordeConfig.getHordeMobs().isEmpty()) {
                         for (var mobSpawnData : HordeConfig.getHordeMobs()) {
                             if (UndeadNights.globalSpawnCounter < MainConfig.getHordeMobsSpawnCap()) {
@@ -294,13 +345,13 @@ public class UndeadSpawner implements CustomSpawner {
                                     spawnCounter++;
                                 }
                                 waveMobCounter++;
-                                if (waveMobCounter >= HordeConfig.getMaxWaveSize()) {
+                                if (waveMobCounter >= scaledHordeSize) {
                                     d = 0;
                                     break;
                                 }
                             } else {
                                 // spawn cap reached, don't spawn anymore mobs in this wave
-                                waveMobCounter = HordeConfig.getMaxWaveSize();
+                                waveMobCounter = scaledHordeSize;
                                 spawnCapReached = true;
                                 d = 0;
                                 break;
@@ -322,11 +373,41 @@ public class UndeadSpawner implements CustomSpawner {
                 if (MainConfig.getPrintDebugMessages()) {
                     UndeadNights.LOGGER.info("Horde config variant 2 detected.");
                 }
-                List<HordeConfig.HordesData> hordes = HordeConfig.getHordes();
-                int hordeIdToSpawn = hordeToSpawn - 1;
-                if (hordeToSpawn == 0) {
-                    hordeIdToSpawn = randomSource.nextIntBetweenInclusive(0, hordes.size() - 1);
+                if (hordeIdFromHordesConfig == 0) {
+                    UndeadNights.LOGGER.warn("Horde to spawn was set to 0, setting it to 1.");
+                    hordeIdFromHordesConfig = 1;
                 }
+                int hordeIdToSpawn = hordeIdFromHordesConfig - 1;
+                if (!UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordes().getListOfPossibleHordes().isEmpty()) {
+                    if (UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordes().getHordeSelectionMode().equalsIgnoreCase("sequential")) {
+                        UndeadNights.serverState.setPossibleHordesIndex(UndeadNights.serverState.getPossibleHordesIndex() + 1);
+                        if (UndeadNights.serverState.getPossibleHordesIndex() >= UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordes().getListOfPossibleHordes().size()) {
+                            UndeadNights.serverState.setPossibleHordesIndex(0);
+                        }
+                        hordeIdToSpawn = UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordes().getListOfPossibleHordes().get(UndeadNights.serverState.getPossibleHordesIndex()) - 1;
+                        if (MainConfig.getPrintDebugMessages()) {
+                            UndeadNights.LOGGER.info("Horde selection mode: sequential, listOfPossibleHordes({}) = {} will be spawned", UndeadNights.serverState.getPossibleHordesIndex(), UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordes().getListOfPossibleHordes().get(hordeIdToSpawn));
+                        }
+                    } else if (UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordes().getHordeSelectionMode().equalsIgnoreCase("random")) {
+                        int index = randomSource.nextIntBetweenInclusive(0, (UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordes().getListOfPossibleHordes().size() - 1));
+                        hordeIdToSpawn = UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordes().getListOfPossibleHordes().get(index) - 1;
+                        if (MainConfig.getPrintDebugMessages()) {
+                            UndeadNights.LOGGER.info("Horde selection mode: random, listOfPossibleHordes({}) = {} will be spawned", index, UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordes().getListOfPossibleHordes().get(index));
+                        }
+                    }
+                }
+
+                if (hordeIdToSpawn >= HordeConfig.getHordes().size()) {
+                    if (MainConfig.getPrintDebugMessages()) {
+                        UndeadNights.LOGGER.error("Horde index {} from config is out of range, using default horde instead.", hordeIdToSpawn);
+                    }
+                    hordeIdToSpawn = hordeIdFromHordesConfig - 1;
+                }
+
+                if (MainConfig.getPrintDebugMessages()) {
+                    UndeadNights.LOGGER.info("Spawning Horde \"{}\"", HordeConfig.getHordes().get(hordeIdToSpawn).hordeName());
+                }
+                List<HordeConfig.HordesData> hordes = HordeConfig.getHordes();
                 for (var mobSpawnData : hordes.get(hordeIdToSpawn).hordeMobs()) {
                     int mobCount;
                     if (mobSpawnData.countMin() >= mobSpawnData.countMax()) {
@@ -337,7 +418,11 @@ public class UndeadSpawner implements CustomSpawner {
                             UndeadNights.LOGGER.info("Spawning {} {}", mobCount, mobSpawnData.mobId());
                         }
                     }
-                    for (int j = 0; j < mobCount; j++) {
+                    int scaledMobCount = (int) Math.round(mobCount * UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordes().getHordeSizeScaleFactor());
+                    if (MainConfig.getPrintDebugMessages()) {
+                        UndeadNights.LOGGER.info("Scaled mob count: {}", scaledMobCount);
+                    }
+                    for (int j = 0; j < scaledMobCount; j++) {
                         boolean spawnMob = true;
                         if (UndeadNights.globalSpawnCounter >= MainConfig.getHordeMobsSpawnCap()) {
                             spawnCapReached = true;
@@ -476,17 +561,19 @@ public class UndeadSpawner implements CustomSpawner {
 
         // is it night...?
         if (itIsNight) {
+            UndeadNights.serverState.setPerformDifficultySwitchCheck(true);
             // if it's already a horde night, check if we should respawn new waves
-            if (UndeadNights.serverState.getRespawnZombies() && UndeadNights.serverState.getHordeNight() && MainConfig.getSpawnAdditionalWaves()) {
+            if (UndeadNights.serverState.getRespawnZombies() && UndeadNights.serverState.getHordeNight() &&
+                    UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeNights().isSpawnAdditionalWaves()) {
                 if (UndeadNights.serverState.getTickCounter() > 0) {
                     UndeadNights.serverState.setTickCounter(UndeadNights.serverState.getTickCounter() - 1);
                     return 0;
                 } else {
-                    UndeadNights.serverState.setTickCounter(MainConfig.getCooldownBetweenWaves() * 20);
+                    UndeadNights.serverState.setTickCounter(UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeNights().getCooldownBetweenWaves() * 20);
                 }
 
                 randomValue = randomSource.nextIntBetweenInclusive(1, 100);
-                if (randomValue > (100 - MainConfig.getChanceForAdditionalWaves())) {
+                if (randomValue > (100 - UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeNights().getChanceForAdditionalWave())) {
                     if (MainConfig.getPrintDebugMessages()) {
                         UndeadNights.LOGGER.info("New Wave, randomValue was: {}", randomValue);
                     }
@@ -533,9 +620,10 @@ public class UndeadSpawner implements CustomSpawner {
             // spawn a random horde and/or stray zombies for non-horde nights
             if (UndeadNights.serverState.getDaysCounter() > 0 && !UndeadNights.serverState.getHordeNight()) {
                 if (UndeadNights.serverState.getTryToSpawnRandomHorde()) {
-                    if (MainConfig.getEnableRandomHordes() && (UndeadNights.globalSpawnCounter < MainConfig.getHordeMobsSpawnCap())) {
+                    if (UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordes().isEnableRandomHordes() &&
+                            (UndeadNights.globalSpawnCounter < MainConfig.getHordeMobsSpawnCap())) {
                         randomValue = randomSource.nextIntBetweenInclusive(1, 100);
-                        if ((randomValue > (100 - MainConfig.getChanceForRandomHordes()))) {
+                        if ((randomValue > (100 - UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordes().getChanceForRandomHorde()))) {
                             for (ServerPlayer player : level.getPlayers(LivingEntity::isAlive)) {
                                 if (spawnHorde(level, player, randomSource) == -1) {
                                     break;
@@ -577,7 +665,7 @@ public class UndeadSpawner implements CustomSpawner {
             // this is the first tick of a new night
             if (UndeadNights.serverState.getNightIsStarting()) {
                 randomValue = randomSource.nextIntBetweenInclusive(1, 100);
-                if (!(randomValue > (100 - MainConfig.getChanceForHordeNight()))) {
+                if (!(randomValue > (100 - UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeNights().getChanceForHordeNight()))) {
                     return 0;
                 } else {
                     UndeadNights.serverState.setIsNaturalSpawningOk(true);
@@ -612,14 +700,14 @@ public class UndeadSpawner implements CustomSpawner {
                 if (!UndeadNights.serverState.getFirstWaveHasSpawned()) {
                     UndeadNights.serverState.setTickCounter(10 * 20);
                 } else {
-                    UndeadNights.serverState.setTickCounter(MainConfig.getCooldownBetweenWaves() * 20);
+                    UndeadNights.serverState.setTickCounter(UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeNights().getCooldownBetweenWaves() * 20);
                     UndeadNights.serverState.setSpawnZombies(false);
                     UndeadNights.serverState.setRespawnZombies(true);
                     if (MainConfig.getPrintDebugMessages()) {
                         UndeadNights.LOGGER.info("Spawned waves for every player: DaysCounter: {} GlobalSpawnCounter: {} Spawn: {}, respawn: {}", UndeadNights.serverState.getDaysCounter(), UndeadNights.globalSpawnCounter, UndeadNights.serverState.getSpawnZombies(), UndeadNights.serverState.getRespawnZombies());
                     }
                 }
-                UndeadNights.serverState.setDaysCounter(MainConfig.getDaysBetweenHordeNights());
+                UndeadNights.serverState.setDaysCounter(UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeNights().getDaysBetweenHordeNights());
                 d = 0;
                 x = 0;
                 z = 0;
@@ -629,7 +717,7 @@ public class UndeadSpawner implements CustomSpawner {
                 for (ServerPlayer player : level.getPlayers(LivingEntity::isAlive)) {
                     player.sendSystemMessage(Component.translatable("message.undeadnights.horde_night_over"));
                 }
-                UndeadNights.serverState.setDaysCounter(MainConfig.getDaysBetweenHordeNights());
+                UndeadNights.serverState.setDaysCounter(UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeNights().getDaysBetweenHordeNights());
                 if (MainConfig.getMaxHordesPerHordeNight() != 0) {
                     UndeadNights.serverState.setHordesCounter(MainConfig.getMaxHordesPerHordeNight() + 1);
                 } else {
@@ -639,6 +727,25 @@ public class UndeadSpawner implements CustomSpawner {
                     UndeadNights.LOGGER.info("The Night of the Undead is over, TimeOfDay: {} DaysCounter: {} GlobalSpawnCounter: {}", level.getDayTime(), UndeadNights.serverState.getDaysCounter(), UndeadNights.globalSpawnCounter);
                 }
             }
+
+            if ((normalizedTimeOfDay >= 11500) && !level.getPlayers(LivingEntity::isAlive).isEmpty() && UndeadNights.automaticDifficultyProgressionActive) {
+                boolean flag = false;
+                if (UndeadNights.serverState.isPerformDifficultySwitchCheck()) {
+                    flag = UndeadNights.difficultyConfig.checkForDifficultyLevelSwitch((int) (level.getDayTime() / 24000L)+1, level.random);
+                    UndeadNights.serverState.setPerformDifficultySwitchCheck(false);
+                }
+                if (flag || !UndeadNights.serverState.isFirstDifficultyLevelPrinted()) {
+                    for (ServerPlayer player : level.getPlayers(LivingEntity::isAlive)) {
+                        player.sendSystemMessage(Component.literal(UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultyName()).withStyle(ChatFormatting.YELLOW));
+                    }
+                    if (MainConfig.getPrintDebugMessages()) {
+                        UndeadNights.LOGGER.info("Difficulty level set to {}", UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultyName());
+                    }
+                    UndeadNights.serverState.setPossibleHordesIndex(-1);
+                    UndeadNights.serverState.setFirstDifficultyLevelPrinted(true);
+                }
+            }
+
             UndeadNights.serverState.setHordeNight(false);
             UndeadNights.serverState.setSpawnZombies(true);
             UndeadNights.serverState.setRespawnZombies(false);

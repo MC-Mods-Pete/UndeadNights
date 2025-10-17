@@ -1,5 +1,6 @@
 package net.petemc.undeadnights.event;
 
+import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -7,6 +8,7 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.goal.FloatGoal;
 import net.minecraft.world.entity.monster.Zombie;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -15,16 +17,16 @@ import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.event.entity.EntityLeaveLevelEvent;
 import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.event.entity.living.ZombieEvent;
+import net.minecraftforge.event.entity.player.PlayerSleepInBedEvent;
+import net.minecraftforge.event.entity.player.SleepingLocationCheckEvent;
+import net.minecraftforge.event.entity.player.SleepingTimeCheckEvent;
 import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.server.command.ConfigCommand;
 import net.petemc.undeadnights.UndeadNights;
 import net.petemc.undeadnights.casts.BlockBreakingZombie;
-import net.petemc.undeadnights.command.HordeMobsCommand;
-import net.petemc.undeadnights.command.SetDefaultHordeCommand;
-import net.petemc.undeadnights.command.SpawnHordeCommand;
-import net.petemc.undeadnights.command.StatusCommand;
+import net.petemc.undeadnights.command.*;
 import net.petemc.undeadnights.config.MainConfig;
 import net.petemc.undeadnights.entity.DemolitionZombieEntity;
 import net.petemc.undeadnights.entity.EliteZombieEntity;
@@ -114,6 +116,7 @@ public class ModEvents {
             new HordeMobsCommand(event.getDispatcher());
             new StatusCommand(event.getDispatcher());
             new SetDefaultHordeCommand(event.getDispatcher());
+            new DifficultyLevelCommand(event.getDispatcher());
 
             ConfigCommand.register(event.getDispatcher());
         }
@@ -145,7 +148,7 @@ public class ModEvents {
                     }
                 }
 
-                if (MainConfig.getHordeZombiesCanPushEachOtherUp()) {
+                if (UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeMobs().isHordeMobsCanClimbEachOther()) {
                     final Vec3 entityPosition = entity.position();
                     final AABB entitySearchArea = new AABB(entityPosition, entityPosition).inflate(0.45 / 2d);
                     List<Entity> sortedEntityList = world.getEntitiesOfClass(Entity.class, entitySearchArea , entityTagCheck ->

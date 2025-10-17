@@ -24,6 +24,7 @@ public class HordeConfig {
     private static int maxWaveSize = 15;
     private static MobSpawnData defaultHordeMob = null;
     private static final List<MobSpawnData> hordeMobs = new ArrayList<>();
+    private static final List<String> targetEntities = new ArrayList<>();
 
     private static final List<HordesData> hordes = new ArrayList<>();
     private static int numberOfHordes = 0;
@@ -79,6 +80,18 @@ public class HordeConfig {
             try (FileReader reader = new FileReader(CONFIG_FILE)) {
                 JsonObject json = new Gson().fromJson(reader, JsonObject.class);
                 configVariant = json.get("configVariant").getAsInt();
+                targetEntities.clear();
+                try {
+                    JsonArray targetArray = json.getAsJsonArray("targetEntities");
+                    for (int i = 0; i < targetArray.size(); i++) {
+                        String target = targetArray.get(i).getAsString();
+                        target = target.replace(':', '.');
+                        targetEntities.add("entity." + target);
+                    }
+                } catch (Exception e) {
+                    UndeadNights.LOGGER.info("------ No target entities specified, defaulting to all players ------");
+                    targetEntities.clear();
+                }
                 if (configVariant == 1) {
                     maxWaveSize = json.get("maxWaveSize").getAsInt();
                     try {
@@ -240,6 +253,10 @@ public class HordeConfig {
 
     public static List<HordesData> getHordes() {
         return hordes;
+    }
+
+    public static List<String> getTargetEntities() {
+        return targetEntities;
     }
 
     public static int getNumberOfHordes() {

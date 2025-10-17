@@ -22,6 +22,8 @@ import net.petemc.undeadnights.client.render.HordeZombieRenderer;
 import net.petemc.undeadnights.command.HordeMobsCommand;
 import net.petemc.undeadnights.config.HordeConfig;
 import net.petemc.undeadnights.config.MainConfig;
+import net.petemc.undeadnights.config.difficulty.DifficultyConfig;
+import net.petemc.undeadnights.config.difficulty.DifficultyConfigLoader;
 import net.petemc.undeadnights.effect.ModEffects;
 import net.petemc.undeadnights.entity.ModEntities;
 import net.petemc.undeadnights.item.ModCreativeModeTabs;
@@ -40,7 +42,10 @@ public class UndeadNights {
 
 	public static StateSaverAndLoader serverState = null;
 
+    public static DifficultyConfig difficultyConfig;
+
 	public static int globalSpawnCounter = 0;
+    public static boolean automaticDifficultyProgressionActive = false;
 
 	public UndeadNights(FMLJavaModLoadingContext context) {
 		IEventBus modEventBus = context.getModEventBus();
@@ -59,6 +64,8 @@ public class UndeadNights {
 		modEventBus.addListener(this::addCreative);
 		context.registerConfig(ModConfig.Type.SERVER, MainConfig.SPEC_SERVER);
 		HordeConfig.loadConfig();
+
+        DifficultyConfigLoader.loadDifficultyConfig();
 	}
 
 	private void commonSetup(final FMLCommonSetupEvent event) {
@@ -83,11 +90,19 @@ public class UndeadNights {
 	public void onServerStarting(ServerStartingEvent event) {
 		LOGGER.info("Initializing UndeadNights Mod");
 		if (UndeadNights.serverState == null) {
-			UndeadNights.serverState = StateSaverAndLoader.getServerState(event.getServer());
-			// check if the DaysCounter in the config was changed
-			if (UndeadNights.serverState.getLastMaxDaysCounter() != MainConfig.getDaysBetweenHordeNights()) {
-				UndeadNights.serverState.setDaysCounter(MainConfig.getDaysBetweenHordeNights());
-				UndeadNights.serverState.setLastMaxDaysCounter(MainConfig.getDaysBetweenHordeNights());
+            UndeadNights.serverState = StateSaverAndLoader.getServerState(event.getServer());
+
+            // TODO remove, only for testing
+            UndeadNights.serverState.setFirstDifficultyLevelPrinted(false);
+            //UndeadNights.serverState.setCurrentDifficultyLevelIndex(0);
+
+            UndeadNights.difficultyConfig.setCurrentDifficultyLevel(UndeadNights.difficultyConfig.getDifficultyLevels().get(UndeadNights.serverState.getCurrentDifficultyLevelIndex()));
+            UndeadNights.automaticDifficultyProgressionActive = MainConfig.getEnableAutomaticDifficultyProgression();
+
+            // check if the DaysCounter in the config was changed
+			if (UndeadNights.serverState.getLastMaxDaysCounter() != UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeNights().getDaysBetweenHordeNights()) {
+				UndeadNights.serverState.setDaysCounter(UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeNights().getDaysBetweenHordeNights());
+				UndeadNights.serverState.setLastMaxDaysCounter(UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeNights().getDaysBetweenHordeNights());
 			}
 
 			// check if the Grace Period in the config was changed
@@ -113,11 +128,12 @@ public class UndeadNights {
 			if (MainConfig.getPrintDebugMessages()) {
 				UndeadNights.LOGGER.info("INIT DaysCounter: {} LastMaxDaysCounter: {}", UndeadNights.serverState.getDaysCounter(), UndeadNights.serverState.getLastMaxDaysCounter());
 				UndeadNights.LOGGER.info("INIT HordeNight: {} SpawnZombies: {} RespawnZombies: {}", UndeadNights.serverState.getHordeNight(), UndeadNights.serverState.getSpawnZombies(), UndeadNights.serverState.getRespawnZombies());
-			}
-			UndeadSpawner.hordeToSpawn = HordeConfig.getDefaultHorde();
+			    UndeadNights.LOGGER.info("INIT Difficulty level: {}", UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultyName());
+            }
+			UndeadSpawner.hordeIdFromHordesConfig = HordeConfig.getDefaultHorde();
 			//UndeadSpawner.prevNormalizedTimeOfDay = event.getServer().overworld().getDayTime() - 1;
-			HordeMobsCommand.hordeZombiesCanBreakBlocks = MainConfig.getHordeZombiesCanBreakBlocks();
-			HordeMobsCommand.hordeZombiesBlockBreakingTier = MainConfig.getZombiesBlockBreakTier();
+			HordeMobsCommand.hordeZombiesCanBreakBlocks = UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeMobs().isBlockBreaking();
+			HordeMobsCommand.hordeZombiesBlockBreakingTier = UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeMobs().getBlockBreakingTier();
 		}
 	}
 

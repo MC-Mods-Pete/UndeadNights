@@ -160,6 +160,16 @@ repositories {
     // flatDir {
     //     dir 'libs'
     // }
+
+    // curse maven
+    mavenLocal()
+
+    maven {
+        url "https://cursemaven.com"
+        content {
+            includeGroup "curse.maven"
+        }
+    }
 }
 
 dependencies {
@@ -187,6 +197,10 @@ dependencies {
     // For more info:
     // http://www.gradle.org/docs/current/userguide/artifact_dependencies_tutorial.html
     // http://www.gradle.org/docs/current/userguide/dependency_management.html
+
+    implementation fg.deobf("curse.maven:comforts-276951:${comforts_version}")
+
+    runtimeOnly fg.deobf("curse.maven:jade--324717:${jade_version}")
 }
 
 mixin {

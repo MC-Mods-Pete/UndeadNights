@@ -1,11 +1,13 @@
 package net.petemc.undeadnights.mixin;
 
+import com.illusivesoulworks.comforts.client.renderer.SleepingBagBlockEntityRenderer;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.monster.Zombie;
+import net.petemc.undeadnights.UndeadNights;
 import net.petemc.undeadnights.casts.BlockBreakingZombie;
 import net.petemc.undeadnights.config.MainConfig;
 import net.petemc.undeadnights.entity.DemolitionZombieEntity;
@@ -42,7 +44,7 @@ public class ZombieEntityMixin implements BlockBreakingZombie
 
     @Inject(method = "isSunSensitive", at = @At("TAIL"), cancellable = true)
     public void isSunSensitive(CallbackInfoReturnable<Boolean> cir) {
-        cir.setReturnValue(MainConfig.getVanillaZombiesBurnInDaylight());
+        cir.setReturnValue(UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeMobs().isVanillaZombiesBurnInTheSun());
     }
 
     @Unique

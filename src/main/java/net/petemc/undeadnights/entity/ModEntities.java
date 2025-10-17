@@ -28,7 +28,10 @@ public class ModEntities {
                             .setTrackingRange(64)
                             .setUpdateInterval(1)
                             .sized(0.5F, 0.5F)
+                            .noSummon()
                             .build("tnt_projectile"));
+
+
 
     public static void initModEntities() {
         HordeZombieEntity.init();

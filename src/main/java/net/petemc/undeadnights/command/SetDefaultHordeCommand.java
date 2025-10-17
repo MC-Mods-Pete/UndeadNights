@@ -28,14 +28,14 @@ public class SetDefaultHordeCommand {
         String message = null;
         if (HordeConfig.getConfigVariant() == 2) {
             if ((defaultHordeId > HordeConfig.getHordes().size()) || (defaultHordeId < 0)) {
-                UndeadSpawner.hordeToSpawn = 1;
+                UndeadSpawner.hordeIdFromHordesConfig = 1;
                 message = "Not a valid hordeId, value set to 1";
             } else {
-                UndeadSpawner.hordeToSpawn = defaultHordeId;
+                UndeadSpawner.hordeIdFromHordesConfig = defaultHordeId;
                 message = "Set default horde to " + defaultHordeId + "\nPlease note: after a server restart this will be reverted to the value in the config file.";
             }
         } else {
-            UndeadSpawner.hordeToSpawn = 1;
+            UndeadSpawner.hordeIdFromHordesConfig = 1;
             message = "Please note: Horde config variant 1 does not support multiple horde configs, value is always 1";
         }
 
