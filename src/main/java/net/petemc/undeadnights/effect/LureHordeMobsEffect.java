@@ -11,7 +11,7 @@ import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.petemc.undeadnights.UndeadNights;
-import net.petemc.undeadnights.config.MainConfig;
+import net.petemc.undeadnights.casts.UndeadNightsExtendedPlayer;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Comparator;
@@ -25,6 +25,13 @@ public class LureHordeMobsEffect extends MobEffect {
     @Override
     public void applyEffectTick(@NotNull LivingEntity pLivingEntity, int pAmplifier) {
         if (!pLivingEntity.level().isClientSide()) {
+            double chance = 0.08D;
+            if (pLivingEntity instanceof UndeadNightsExtendedPlayer hordeLurePlayer) {
+                if (!hordeLurePlayer.undeadnights_hasHordeLureEffect()) {
+                    chance = 20.0D;
+                }
+                hordeLurePlayer.undeadnights_setHordeLureEffect(true);
+            }
             if (pLivingEntity instanceof Player pPlayer) {
                 LevelAccessor world = pPlayer.level();
                 RandomSource randomSource = pPlayer.getRandom();
@@ -42,7 +49,7 @@ public class LureHordeMobsEffect extends MobEffect {
                 final AABB entitySearchArea = new AABB(entityPosition, entityPosition).inflate(15d);
 
                 double randomValue = Math.random();
-                if (randomValue < 0.03D) {
+                if (randomValue < (chance / 20)) {
                     List<Entity> sortedEntityList = world.getEntitiesOfClass(Entity.class, entitySearchArea, entityUUIDCheck ->
                             UndeadNights.serverState.spawnedHordeMobs.contains(entityUUIDCheck.getUUID()))
                             .stream().sorted(Comparator.comparingDouble(entityDistSort -> entityDistSort.distanceToSqr(entityPosition))).toList();

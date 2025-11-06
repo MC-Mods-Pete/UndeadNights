@@ -107,7 +107,7 @@ public class BreakBlockGoal extends Goal {
             return false;
         }
 
-        if (this.mob.getRandom().nextFloat() < 0.5F) {
+        if (this.mob.getRandom().nextFloat() < 0.3F) {
             return false;
         }
 
@@ -142,7 +142,7 @@ public class BreakBlockGoal extends Goal {
 
         targetBlock = blockPos;
         float destroyTime = world.getBlockState(targetBlock).getBlock().defaultDestroyTime();
-        scaledTargetDestroyTime = destroyTime * 2;
+        scaledTargetDestroyTime = destroyTime * 1.5f;
         if (MainConfig.getPrintDebugMessages()) {
             UndeadNights.LOGGER.info("Block: {} destroyTime: {} Stage: {}", world.getBlockState(targetBlock).getBlock(), world.getBlockState(targetBlock).getBlock().defaultDestroyTime(), UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeMobs().getBlockBreakingTier());
         }

@@ -7,8 +7,10 @@ import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
 import net.petemc.undeadnights.UndeadNights;
 import net.petemc.undeadnights.config.MainConfig;
+import net.petemc.undeadnights.util.StateSaverAndLoader;
 
 import java.util.Collection;
 import java.util.Objects;
@@ -34,10 +36,15 @@ public class SpawnHordeCommand {
 
     private int spawnHorde(CommandSourceStack source) throws CommandSyntaxException {
         if (UndeadNights.globalSpawnCounter < MainConfig.getHordeMobsSpawnCap()) {
-            spawnHorde = true;
             Objects.requireNonNull(source.getEntity()).sendSystemMessage(Component.translatable("message.undeadnights.command_spawn_horde_all"));
             if (MainConfig.getPrintDebugMessages()) {
                 UndeadNights.LOGGER.info("Command to spawn hordes for all players issued.");
+            }
+            //spawnHorde = true;
+            for (Entity entity : source.getLevel().players()) {
+                if (entity instanceof Player) {
+                    UndeadNights.serverState.entitiesWithPendingHorde.add(entity.getUUID());
+                }
             }
         } else {
             Objects.requireNonNull(source.getEntity()).sendSystemMessage(Component.translatable("message.undeadnights.spawn_cap_reached"));
@@ -47,8 +54,15 @@ public class SpawnHordeCommand {
 
     private int spawnHorde(CommandSourceStack source, Collection<? extends Entity> pTargets) throws CommandSyntaxException {
         if (UndeadNights.globalSpawnCounter < MainConfig.getHordeMobsSpawnCap()) {
-            spawnHorde = true;
-            entities = pTargets;
+            //spawnHorde = true;
+            //entities = pTargets;
+            if (!pTargets.isEmpty()) {
+                for (Entity entity : pTargets) {
+                    if (entity instanceof Player) {
+                        UndeadNights.serverState.entitiesWithPendingHorde.add(entity.getUUID());
+                    }
+                }
+            }
             Objects.requireNonNull(source.getEntity()).sendSystemMessage(Component.translatable("message.undeadnights.command_spawn_horde"));
             if (MainConfig.getPrintDebugMessages()) {
                 UndeadNights.LOGGER.info("Command to spawn hordes for certain players issued.");

@@ -45,6 +45,10 @@ public class MainConfig
         return hordeWavesCanSpawnOnTrees;
     }
 
+    public static boolean getHordeWavesCanSpawnInCaves() {
+        return hordeWavesCanSpawnInCaves;
+    }
+
     public static boolean getBlockLightLevelsInfluenceMonsterSpawns() {
         return blockLightLevelsInfluenceMonsterSpawns;
     }
@@ -164,6 +168,10 @@ public class MainConfig
     private static final ForgeConfigSpec.BooleanValue HORDE_WAVES_CAN_SPAWN_ON_TREES = BUILDER_SERVER
             .comment("If true, horde waves can spawn on trees | default: false")
             .define("hordeWavesCanSpawnOnTrees", false);
+
+    private static final ForgeConfigSpec.BooleanValue HORDE_WAVES_CAN_SPAWN_IN_CAVES = BUILDER_SERVER
+            .comment("If true, horde waves can spawn in caves | default: false")
+            .define("hordeWavesCanSpawnInCaves", false);
 
     private static final ForgeConfigSpec.BooleanValue BLOCK_LIGHT_LEVELS_INFLUENCE_MONSTER_SPAWNS = BUILDER_SERVER
             .comment("If true, the light level of the block position can prevent horde mobs from spawning | default: false")
@@ -296,6 +304,7 @@ public class MainConfig
     private static int hordeMobsSpawnCap = 100;
     private static boolean hordeWavesCanSpawnInWater = false;
     private static boolean hordeWavesCanSpawnOnTrees = false;
+    private static boolean hordeWavesCanSpawnInCaves = false;
     private static boolean blockLightLevelsInfluenceMonsterSpawns = false;
     private static int maxBlockLightLevelForMonsterSpawns = 0;
     private static boolean hordeNightsDisableSleeping = true;
@@ -326,6 +335,7 @@ public class MainConfig
             hordeMobsSpawnCap = HORDE_MOBS_SPAWN_CAP.get();
             hordeWavesCanSpawnInWater = HORDE_WAVES_CAN_SPAWN_IN_WATER.get();
             hordeWavesCanSpawnOnTrees = HORDE_WAVES_CAN_SPAWN_ON_TREES.get();
+            hordeWavesCanSpawnInCaves = HORDE_WAVES_CAN_SPAWN_IN_CAVES.get();
             blockLightLevelsInfluenceMonsterSpawns = BLOCK_LIGHT_LEVELS_INFLUENCE_MONSTER_SPAWNS.get();
             maxBlockLightLevelForMonsterSpawns = MAX_BLOCK_LIGHT_LEVEL_FOR_MONSTER_SPAWNS.get();
             hordeNightsDisableSleeping = HORDE_NIGHTS_DISABLE_SLEEPING.get();

@@ -117,6 +117,8 @@ public class ModEvents {
             new StatusCommand(event.getDispatcher());
             new SetDefaultHordeCommand(event.getDispatcher());
             new DifficultyLevelCommand(event.getDispatcher());
+            // Debug command to test A* pathfinding in-game
+            new PathDebugCommand(event.getDispatcher());
 
             ConfigCommand.register(event.getDispatcher());
         }
@@ -181,5 +183,3 @@ public class ModEvents {
         }
     }
 }
-
-
