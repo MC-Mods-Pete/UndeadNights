@@ -40,6 +40,7 @@ public class StateSaverAndLoader extends SavedData {
     public HashSet<UUID> spawnedHordeMobs = new HashSet<UUID>();
     public HashSet<UUID> hordeMobsToRemove = new HashSet<UUID>();
     public HashSet<UUID> entitiesWithPendingHorde = new HashSet<UUID>();
+    public HashSet<UUID> entitiesWithPendingWave = new HashSet<UUID>();
     public HashSet<UUID> entitiesWithReceivedHorde = new HashSet<UUID>();
 
 
@@ -289,6 +290,12 @@ public class StateSaverAndLoader extends SavedData {
             state.entitiesWithPendingHorde.add(hordeMobUUID);
         });
 
+        CompoundTag pendingWaveUUIDs = tag.getCompound("entitiesWithPendingWave");
+        pendingWaveUUIDs.getAllKeys().forEach(key -> {
+            UUID hordeMobUUID = pendingWaveUUIDs.getUUID(key);
+            state.entitiesWithPendingWave.add(hordeMobUUID);
+        });
+
         CompoundTag receivedHordeUUIDs = tag.getCompound("entitiesWithReceivedHorde");
         receivedHordeUUIDs.getAllKeys().forEach(key -> {
             UUID hordeMobUUID = receivedHordeUUIDs.getUUID(key);
@@ -345,6 +352,12 @@ public class StateSaverAndLoader extends SavedData {
             pendingHordeUUIDs.putUUID(uuid.toString(), uuid);
         });
         tag.put("entitiesWithPendingHorde", pendingHordeUUIDs);
+
+        CompoundTag pendingWaveUUIDs = new CompoundTag();
+        entitiesWithPendingWave.forEach((uuid) -> {
+            pendingWaveUUIDs.putUUID(uuid.toString(), uuid);
+        });
+        tag.put("entitiesWithPendingWave", pendingWaveUUIDs);
 
         CompoundTag receivedHordeUUIDs = new CompoundTag();
         entitiesWithReceivedHorde.forEach((uuid) -> {

@@ -18,7 +18,7 @@ public final class Pathfinding {
     // Mutable defaults (can be changed at runtime via setters)
     private static float mobWidth = 0.6f;
     private static float mobHeight = 1.8f;
-    private static int maxNodes = 20000;
+    private static int maxNodes = 10000;
     private static int maxDown = 4;
     private static int maxUp = 1;
     private static int endRadius = 10; // default radius (10) to treat success when near target
@@ -48,11 +48,11 @@ public final class Pathfinding {
      * The computation runs on the common ForkJoinPool and returns a CompletableFuture
      * that completes with the found BlockPos or null if none was found.
      */
-    public static CompletableFuture<BlockPos> findStartPositionAStarAsync(Level level, BlockPos end, int minDistance) {
-        return CompletableFuture.supplyAsync(() -> Helpers.findStartPositionForPathAStar(
+    public static CompletableFuture<BlockPos> findEndPositionAStarAsync(Level level, BlockPos end, int distance) {
+        return CompletableFuture.supplyAsync(() -> Helpers.findEndPositionForPathAStar(
                 level,
                 end,
-                minDistance,
+                distance,
                 false,
                 getMobWidth(),
                 getMobHeight(),

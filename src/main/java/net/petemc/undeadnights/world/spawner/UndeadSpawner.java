@@ -48,9 +48,11 @@ import net.petemc.undeadnights.entity.ModEntities;
 import net.petemc.undeadnights.entity.ai.goal.BreakBlockGoal;
 import net.petemc.undeadnights.sound.UndeadNightsSounds;
 import net.petemc.undeadnights.util.Helpers;
+import net.petemc.undeadnights.util.HordesSpawning;
 import net.petemc.undeadnights.util.Pathfinding;
 import org.jetbrains.annotations.NotNull;
 
+import javax.annotation.Nullable;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
@@ -58,9 +60,10 @@ public class UndeadSpawner implements CustomSpawner {
     public static boolean invalidHordeMobEntry = false;
     public static int hordeIdFromHordesConfig = 1;
 
-    public HashMap<UUID, CompletableFuture<BlockPos>> completableFutureBlockPositionsPerPlayer = new HashMap<>();
+    public static boolean useAsyncHordeSpawning = true;
 
-    CompletableFuture<BlockPos> completableFuture = null;
+    public HashMap<UUID, CompletableFuture<BlockPos>> completableFutureBlockPositionsPerPlayer = new HashMap<>();
+    public HashMap<UUID, CompletableFuture<SpawnHordeResult>> hordeSpawningPerPlayer = new HashMap<>();
 
     private double x = 0;
     private double z = 0;
@@ -131,9 +134,9 @@ public class UndeadSpawner implements CustomSpawner {
             y = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, pos.getX() + deltaX, pos.getZ() + deltaZ);
         }
 
-        if (MainConfig.getHordeWavesCanSpawnInCaves() && playerInCave) {
-            y = pos.getY();
-        }
+        //if (MainConfig.getHordeWavesCanSpawnInCaves() && playerInCave) {
+        //    y = pos.getY();
+        //}
 
         return new BlockPos(pos.getX() + deltaX, y, pos.getZ() + deltaZ);
     }
@@ -166,11 +169,18 @@ public class UndeadSpawner implements CustomSpawner {
         if (player instanceof UndeadNightsExtendedPlayer undeadNightsExtendedPlayer) {
             playerInCave = undeadNightsExtendedPlayer.undeadnights_isInCave();
         }
-        //pos = findNearbySurfaceSpawnPosition(level, pos, randomSource, playerInCave);
 
-        UndeadNights.LOGGER.info("Initial horde mob spawn position at {}, {}, {}", pos.getX(), pos.getY(), pos.getZ());
-        pos = Helpers.findSpawnablePosition(level, pos, 8);
-        UndeadNights.LOGGER.info("Adjusted horde mob spawn position to {}, {}, {}", pos.getX(), pos.getY(), pos.getZ());
+        if (MainConfig.getHordeWavesCanSpawnInCaves() && playerInCave) {
+            if (MainConfig.getPrintDebugMessages()) {
+                UndeadNights.LOGGER.info("Player {} is in cave, attempting to spawn horde mob in cave.", player.getName().getString());
+            }
+            pos = Helpers.findSpawnablePosition(level, pos, 8, 5);
+        } else {
+            if (MainConfig.getPrintDebugMessages()) {
+                UndeadNights.LOGGER.info("Player {} is not in cave, attempting to spawn horde mob on surface.", player.getName().getString());
+            }
+            pos = findNearbySurfaceSpawnPosition(level, pos, randomSource, playerInCave);
+        }
 
         BlockPos finalPos = pos;
         UndeadNights.LOGGER.info("Spawning horde mob {} at position {}, {}, {}", mobSpawnData.mobId(), finalPos.getX(), finalPos.getY(), finalPos.getZ());
@@ -274,7 +284,9 @@ public class UndeadSpawner implements CustomSpawner {
                 if (entity instanceof LivingEntity livingEntity) {
                     livingEntity.addEffect(new MobEffectInstance(MobEffects.FIRE_RESISTANCE,15*20, 1));
                     livingEntity.addEffect(new MobEffectInstance(MobEffects.SLOW_FALLING,2*20, 1));
-                    livingEntity.addEffect(new MobEffectInstance(MobEffects.GLOWING,200*20, 1));
+                    if (MainConfig.getDebugMakeHordeMobsGlow()) {
+                        livingEntity.addEffect(new MobEffectInstance(MobEffects.GLOWING, 200 * 20, 1));
+                    }
                 }
             }
             level.tryAddFreshEntityWithPassengers(entity);
@@ -294,7 +306,38 @@ public class UndeadSpawner implements CustomSpawner {
         return 0;
     }
 
-    public int spawnHorde(ServerLevel level, ServerPlayer player, RandomSource randomSource) {
+    public static enum SpawnHordeResult {
+        DONE,
+        NOT_DONE_YET,
+        FAILED;
+    }
+
+    public SpawnHordeResult spawnHorde(ServerLevel level, ServerPlayer player, RandomSource randomSource) {
+        if (useAsyncHordeSpawning) {
+            if (!hordeSpawningPerPlayer.containsKey(player.getUUID())) {
+                hordeSpawningPerPlayer.put(player.getUUID(),
+                        HordesSpawning.spawnHordeAsync(level, player, randomSource));
+                player.sendSystemMessage(Component.literal("Finding horde spawn location (async)...").withStyle(ChatFormatting.DARK_AQUA));
+                if (MainConfig.getPrintDebugMessages()) {
+                    UndeadNights.LOGGER.info("Async horde spawning location calculation for player {} at {}", player.getName().getString(), player.blockPosition());
+                }
+            }
+            CompletableFuture<SpawnHordeResult> existingFutureHorde = hordeSpawningPerPlayer.get(player.getUUID());
+            if (existingFutureHorde != null && existingFutureHorde.isDone()) {
+                SpawnHordeResult result = SpawnHordeResult.FAILED;
+                try {
+                    result = existingFutureHorde.get();
+                } catch (Exception e) {
+                    UndeadNights.LOGGER.error("Spawning horde for player {} failed!", player.getName().getString());
+                }
+                hordeSpawningPerPlayer.remove(player.getUUID());
+                return SpawnHordeResult.DONE;
+            } else {
+                // still not done, skip this spawn attempt
+                return SpawnHordeResult.NOT_DONE_YET;
+            }
+        }
+
         int randomValue;
         int spawnCounter = 0;
         BlockPos possibleSpawnLocation;
@@ -329,34 +372,14 @@ public class UndeadSpawner implements CustomSpawner {
             possibleSpawnLocation = player.blockPosition().offset((int) x, 0, (int) z);
 
             // cave spawning check
-            if ((MainConfig.getHordeWavesCanSpawnInCaves() && playerInCave)) {
-                /*possibleSpawnLocation = player.blockPosition().offset((int) x, 0, (int) z);
-                BlockPos.MutableBlockPos mutablePossibleSpawnLocation =
-                        new BlockPos.MutableBlockPos(possibleSpawnLocation.getX(), player.getY(), possibleSpawnLocation.getZ());
-                if (MainConfig.getPrintDebugMessages()) {
-                    UndeadNights.LOGGER.info("Cave horde spawning check for player {} at position {}", player.getName().getString(), mutablePossibleSpawnLocation);
-                }
-
-                if (level.getBlockState(mutablePossibleSpawnLocation).getBlock().toString().contains("air")) {
-                    while (mutablePossibleSpawnLocation.getY() > level.getMinBuildHeight() && !level.getBlockState(mutablePossibleSpawnLocation).blocksMotion()) {
-                        mutablePossibleSpawnLocation.move(Direction.DOWN);
-                        if (level.getBlockState(mutablePossibleSpawnLocation).getFluidState().is(FluidTags.WATER)) {
-                            foundHordeSpawnLocation = false;
-                            break;
-                        } else {
-                            foundHordeSpawnLocation = true;
-                        }
-                    }
-                    if (MainConfig.getPrintDebugMessages()) {
-                        UndeadNights.LOGGER.info("Block at position {} is {} was changed to {} {}", possibleSpawnLocation, level.getBlockState(possibleSpawnLocation).getBlock(), mutablePossibleSpawnLocation, level.getBlockState(mutablePossibleSpawnLocation).getBlock());
-                    }
-                    possibleSpawnLocation = mutablePossibleSpawnLocation;
-                }
-                 */
+            if (MainConfig.getHordeWavesCanSpawnInCaves() && playerInCave) {
                 if (!completableFutureBlockPositionsPerPlayer.containsKey(player.getUUID())) {
                     player.sendSystemMessage(Component.literal("Calculating cave horde spawn location...").withStyle(ChatFormatting.DARK_AQUA));
+                    if (MainConfig.getPrintDebugMessages()) {
+                        UndeadNights.LOGGER.info("Starting cave horde spawn location calculation for player {} at {}", player.getName().getString(), player.blockPosition());
+                    }
                     completableFutureBlockPositionsPerPlayer.put(player.getUUID(),
-                            Pathfinding.findStartPositionAStarAsync(level, player.blockPosition(), 50));
+                            Pathfinding.findEndPositionAStarAsync(level, player.blockPosition(), MainConfig.getCaveSpawnDistance()));
                 }
                 CompletableFuture<BlockPos> existingFuture = completableFutureBlockPositionsPerPlayer.get(player.getUUID());
                 if (existingFuture != null && existingFuture.isDone()) {
@@ -366,18 +389,21 @@ public class UndeadSpawner implements CustomSpawner {
                         //possibleSpawnLocation = player.blockPosition().offset((int) x, 0, (int) z);
                     }
                     if (possibleSpawnLocation == null) {
+                        UndeadNights.LOGGER.info("Cave horde spawn location calculation for player {} failed, trying again.", player.getName().getString());
                         completableFutureBlockPositionsPerPlayer.remove(player.getUUID());
                         d = 0;
                         continue;
                     }
                     player.sendSystemMessage(Component.literal("Cave horde spawn location calculated.").withStyle(ChatFormatting.DARK_AQUA));
-                    UndeadNights.LOGGER.info("Cave horde spawn location for player {} calculated at position {}", player.getName().getString(), possibleSpawnLocation);
+                    if (MainConfig.getPrintDebugMessages()) {
+                        UndeadNights.LOGGER.info("Cave horde spawn location calculation for player {} is done, result: {}", player.getName().getString(), possibleSpawnLocation);
+                    }
                     foundHordeSpawnLocation = true;
                     completableFutureBlockPositionsPerPlayer.remove(player.getUUID());
                 } else {
                     // still not done, skip this spawn attempt
                     d = 0;
-                    return -1;
+                    return SpawnHordeResult.FAILED;
                     //continue;
                 }
             } else {
@@ -547,7 +573,7 @@ public class UndeadSpawner implements CustomSpawner {
                     }
                     UndeadNights.serverState.entitiesWithPendingHorde.remove(player.getUUID());
                     UndeadNights.serverState.entitiesWithReceivedHorde.add(player.getUUID());
-                    return 0;
+                    return SpawnHordeResult.DONE;
                 } else {
                     continue;
                 }
@@ -555,22 +581,26 @@ public class UndeadSpawner implements CustomSpawner {
 
             if (spawnCapReached) {
                 UndeadNights.LOGGER.info("Spawn cap reached, {} Horde Zombies are already loaded into this world.", MainConfig.getHordeMobsSpawnCap());
-                return -1;
+                return SpawnHordeResult.FAILED;
             }
         } // <---
         if (spawnCounter == 0) {
             UndeadNights.LOGGER.info("Failed to spawn a horde.");
-            return -1;
+            return SpawnHordeResult.FAILED;
         }
 
-        return 0;
+        return SpawnHordeResult.DONE;
     }
 
 
     @Override
     public int tick(@NotNull ServerLevel level, boolean spawnMonsters, boolean spawnAnimals) {
         // check if Horde Nights and monster spawning are enabled
-        if (!spawnMonsters || !MainConfig.getUndeadNightsEnabled()) {
+        if (!MainConfig.getUndeadNightsEnabled()) {
+            return 0;
+        }
+
+        if (!spawnMonsters && !MainConfig.getIgnoreDoMobSpawningGamerule()) {
             return 0;
         }
 
@@ -582,23 +612,6 @@ public class UndeadSpawner implements CustomSpawner {
         // Check if the SaveState is already initialized
         if (UndeadNights.serverState == null) {
             return 0;
-        }
-
-        if (completableFuture != null) {
-            //Pathfinding.findStartPositionAsync(level, new BlockPos(0, level.getSeaLevel(), 0), 100, 100);
-            UndeadNights.LOGGER.info("Checking async pathfinding result...");
-            if (completableFuture.isDone()) {
-                try {
-                    BlockPos result = completableFuture.get();
-                    UndeadNights.LOGGER.info("Async pathfinding result: {}", result);
-                    for (ServerPlayer player : level.getPlayers(LivingEntity::isAlive)) {
-                        player.sendSystemMessage(Component.literal("Async pathfinding result: " + result));
-                    }
-                } catch (Exception e) {
-                    UndeadNights.LOGGER.error("Getting async pathfinding result failed!");
-                }
-                completableFuture = null;
-            }
         }
 
         // calculate normalized time of day and set "Is It Night" flag
@@ -620,7 +633,7 @@ public class UndeadSpawner implements CustomSpawner {
                 if (!UndeadNights.serverState.entitiesWithReceivedHorde.contains(playerUUID)) {
                     Entity entity = level.getEntity(playerUUID);
                     if (entity instanceof ServerPlayer serverPlayer) {
-                        if (spawnHorde(level, serverPlayer, randomSource) == -1) {
+                        if (spawnHorde(level, serverPlayer, randomSource) == SpawnHordeResult.FAILED) {
                             //serverPlayer.sendSystemMessage(Component.translatable("message.undeadnights.command_spawn_horde_failed"));
                         }
                         //UndeadNights.serverState.entitiesWithReceivedHorde.add(playerUUID);
@@ -640,31 +653,6 @@ public class UndeadSpawner implements CustomSpawner {
                 }
             }
         }
-
-        /*
-        if (SpawnHordeCommand.spawnHorde) {
-            SpawnHordeCommand.spawnHorde = false;
-            if (SpawnHordeCommand.entities != null) {
-                for (var player : SpawnHordeCommand.entities.stream().toList()) {
-                    if (player instanceof ServerPlayer serverPlayer) {
-                        if (spawnHorde(level, serverPlayer, randomSource) == -1) {
-                            serverPlayer.sendSystemMessage(Component.translatable("message.undeadnights.command_spawn_horde_failed"));
-                            break;
-                        }
-                    }
-                }
-                SpawnHordeCommand.entities = null;
-            } else {
-                for (ServerPlayer player : level.getPlayers(LivingEntity::isAlive)) {
-                    if (spawnHorde(level, player, randomSource) == -1) {
-                        player.sendSystemMessage(Component.translatable("message.undeadnights.command_spawn_horde_failed"));
-                        break;
-                    }
-                }
-            }
-        }
-
-         */
 
         // is it night...?
         if (itIsNight) {
@@ -732,7 +720,7 @@ public class UndeadSpawner implements CustomSpawner {
                         randomValue = randomSource.nextIntBetweenInclusive(1, 100);
                         if ((randomValue > (100 - UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordes().getChanceForRandomHorde()))) {
                             for (ServerPlayer player : level.getPlayers(LivingEntity::isAlive)) {
-                                if (spawnHorde(level, player, randomSource) == -1) {
+                                if (spawnHorde(level, player, randomSource) == SpawnHordeResult.FAILED) {
                                     break;
                                 }
                                 if (MainConfig.getPrintDebugMessages()) {
@@ -796,13 +784,11 @@ public class UndeadSpawner implements CustomSpawner {
                     }
                 }
                 for (ServerPlayer player : level.getPlayers(LivingEntity::isAlive)) {
-                    if (spawnHorde(level, player, randomSource) == -1) {
-                        break;
-                    } else {
-                        UndeadNights.serverState.setFirstWaveHasSpawned(true);
-                    }
-                    UndeadNights.serverState.setHordesCounter(UndeadNights.serverState.getHordesCounter() - 1);
+                    UndeadNights.serverState.entitiesWithPendingHorde.add(player.getUUID());
+                    UndeadNights.serverState.entitiesWithPendingWave.add(player.getUUID());
+                    UndeadNights.serverState.setFirstWaveHasSpawned(true);
                 }
+                UndeadNights.serverState.setHordesCounter(UndeadNights.serverState.getHordesCounter() - 1);
 
                 if (!UndeadNights.serverState.getFirstWaveHasSpawned()) {
                     UndeadNights.serverState.setTickCounter(10 * 20);
@@ -823,6 +809,10 @@ public class UndeadSpawner implements CustomSpawner {
             if (UndeadNights.serverState.getHordeNight()) {
                 for (ServerPlayer player : level.getPlayers(LivingEntity::isAlive)) {
                     player.sendSystemMessage(Component.translatable("message.undeadnights.horde_night_over"));
+                    if (UndeadNights.serverState.entitiesWithPendingWave.contains(player.getUUID())) {
+                        UndeadNights.serverState.entitiesWithPendingWave.remove(player.getUUID());
+                        UndeadNights.serverState.entitiesWithPendingHorde.remove(player.getUUID());
+                    }
                 }
                 UndeadNights.serverState.setDaysCounter(UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeNights().getDaysBetweenHordeNights());
                 if (MainConfig.getMaxHordesPerHordeNight() != 0) {

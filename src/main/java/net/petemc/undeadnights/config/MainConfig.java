@@ -37,6 +37,10 @@ public class MainConfig
         return hordeMobsSpawnCap;
     }
 
+    public static boolean getIgnoreDoMobSpawningGamerule() {
+        return ignoreDoMobSpawningGamerule;
+    }
+
     public static boolean getHordeWavesCanSpawnInWater() {
         return hordeWavesCanSpawnInWater;
     }
@@ -48,6 +52,8 @@ public class MainConfig
     public static boolean getHordeWavesCanSpawnInCaves() {
         return hordeWavesCanSpawnInCaves;
     }
+
+    public static int getCaveSpawnDistance() { return caveSpawnDistance; }
 
     public static boolean getBlockLightLevelsInfluenceMonsterSpawns() {
         return blockLightLevelsInfluenceMonsterSpawns;
@@ -101,6 +107,8 @@ public class MainConfig
         return printDebugMessages;
     }
 
+    public static boolean getDebugMakeHordeMobsGlow() { return debugMakeHordeMobsGlow; }
+
     // Server Config
     private static final ForgeConfigSpec.Builder BUILDER_SERVER = new ForgeConfigSpec.Builder();
 
@@ -116,14 +124,6 @@ public class MainConfig
             .comment("Note: if the grace period is set to 0 the first horde night will occur after")
             .comment("the number of days set with daysBetweenHordeNights below.")
             .defineInRange("gracePeriod", 0, 0, Integer.MAX_VALUE);
-
-    private static final ForgeConfigSpec.IntValue DAYS_BETWEEN_HORDE_NIGHTS = BUILDER_SERVER
-            .comment("Days between horde nights (1 = every night is a horde night) | default: 5")
-            .defineInRange("daysBetweenHordeNights", 5, 1, Integer.MAX_VALUE);
-
-    private static final ForgeConfigSpec.IntValue CHANCE_FOR_HORDE_NIGHTS = BUILDER_SERVER
-            .comment("Chance in % for a horde night | default: 100")
-            .defineInRange("chanceForHordeNight", 100, 1, 100);
 
     private static final ForgeConfigSpec.IntValue MAX_HORDES_PER_HORDE_NIGHTS = BUILDER_SERVER
             .comment("Maximum number of hordes that can spawn per horde night (0 = unlimited) | default: 0")
@@ -149,17 +149,9 @@ public class MainConfig
             .comment("Maximum amount of horde mobs that can be loaded in the world at the same time | default: 80")
             .defineInRange("hordeMobsSpawnCap", 80, 1, 2048);
 
-    private static final ForgeConfigSpec.BooleanValue SPAWN_ADDITIONAL_WAVES = BUILDER_SERVER
-            .comment("If true, additional waves can spawn in a horde night | default: true")
-            .define("spawnAdditionalWaves", true);
-
-    private static final ForgeConfigSpec.IntValue COOLDOWN_BETWEEN_WAVES = BUILDER_SERVER
-            .comment("Time in seconds between check for next possible wave in a horde night | default: 45")
-            .defineInRange("cooldownBetweenWaves", 45, 1, Integer.MAX_VALUE);
-
-    private static final ForgeConfigSpec.IntValue CHANCE_FOR_ADDITIONAL_WAVES = BUILDER_SERVER
-            .comment("Chance in % for another zombie wave (checked after every wave cooldown) | default: 7")
-            .defineInRange("chanceForAdditionalWaves", 7, 1, 100);
+    private static final ForgeConfigSpec.BooleanValue IGNORE_DO_MOB_SPAWNING_GAMERULE = BUILDER_SERVER
+            .comment("If true, the vanilla gamerune doMobSpawning will be ignored | default: true")
+            .define("ignoreDoMobSpawningGamerule", true);
 
     private static final ForgeConfigSpec.BooleanValue HORDE_WAVES_CAN_SPAWN_IN_WATER = BUILDER_SERVER
             .comment("If true, horde waves can spawn in water | default: false")
@@ -172,6 +164,10 @@ public class MainConfig
     private static final ForgeConfigSpec.BooleanValue HORDE_WAVES_CAN_SPAWN_IN_CAVES = BUILDER_SERVER
             .comment("If true, horde waves can spawn in caves | default: false")
             .define("hordeWavesCanSpawnInCaves", false);
+
+    private static final ForgeConfigSpec.IntValue CAVE_SPAWN_DISTANCE = BUILDER_SERVER
+            .comment("Distance a horde will spawn away from the player when in a cave | default: 45")
+            .defineInRange("caveSpawnDistance", 45, 10, 100);
 
     private static final ForgeConfigSpec.BooleanValue BLOCK_LIGHT_LEVELS_INFLUENCE_MONSTER_SPAWNS = BUILDER_SERVER
             .comment("If true, the light level of the block position can prevent horde mobs from spawning | default: false")
@@ -193,66 +189,9 @@ public class MainConfig
             .comment("If true, the horde zombies will be persistent and not despawn | default: false")
             .define("persistentMobs", false);
 
-    private static final ForgeConfigSpec.BooleanValue HORDE_ZOMBIES_BURN_IN_DAYLIGHT = BUILDER_SERVER
-            .comment("If true, the horde zombies (only those added by this mod) will burn in daylight | default: false")
-            .define("hordeZombiesBurnInDaylight", false);
-
-    private static final ForgeConfigSpec.BooleanValue VANILLA_ZOMBIES_BURN_IN_DAYLIGHT = BUILDER_SERVER
-            .comment("If true, the vanilla zombies will burn in daylight | default: true")
-            .define("vanillaZombiesBurnInDaylight", true);
-
-    private static final ForgeConfigSpec.BooleanValue HORDE_ZOMBIES_CAN_PUSH_EACH_OTHER_UP = BUILDER_SERVER
-            .comment("If true, (Horde, Elite and vanilla) zombies can push each other up (WWZ style) | default: true")
-            .define("hordeZombiesCanPushEachOtherUp", true);
-
-    private static final ForgeConfigSpec.BooleanValue HORDE_ZOMBIES_CAN_BREAK_BLOCKS = BUILDER_SERVER
-            .comment("If true, (Horde, Elite and vanilla) zombies can break blocks | default: false")
-            .define("hordeZombiesCanBreakBlocks", false);
-
-    private static final ForgeConfigSpec.IntValue ZOMBIES_BLOCK_BREAK_TIER = BUILDER_SERVER
-            .comment("Zombie block break tier (0-4) | default: 1")
-            .defineInRange("zombieBlockBreakTier", 1, 0, 4);
-
-    private static final ForgeConfigSpec.BooleanValue HORDE_ZOMBIES_HAVE_INCREASED_WATER_MOVEMENT_SPEED = BUILDER_SERVER
-            .comment("If true, Horde Zombies (incl. vanilla) have increased water movement speed | default: false")
-            .define("hordeZombiesHaveIncreasedWaterMovementSpeed", false);
-
     private static final ForgeConfigSpec.BooleanValue SECURITY_CRAFT_COMPATIBILITY = BUILDER_SERVER
             .comment("If true, Horde Zombies are not able to break reinforced blocks from the Security Craft mod | default: false")
             .define("securityCraftCompatibility", false);
-
-    private static final ForgeConfigSpec.BooleanValue ENABLE_RANDOM_HORDES = BUILDER_SERVER
-            .comment("If true, a random horde can spawn on none-horde nights | default: false")
-            .define("enableRandomHordes", false);
-
-    private static final ForgeConfigSpec.IntValue CHANCE_FOR_RANDOM_HORDES = BUILDER_SERVER
-            .comment("Chance in % for a random horde (checked once per night, on none-horde nights) | default: 15")
-            .defineInRange("chanceForRandomHordes", 15, 1, 100);
-
-    private static final ForgeConfigSpec.BooleanValue ENABLE_LURE_HORDE_EFFECT = BUILDER_SERVER
-            .comment("If true, killing a horde mob can give the player the lure horde effect | default: true")
-            .comment("Getting this effect will attract horde mobs in the area.")
-            .define("enableLureHordeEffect", true);
-
-    private static final ForgeConfigSpec.BooleanValue NON_HORDE_ZOMBIES_CAN_CAUSE_LURE_HORDE_EFFECT = BUILDER_SERVER
-            .comment("If true, killing zombies that were not spawned in a horde can also give the player the lure horde effect | default: true")
-            .define("nonHordeZombiesCanCauseLureHordeEffect", true);
-
-    private static final ForgeConfigSpec.DoubleValue CHANCE_FOR_LURE_HORDE_EFFECT = BUILDER_SERVER
-            .comment("Chance to get the lure horde effect, when the player kills a horde mob (1.0 = 100%) | default: 0.07")
-            .defineInRange("chanceForLureHordeEffect", 0.07, 0.0, 1.0);
-
-    private static final ForgeConfigSpec.IntValue DURATION_FOR_LURE_HORDE_EFFECT = BUILDER_SERVER
-            .comment("Duration in seconds for the lure horde effect | default: 60")
-            .defineInRange("durationForLureHordeEffect", 60, 1, Integer.MAX_VALUE);
-
-    private static final ForgeConfigSpec.BooleanValue LURE_HORDE_EFFECT_SPAWNS_HORDE = BUILDER_SERVER
-            .comment("If true, getting the lure horde effect can spawn a horde | default: true")
-            .define("lureHordeEffectSpawnsHorde", true);
-
-    private static final ForgeConfigSpec.DoubleValue CHANCE_FOR_LURE_EFFECT_HORDE = BUILDER_SERVER
-            .comment("Chance for the lure horde effect to spawn a horde (1.0 = 100%) | default: 0.2")
-            .defineInRange("chanceForLureEffectToSpawnHorde", 0.2, 0.0, 1.0);
 
     private static final ForgeConfigSpec.BooleanValue HORDE_ZOMBIES_SPAWN_NATURALLY = BUILDER_SERVER
             .comment("If true, Horde Zombies will spawn naturally | default: true")
@@ -286,6 +225,10 @@ public class MainConfig
             .comment("If true, debug messages will be logged out | default: false")
             .define("printDebugMessages", false);
 
+    private static final ForgeConfigSpec.BooleanValue DEBUG_MAKE_HORDE_MOBS_GLOW = BUILDER_SERVER
+            .comment("If true, horde mods that are added with a horde glow (for debug) | default: false")
+            .define("debugMakeHordeMobsGlow", false);
+
    public static final ForgeConfigSpec SPEC_SERVER = BUILDER_SERVER.build();
 
     // Client Config
@@ -302,9 +245,11 @@ public class MainConfig
     private static int distanceMin = 70;
     private static int distanceMax = 75;
     private static int hordeMobsSpawnCap = 100;
+    private static boolean ignoreDoMobSpawningGamerule = true;
     private static boolean hordeWavesCanSpawnInWater = false;
     private static boolean hordeWavesCanSpawnOnTrees = false;
     private static boolean hordeWavesCanSpawnInCaves = false;
+    private static int caveSpawnDistance = 50;
     private static boolean blockLightLevelsInfluenceMonsterSpawns = false;
     private static int maxBlockLightLevelForMonsterSpawns = 0;
     private static boolean hordeNightsDisableSleeping = true;
@@ -319,6 +264,7 @@ public class MainConfig
     private static double maxHealthEliteZombies = 40.0D;
     private static double maxHealthDemolitionZombies = 40.0D;
     private static boolean printDebugMessages = false;
+    private static boolean debugMakeHordeMobsGlow = false;
 
     @SubscribeEvent
     static void onLoad(final ModConfigEvent event)
@@ -333,9 +279,11 @@ public class MainConfig
             distanceMin = DISTANCE_MIN.get();
             distanceMax = DISTANCE_MAX.get();
             hordeMobsSpawnCap = HORDE_MOBS_SPAWN_CAP.get();
+            ignoreDoMobSpawningGamerule = IGNORE_DO_MOB_SPAWNING_GAMERULE.get();
             hordeWavesCanSpawnInWater = HORDE_WAVES_CAN_SPAWN_IN_WATER.get();
             hordeWavesCanSpawnOnTrees = HORDE_WAVES_CAN_SPAWN_ON_TREES.get();
             hordeWavesCanSpawnInCaves = HORDE_WAVES_CAN_SPAWN_IN_CAVES.get();
+            caveSpawnDistance = CAVE_SPAWN_DISTANCE.get();
             blockLightLevelsInfluenceMonsterSpawns = BLOCK_LIGHT_LEVELS_INFLUENCE_MONSTER_SPAWNS.get();
             maxBlockLightLevelForMonsterSpawns = MAX_BLOCK_LIGHT_LEVEL_FOR_MONSTER_SPAWNS.get();
             hordeNightsDisableSleeping = HORDE_NIGHTS_DISABLE_SLEEPING.get();
@@ -350,6 +298,7 @@ public class MainConfig
             maxHealthEliteZombies = MAX_HEALTH_ELITE_ZOMBIES.get();
             maxHealthDemolitionZombies = MAX_HEALTH_DEMOLITION_ZOMBIES.get();
             printDebugMessages = PRINT_DEBUG_MESSAGES.get();
+            debugMakeHordeMobsGlow = DEBUG_MAKE_HORDE_MOBS_GLOW.get();
         }
         if (SPEC_CLIENT.isLoaded()) {
             UndeadNights.LOGGER.info("Loading {} client config", UndeadNights.MOD_ID);

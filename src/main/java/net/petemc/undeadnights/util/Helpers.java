@@ -1,24 +1,45 @@
 package net.petemc.undeadnights.util;
 
+import com.google.common.collect.ImmutableSet;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.FluidTags;
+import net.minecraft.world.entity.*;
+import net.minecraft.world.entity.ai.Brain;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.ai.memory.MemoryModuleType;
+import net.minecraft.world.entity.ai.memory.WalkTarget;
+import net.minecraft.world.entity.ai.navigation.GroundPathNavigation;
+import net.minecraft.world.entity.ai.navigation.PathNavigation;
+import net.minecraft.world.entity.ai.util.DefaultRandomPos;
+import net.minecraft.world.entity.ai.util.LandRandomPos;
+import net.minecraft.world.entity.ai.util.RandomPos;
+import net.minecraft.world.entity.monster.Strider;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.PathNavigationRegion;
+import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraft.world.level.pathfinder.Path;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.petemc.undeadnights.UndeadNights;
 import net.petemc.undeadnights.config.MainConfig;
 import net.minecraft.world.level.block.FenceBlock;
 import net.minecraft.world.level.block.FenceGateBlock;
 import net.minecraft.world.level.block.DoorBlock;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import net.petemc.undeadnights.UndeadNights;
+import net.petemc.undeadnights.entity.HordeZombieEntity;
+import net.petemc.undeadnights.entity.ModEntities;
 
+import javax.annotation.Nullable;
+import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Helpers {
@@ -28,16 +49,16 @@ public class Helpers {
         int z = pos.getZ();
         int y;
 
-        UndeadNights.LOGGER.info("--------------> Player position {} {} {}", x, pos.getY(), z);
+        //UndeadNights.LOGGER.info("--------------> Player position {} {} {}", x, pos.getY(), z);
 
         y = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z);
-        UndeadNights.LOGGER.info("----------------------------------------> Player is on surface (MOTION_BLOCKING_NO_LEAVES) {} {} {}", y, pos.getY(), level.getBlockState(pos));
+        //UndeadNights.LOGGER.info("----------------------------------------> Player is on surface (MOTION_BLOCKING_NO_LEAVES) {} {} {}", y, pos.getY(), level.getBlockState(pos));
         if (y == pos.getY()) {
             return false; // on surface
         }
 
         y = level.getHeight(Heightmap.Types.MOTION_BLOCKING, x, z);
-        UndeadNights.LOGGER.info("----------------------------------------> Player is on surface (MOTION_BLOCKING) {} {} {}", y, pos.getY(), level.getBlockState(pos));
+        //UndeadNights.LOGGER.info("----------------------------------------> Player is on surface (MOTION_BLOCKING) {} {} {}", y, pos.getY(), level.getBlockState(pos));
         if (y == pos.getY()) {
             return false; // on surface
         }
@@ -81,7 +102,7 @@ public class Helpers {
     }
 
     public static boolean caveCheckStageTwo(Level level, BlockPos pos) {
-        UndeadNights.LOGGER.info("--------------------> Cave2 check at position {} {} {}", pos.getX(), pos.getY(), pos.getZ());
+        //UndeadNights.LOGGER.info("--------------------> Cave2 check at position {} {} {}", pos.getX(), pos.getY(), pos.getZ());
         AABB box = new AABB(pos).inflate(10, 0, 10);
         AtomicBoolean isCave = new AtomicBoolean(true);
         BlockPos.MutableBlockPos.betweenClosedStream(box)
@@ -235,16 +256,17 @@ public class Helpers {
     /**
      * A simple A* entry points (overloads). The real implementation lives in findPathAStarWithLimits.
      */
-    public static java.util.List<BlockPos> findPathAStar(Level level, BlockPos start, BlockPos end, float mobWidth, float mobHeight, int maxNodes) {
-        // maintain previous default behavior: allow drops up to 4 blocks
-        return findPathAStarWithLimits(level, start, end, mobWidth, mobHeight, maxNodes, 4);
+    public static List<BlockPos> findPathAStar(Level level, BlockPos start, BlockPos end, float mobWidth, float mobHeight, int maxNodes) {
+        // maintain previous default behavior: allow drops up to 4 blocks, default maxUp=1, exact target
+        return findPathAStarWithLimits(level, start, end, mobWidth, mobHeight, maxNodes, 4, 1, 0);
     }
 
-    public static java.util.List<BlockPos> findPathAStar(Level level, BlockPos start, BlockPos end, float mobWidth, float mobHeight, int maxNodes, int maxDown) {
-        return findPathAStarWithLimits(level, start, end, mobWidth, mobHeight, maxNodes, maxDown);
+    public static List<BlockPos> findPathAStar(Level level, BlockPos start, BlockPos end, float mobWidth, float mobHeight, int maxNodes, int maxDown) {
+        // forward with default maxUp=1 and exact target
+        return findPathAStarWithLimits(level, start, end, mobWidth, mobHeight, maxNodes, maxDown, 1, 0);
     }
 
-    public static java.util.List<BlockPos> findPathAStar(Level level, BlockPos start, BlockPos end, float mobWidth, float mobHeight, int maxNodes, int maxDown, int maxUp, int endRadius) {
+    public static List<BlockPos> findPathAStar(Level level, BlockPos start, BlockPos end, float mobWidth, float mobHeight, int maxNodes, int maxDown, int maxUp, int endRadius) {
         return findPathAStarWithLimits(level, start, end, mobWidth, mobHeight, maxNodes, maxDown, maxUp, Math.max(0, endRadius));
     }
 
@@ -258,7 +280,7 @@ public class Helpers {
 
     /** Final overload: configurable maxDown, maxUp and endRadius. */
     public static boolean canMobPathfindAStar(Level level, BlockPos start, BlockPos end, float mobWidth, float mobHeight, int maxNodes, int maxDown, int maxUp, int endRadius) {
-        java.util.List<BlockPos> path = findPathAStar(level, start, end, mobWidth, mobHeight, maxNodes, maxDown, maxUp, Math.max(0, endRadius));
+        List<BlockPos> path = findPathAStar(level, start, end, mobWidth, mobHeight, maxNodes, maxDown, maxUp, Math.max(0, endRadius));
         return !path.isEmpty();
     }
 
@@ -266,7 +288,7 @@ public class Helpers {
      * Internal implementation supporting configurable maxUp (how many blocks can be stepped up in one move)
      * and endRadius (goal tolerance). This is an overloaded variant of the older findPathAStarWithLimits.
      */
-    private static java.util.List<BlockPos> findPathAStarWithLimits(Level level, BlockPos start, BlockPos end, float mobWidth, float mobHeight, int maxNodes, int maxDown, int maxUp, int endRadius) {
+    private static List<BlockPos> findPathAStarWithLimits(Level level, BlockPos start, BlockPos end, float mobWidth, float mobHeight, int maxNodes, int maxDown, int maxUp, int endRadius) {
         class PathNode {
             final BlockPos pos;
             final double g; // cost from start
@@ -277,17 +299,17 @@ public class Helpers {
 
         BlockPos fixedStart = start == null ? null : start.immutable();
         BlockPos fixedEnd = end == null ? null : end.immutable();
-        if (fixedStart == null || fixedEnd == null) return java.util.Collections.emptyList();
+        if (fixedStart == null || fixedEnd == null) return Collections.emptyList();
 
         if (level.getBlockState(fixedStart).is(Blocks.WATER)) {
             BlockPos alt = findNearbyStandable(level, start, mobWidth, mobHeight, 5);
-            if (alt == null || level.getBlockState(alt).is(Blocks.WATER)) return java.util.Collections.emptyList();
+            if (alt == null || level.getBlockState(alt).is(Blocks.WATER)) return Collections.emptyList();
             fixedStart = alt.immutable();
         }
 
-        java.util.PriorityQueue<PathNode> open = new java.util.PriorityQueue<>(java.util.Comparator.comparingDouble(n -> n.f));
-        java.util.Map<BlockPos, Double> gScore = new java.util.HashMap<>();
-        java.util.Set<BlockPos> closed = new java.util.HashSet<>();
+        PriorityQueue<PathNode> open = new PriorityQueue<>(Comparator.comparingDouble(n -> n.f));
+        Map<BlockPos, Double> gScore = new HashMap<>();
+        Set<BlockPos> closed = new HashSet<>();
 
         PathNode startNode = new PathNode(fixedStart, 0.0, heuristic(fixedStart, fixedEnd), null);
         open.add(startNode);
@@ -304,7 +326,7 @@ public class Helpers {
 
             double distToGoal = heuristic(current.pos, fixedEnd);
             if (distToGoal <= (double) endRadius) {
-                java.util.LinkedList<BlockPos> path = new java.util.LinkedList<>();
+                LinkedList<BlockPos> path = new LinkedList<>();
                 PathNode it = current;
                 while (it != null) {
                     path.addFirst(it.pos);
@@ -357,21 +379,9 @@ public class Helpers {
             }
         }
 
-        return java.util.Collections.emptyList();
+        return Collections.emptyList();
     }
 
-    /**
-     * Backwards-compatible A* implementation that requires reaching the exact end (endRadius=0).
-     */
-    private static java.util.List<BlockPos> findPathAStarWithLimits(Level level, BlockPos start, BlockPos end, float mobWidth, float mobHeight, int maxNodes, int maxDown) {
-        // Delegate to the full-parameter implementation with default maxUp=1 and endRadius=0 (exact target).
-        return findPathAStarWithLimits(level, start, end, mobWidth, mobHeight, maxNodes, maxDown, 1, 0);
-    }
-
-    /**
-     * Search for a nearby standable position within the given horizontal radius and -1..1 vertical offset.
-     * Returns the closest (by manhattan distance) standable BlockPos or null if none found.
-     */
     private static BlockPos findNearbyStandable(Level level, BlockPos center, float mobWidth, float mobHeight, int radius) {
         BlockPos best = null;
         int bestDist = Integer.MAX_VALUE;
@@ -392,10 +402,7 @@ public class Helpers {
         return best;
     }
 
-
-
     private static double heuristic(BlockPos a, BlockPos b) {
-        // Use Euclidean distance as heuristic (admissible for diagonal movement)
         double dx = (double)a.getX() - (double)b.getX();
         double dy = (double)a.getY() - (double)b.getY();
         double dz = (double)a.getZ() - (double)b.getZ();
@@ -420,12 +427,7 @@ public class Helpers {
         return doesNotBlockMovement && notLeaves && notWater;
     }
 
-    /**
-     * Returns true if an entity with given width/height can stand at the given block position (feet at pos.getY()).
-     * It checks that the space for the entity is free and that there's a solid block below its feet (so it won't fall).
-     */
     private static boolean canStandAt(Level level, BlockPos pos, float mobWidth, float mobHeight) {
-        // Build the entity AABB for the candidate standing position (feet at pos.getY()).
         double cx = pos.getX() + 0.5;
         double cz = pos.getZ() + 0.5;
         double bottomY = pos.getY();
@@ -434,17 +436,11 @@ public class Helpers {
 
         AABB box = new AABB(cx - halfWidth, bottomY, cz - halfWidth, cx + halfWidth, topY, cz + halfWidth);
 
-        // The entity space must be free (so we don't stand inside a solid block). This allows standing in
-        // non-colliding blocks such as grass or flowers because their collision shapes are empty.
         if (!isAABBFree(level, box)) return false;
 
-        // There must be a solid supporting block directly below the feet position.
         return hasSolidBlockBelow(level, pos);
     }
 
-    /**
-     * Returns true if the given AABB does not intersect any block collision shapes.
-     */
     private static boolean isAABBFree(Level level, AABB box) {
         int minX = (int) Math.floor(box.minX);
         int minY = (int) Math.floor(box.minY);
@@ -472,10 +468,6 @@ public class Helpers {
         return true;
     }
 
-    /**
-     * Returns true if the given AABB does not intersect any block collision shapes.
-     * Strict version for spawn position validation: any non-empty collision shape blocks spawning.
-     */
     private static boolean isAABBFreeForSpawn(Level level, AABB box) {
         int minX = (int) Math.floor(box.minX);
         int minY = (int) Math.floor(box.minY);
@@ -497,9 +489,6 @@ public class Helpers {
         return true;
     }
 
-    /**
-     * Returns true if there is a solid (collidable) block directly below the given center position.
-     */
     private static boolean hasSolidBlockBelow(Level level, BlockPos center) {
        BlockPos below = center.below();
        if (below.getY() < level.getMinBuildHeight()) return false;
@@ -514,33 +503,62 @@ public class Helpers {
        return hasCollision || isSlab || isStair || isFence || isFenceGate || isDoor;
    }
 
-   public static BlockPos findStartPositionForPathAStar(Level level, BlockPos end, int distance) {
+   public static BlockPos findEndPositionForPathAStar(Level level, BlockPos end, int distance) {
         // default settings: do not allow end in water, mob size standard, large node limit, maxDown=4, maxUp=1
-        return findStartPositionForPathAStar(level, end, distance, false, 0.6f, 1.8f, 10000, 4, 1, 0);
+        return findEndPositionForPathAStar(level, end, distance, false, 0.6f, 1.8f, 10000, 4, 1, 0);
     }
 
-    public static BlockPos findStartPositionForPathAStar(Level level, BlockPos start, int distance, boolean canEndInWater, float mobWidth, float mobHeight, int maxNodes, int maxDown, int maxUp) {
+    public static BlockPos findEndPositionForPathAStar(Level level, BlockPos start, int distance, boolean canEndInWater, float mobWidth, float mobHeight, int maxNodes, int maxDown, int maxUp) {
         // default radius 0 for exact target behavior
-        return findStartPositionForPathAStar(level, start, distance, canEndInWater, mobWidth, mobHeight, maxNodes, maxDown, maxUp, 10);
+        return findEndPositionForPathAStar(level, start, distance, canEndInWater, mobWidth, mobHeight, maxNodes, maxDown, maxUp, 10);
     }
 
-    public static BlockPos findStartPositionForPathAStar(Level level, BlockPos start, int distance, boolean canEndInWater, float mobWidth, float mobHeight, int maxNodes, int maxDown, int maxUp, int radius) {
+    public static BlockPos findEndPositionForPathAStar(Level level, BlockPos start, int distance, boolean canEndInWater, float mobWidth, float mobHeight, int maxNodes, int maxDown, int maxUp, int radius) {
         if (start == null || level == null) return null;
 
+        final int minWorldY = level.getMinBuildHeight();
+        final int maxWorldY = level.getMaxBuildHeight();
+
+        // quick AABB check for start
+        double sx = start.getX() + 0.5;
+        double sz = start.getZ() + 0.5;
+        double bottomY = start.getY();
+        double topY = bottomY + mobHeight;
+        double halfWidth = mobWidth / 2.0;
+        AABB startBox = new AABB(sx - halfWidth, bottomY, sz - halfWidth, sx + halfWidth, topY, sz + halfWidth);
+        if (!isAABBFree(level, startBox)) return null;
+
+        // if start is in air, lower until we find a standable block
+        if (!hasSolidBlockBelow(level, start)) {
+            BlockPos found = null;
+            int sxInt = start.getX();
+            int szInt = start.getZ();
+            for (int y = start.getY() - 1; y >= minWorldY; y--) {
+                BlockPos candidate = new BlockPos(sxInt, y, szInt);
+                double cbottomY = candidate.getY();
+                double ctopY = cbottomY + mobHeight;
+                AABB centered = new AABB(candidate.getX() + 0.5 - halfWidth, cbottomY, candidate.getZ() + 0.5 - halfWidth,
+                                         candidate.getX() + 0.5 + halfWidth, ctopY, candidate.getZ() + 0.5 + halfWidth);
+                if (!isAABBFree(level, centered)) continue;
+                if (hasSolidBlockBelow(level, candidate)) { found = candidate; break; }
+            }
+            if (found == null) return null;
+            start = found;
+        }
+
         final int[][] dirs = new int[][]{{1,0},{-1,0},{0,1},{0,-1},{1,1},{1,-1},{-1,1},{-1,-1}};
-        final int minY = level.getMinBuildHeight();
-        final int maxY = level.getMaxBuildHeight();
-        final BlockPos startPos = start.immutable();
+        BlockPos.MutableBlockPos mutable = new BlockPos.MutableBlockPos();
+        Map<Long, BlockState> blockStateCache = new HashMap<>();
+        Map<Long, Integer> bestDepth = new HashMap<>();
+        List<BlockPos> exactDepthCandidates = new ArrayList<>();
 
-        class Node { final BlockPos pos; final int depth; final double score; Node(BlockPos p, int d, double s) { pos = p; depth = d; score = s; } }
+        // lightweight node for search
+        class Node { final int x,y,z; final long key; final int depth; final double score; Node(int x,int y,int z,long key,int depth,double score){this.x=x;this.y=y;this.z=z;this.key=key;this.depth=depth;this.score=score;} }
+        PriorityQueue<Node> open = new PriorityQueue<>(Comparator.comparingDouble(n -> n.score));
 
-        java.util.PriorityQueue<Node> open = new java.util.PriorityQueue<>(java.util.Comparator.comparingDouble(n -> n.score));
-        java.util.Map<BlockPos, Integer> bestDepth = new java.util.HashMap<>();
-
-        // initial node: prefer nodes that are already far (score negative horizontal distance)
-        double startScore = -0.0 + 0.0;
-        open.add(new Node(startPos, 0, startScore));
-        bestDepth.put(startPos, 0);
+        int startX = start.getX(); int startY = start.getY(); int startZ = start.getZ();
+        open.add(new Node(startX, startY, startZ, start.asLong(), 0, -0.0));
+        bestDepth.put(start.asLong(), 0);
 
         int expanded = 0;
 
@@ -548,65 +566,82 @@ public class Helpers {
             Node cur = open.poll();
             if (cur == null) break;
 
-            // If we've reached the exact target path length, check radius and end-water rules
             if (cur.depth == distance) {
-                double dx = (double)cur.pos.getX() - (double)startPos.getX();
-                double dz = (double)cur.pos.getZ() - (double)startPos.getZ();
-                double horizDist = Math.sqrt(dx*dx + dz*dz);
-                if (horizDist > (double)radius) {
-                    BlockState endState = level.getBlockState(cur.pos);
-                    boolean isWater = endState.is(Blocks.WATER) || endState.getFluidState().is(FluidTags.WATER);
-                    if (isWater) {
-                        if (canEndInWater) return cur.pos;
-                    } else {
-                        return cur.pos;
-                    }
-                }
-                // do not expand further
+                mutable.set(cur.x, cur.y, cur.z);
+                long cKey = mutable.asLong();
+                BlockState endState = blockStateCache.computeIfAbsent(cKey, k -> level.getBlockState(mutable));
+                boolean isLava = endState.is(Blocks.LAVA) || endState.getFluidState().is(FluidTags.LAVA);
+                if (isLava) continue;
+                boolean isWater = endState.is(Blocks.WATER) || endState.getFluidState().is(FluidTags.WATER);
+                if (isWater && !canEndInWater) continue;
+                exactDepthCandidates.add(new BlockPos(cur.x, cur.y, cur.z));
                 continue;
             }
 
-            // If we already have a better (smaller) depth recorded for this pos, skip
-            Integer recorded = bestDepth.get(cur.pos);
+            Integer recorded = bestDepth.get(cur.key);
             if (recorded != null && cur.depth > recorded) continue;
-
             expanded++;
 
             for (int[] d : dirs) {
-                int nx = cur.pos.getX() + d[0];
-                int nz = cur.pos.getZ() + d[1];
-
-                int scanTop = Math.min(cur.pos.getY() + maxUp, maxY);
-                int scanBottom = Math.max(cur.pos.getY() - maxDown, minY);
-
+                int nx = cur.x + d[0];
+                int nz = cur.z + d[1];
+                int scanTop = Math.min(cur.y + maxUp, maxWorldY);
+                int scanBottom = Math.max(cur.y - maxDown, minWorldY);
                 for (int ny = scanTop; ny >= scanBottom; ny--) {
-                    int vertDiff = ny - cur.pos.getY();
-                    if (vertDiff > maxUp || vertDiff < -maxDown) continue;
-
-                    BlockPos neighbor = new BlockPos(nx, ny, nz);
+                    int vert = ny - cur.y;
+                    if (vert > maxUp || vert < -maxDown) continue;
+                    mutable.set(nx, ny, nz);
+                    long nKey = mutable.asLong();
                     int nextDepth = cur.depth + 1;
+                    Integer prev = bestDepth.get(nKey);
+                    if (prev != null && nextDepth >= prev) continue;
 
-                    // reject if we've seen a better depth for this neighbor
-                    Integer nbRecorded = bestDepth.get(neighbor);
-                    if (nbRecorded != null && nextDepth >= nbRecorded) continue;
-
-                    BlockState neighborState = level.getBlockState(neighbor);
+                    BlockState neighborState = blockStateCache.computeIfAbsent(nKey, k -> level.getBlockState(mutable));
                     boolean neighborIsWater = neighborState.is(Blocks.WATER) || neighborState.getFluidState().is(FluidTags.WATER);
-                    if (nextDepth < distance && neighborIsWater) continue; // avoid water in intermediate steps
+                    if (nextDepth < distance && neighborIsWater) continue;
+                    if (!canStandAt(level, mutable, mobWidth, mobHeight)) continue;
 
-                    if (!canStandAt(level, neighbor, mobWidth, mobHeight)) continue;
+                    double dx = (double)nx - (double)startX;
+                    double dz = (double)nz - (double)startZ;
+                    double horiz = Math.sqrt(dx*dx + dz*dz);
+                    double vertFromStart = Math.abs((double)ny - (double)startY);
+                    double score = -horiz + (nextDepth * 0.001) + vertFromStart;
 
-                    // compute score: prefer larger horizontal distance from start (so negative distance -> smaller score)
-                    double dx = (double)neighbor.getX() - (double)startPos.getX();
-                    double dz = (double)neighbor.getZ() - (double)startPos.getZ();
-                    double horizDist = Math.sqrt(dx*dx + dz*dz);
-                    double score = -horizDist + (nextDepth * 0.001); // tie-break by smaller depth
+                    bestDepth.put(nKey, nextDepth);
+                    open.add(new Node(nx, ny, nz, nKey, nextDepth, score));
 
-                    bestDepth.put(neighbor, nextDepth);
-                    open.add(new Node(neighbor, nextDepth, score));
+                    // stop vertical scanning when standable (we already checked)
+                    if (canStandAt(level, mutable, mobWidth, mobHeight)) break;
+                }
+            }
+        }
 
-                    // stop vertical scanning when we found a standable block
-                    if (canStandAt(level, neighbor, mobWidth, mobHeight)) break;
+        if (!exactDepthCandidates.isEmpty()) {
+            exactDepthCandidates.sort((a,b) -> {
+                double adx = a.getX() - startX; double adz = a.getZ() - startZ; double ad = Math.sqrt(adx*adx + adz*adz);
+                double bdx = b.getX() - startX; double bdz = b.getZ() - startZ; double bd = Math.sqrt(bdx*bdx + bdz*bdz);
+                return Double.compare(bd, ad);
+            });
+
+            double minStraightFactor = 0.8;
+            double minStrictHoriz = Math.max(radius, distance * minStraightFactor);
+            boolean requireStrict = distance >= 50;
+
+            for (BlockPos c : exactDepthCandidates) {
+                double ddx = c.getX() - startX; double ddz = c.getZ() - startZ;
+                double h = Math.sqrt(ddx*ddx + ddz*ddz);
+                if (h < minStrictHoriz) continue;
+                if (Math.abs(c.getY() - startY) > 20) continue;
+                return c;
+            }
+
+            if (!requireStrict) {
+                for (BlockPos c : exactDepthCandidates) {
+                    double ddx = c.getX() - startX; double ddz = c.getZ() - startZ;
+                    double h = Math.sqrt(ddx*ddx + ddz*ddz);
+                    if (h < radius) continue;
+                    if (Math.abs(c.getY() - startY) > 20) continue;
+                    return c;
                 }
             }
         }
@@ -614,178 +649,458 @@ public class Helpers {
         return null;
     }
 
-    /**
-     * Find a spawnable position within `radius` (blocks) of `center` using default mob size, no water, include caves and randomize.
-     * Returns a BlockPos (feet position) or null if none found.
-     */
-    public static BlockPos findSpawnablePosition(Level level, BlockPos center, int radius) {
-        return findSpawnablePosition(level, center, radius, false, 0.6f, 1.8f, true, true);
-    }
+    // --- FAST greedy randomized alternative (much faster but not guaranteed optimal) ---
 
-    /**
-     * Backwards-compatible overload that includes caves and random selection by default.
-     */
-    public static BlockPos findSpawnablePosition(Level level, BlockPos center, int radius, boolean allowWater, float mobWidth, float mobHeight) {
-        return findSpawnablePosition(level, center, radius, allowWater, mobWidth, mobHeight, true, true);
-    }
+    public static BlockPos findEndPositionForPathFast(Level level, BlockPos start, int distance) {
+        // default: preserve previous defaults but tuned for reliability
+        return findEndPositionForPathFast(level, start, distance, false, 0.6f, 1.8f, 250, 4, 1, 0, 3);
+     }
 
-    /**
-     * Full implementation: search for a spawnable position within `radius` of `center`.
-     * - includeCaves: if true, scan a limited vertical column below the surface (fast) to find cave positions.
-     * - randomize: if true, pick a random candidate among valid positions; otherwise prefer nearest positions and return early.
-     *
-     * This simplified variant reduces vertical scanning and early-exits whenever possible for performance.
-     */
-    public static BlockPos findSpawnablePosition(Level level, BlockPos center, int radius, boolean allowWater, float mobWidth, float mobHeight, boolean includeCaves, boolean randomize) {
-        if (level == null || center == null || radius < 0) return null;
+    public static BlockPos findEndPositionForPathFast(Level level, BlockPos start, int distance, boolean canEndInWater, float mobWidth, float mobHeight, int maxAttempts, int maxDown, int maxUp, int radius, int tries) {
+         if (level == null || start == null || distance <= 0 || maxAttempts <= 0 || tries <= 0) return null;
 
-        int cx = center.getX();
-        int cz = center.getZ();
-        int minY = level.getMinBuildHeight();
-        int maxY = level.getMaxBuildHeight();
+        // enable temporary debug logging controlled by the global config flag
+        final boolean debug = MainConfig.getPrintDebugMessages();
 
-        // Prepare XZ candidates inside the circle (squared distance) - allocate once
-        java.util.List<int[]> xzList = new java.util.ArrayList<>();
-        int r2 = radius * radius;
-        for (int dx = -radius; dx <= radius; dx++) {
-            for (int dz = -radius; dz <= radius; dz++) {
-                int dsq = dx*dx + dz*dz;
-                if (dsq <= r2) xzList.add(new int[]{cx + dx, cz + dz, dsq});
+        // quick validation and adjust start if necessary (similar to A* version)
+        final int minWorldY = level.getMinBuildHeight();
+        final int maxWorldY = level.getMaxBuildHeight();
+
+        double sx = start.getX() + 0.5;
+        double sz = start.getZ() + 0.5;
+        double bottomY = start.getY();
+        double topY = bottomY + mobHeight;
+        double halfWidth = mobWidth / 2.0;
+        AABB startBox = new AABB(sx - halfWidth, bottomY, sz - halfWidth, sx + halfWidth, topY, sz + halfWidth);
+        if (!isAABBFree(level, startBox)) return null;
+
+        // if start is in air, lower until we find a standable block
+        if (!hasSolidBlockBelow(level, start)) {
+            BlockPos found = null;
+            int sxInt = start.getX();
+            int szInt = start.getZ();
+            for (int y = start.getY() - 1; y >= minWorldY; y--) {
+                BlockPos candidate = new BlockPos(sxInt, y, szInt);
+                double cbottomY = candidate.getY();
+                double ctopY = cbottomY + mobHeight;
+                AABB centered = new AABB(candidate.getX() + 0.5 - halfWidth, cbottomY, candidate.getZ() + 0.5 - halfWidth,
+                                         candidate.getX() + 0.5 + halfWidth, ctopY, candidate.getZ() + 0.5 + halfWidth);
+                if (!isAABBFree(level, centered)) continue;
+                if (hasSolidBlockBelow(level, candidate)) { found = candidate; break; }
             }
+            if (found == null) return null;
+            start = found;
         }
 
-        // Ensure the exact center is included so the start position itself can be chosen sometimes
-        xzList.add(new int[]{cx, cz, 0});
+        final int[][] dirs = new int[][]{{1,0},{-1,0},{0,1},{0,-1},{1,1},{1,-1},{-1,1},{-1,-1}};
+        BlockPos.MutableBlockPos cur = new BlockPos.MutableBlockPos(start.getX(), start.getY(), start.getZ());
+        ThreadLocalRandom rnd = ThreadLocalRandom.current();
 
-        // Use a short-lived Random seeded with System.nanoTime() to avoid repeated identical shuffles
-        java.util.Random shuffler = new java.util.Random(System.nanoTime());
-        if (randomize) {
-            java.util.Collections.shuffle(xzList, shuffler);
+        // Try many randomized greedy walks; each walk takes exactly 'distance' steps. Fast because we avoid global open sets.
+        // limit how many full A* confirmations we perform per function call
+        int astarChecks = 0;
+        final int MAX_ASTAR_CHECKS = 5;
+
+        double bestOverallScore = Double.NEGATIVE_INFINITY;
+        BlockPos bestOverallCandidate = null;
+
+         for (int attempt = 0; attempt < maxAttempts; attempt++) {
+            // start from original start each attempt
+            cur.set(start.getX(), start.getY(), start.getZ());
+            int curY = cur.getY();
+
+            boolean failed = false;
+            for (int stepIdx = 0; stepIdx < distance; stepIdx++) {
+                // snapshot base coordinates for this step (do not mutate while evaluating candidates)
+                final int baseX = cur.getX();
+                final int baseZ = cur.getZ();
+                final int baseY = curY;
+
+                // randomized order of directions
+                Integer[] order = new Integer[dirs.length];
+                for (int i = 0; i < dirs.length; i++) order[i] = i;
+                Collections.shuffle(Arrays.asList(order), new Random(rnd.nextLong()));
+
+                int localTries = Math.min(tries, dirs.length);
+                int tried = 0;
+
+                double bestScore = Double.NEGATIVE_INFINITY;
+                int chosenX = Integer.MIN_VALUE, chosenY = Integer.MIN_VALUE, chosenZ = Integer.MIN_VALUE;
+
+                for (int oi = 0; oi < order.length && tried < localTries; oi++) {
+                    int[] d = dirs[order[oi]];
+                    tried++;
+                    int nx = baseX + d[0];
+                    int nz = baseZ + d[1];
+
+                    // pick ny by scanning from top allowed downwards to find first standable block
+                    int scanTop = Math.min(baseY + maxUp, maxWorldY);
+                    int scanBottom = Math.max(baseY - maxDown, minWorldY);
+                    int foundNy = Integer.MIN_VALUE;
+                    for (int ny = scanTop; ny >= scanBottom; ny--) {
+                        BlockPos cand = new BlockPos(nx, ny, nz);
+                        BlockState st = level.getBlockState(cand);
+                        boolean isWater = st.is(Blocks.WATER) || st.getFluidState().is(FluidTags.WATER);
+                        if (stepIdx < distance - 1 && isWater) continue; // avoid water on intermediate steps
+                        if (st.is(Blocks.LAVA) || st.getFluidState().is(FluidTags.LAVA)) continue;
+                        // Fast pre-check: cheap heuristic to avoid expensive AABB checks most of the time
+                        if (!quickStandable(level, cand, mobWidth, mobHeight)) continue;
+                        if (canStandAt(level, cand, mobWidth, mobHeight)) { foundNy = ny; break; }
+                    }
+                    if (foundNy == Integer.MIN_VALUE) continue;
+
+                    // cheap chebyshev lower bound to avoid obviously unreachable candidates
+                    int cheb = Math.max(Math.abs(nx - start.getX()), Math.abs(nz - start.getZ()));
+                    if (cheb > distance + 3) continue;
+
+                    double dx = (double)nx - (double)start.getX();
+                    double dz = (double)nz - (double)start.getZ();
+                    double horiz = Math.sqrt(dx*dx + dz*dz);
+                    double verticalPenalty = Math.abs(foundNy - start.getY()) * 0.2;
+                    double score = horiz - verticalPenalty + rnd.nextDouble() * 0.15;
+                    if (score > bestScore) {
+                        bestScore = score;
+                        chosenX = nx; chosenY = foundNy; chosenZ = nz;
+                    }
+                }
+
+                if (chosenX == Integer.MIN_VALUE) {
+                    if (debug) UndeadNights.LOGGER.info("findEndFast: attempt {} step {} - no valid direction found from {} {} {}", attempt, stepIdx, baseX, baseY, baseZ);
+                    failed = true; break;
+                }
+
+                cur.set(chosenX, chosenY, chosenZ);
+                curY = chosenY;
+            }
+
+            if (failed) continue;
+
+            BlockPos candidate = cur.immutable();
+            // final candidate checks
+            BlockState finalState = level.getBlockState(candidate);
+            if (finalState.is(Blocks.LAVA) || finalState.getFluidState().is(FluidTags.LAVA)) {
+                if (debug) UndeadNights.LOGGER.info("findEndFast: candidate {} rejected: lava", candidate);
+                continue;
+            }
+            if (!canEndInWater && (finalState.is(Blocks.WATER) || finalState.getFluidState().is(FluidTags.WATER))) {
+                if (debug) UndeadNights.LOGGER.info("findEndFast: candidate {} rejected: water (end not allowed)", candidate);
+                continue;
+            }
+
+            // Chebyshev distance (diagonal moves allowed) is a lower bound on number of steps
+            int cheb = Math.max(Math.abs(candidate.getX() - start.getX()), Math.abs(candidate.getZ() - start.getZ()));
+            if (cheb > distance + 3) {
+                if (debug) UndeadNights.LOGGER.info("findEndFast: candidate {} rejected: chebyshev {} > allowed {}", candidate, cheb, distance + 3);
+                continue; // too far horizontally to reach in 'distance' steps
+            }
+
+            // compute a simple candidate score (higher is better) to use as fallback
+            double candidateScore = -Math.abs(cheb - distance) - Math.abs(candidate.getY() - start.getY()) * 0.1 + rnd.nextDouble() * 0.01;
+
+            // If chebyshev is within a reasonable window try a cheap straight-line sampling path check
+            if (Math.abs(cheb - distance) <= 4) {
+                try {
+                    boolean cheapOk = canMobPathfind(level, start, candidate, mobWidth, mobHeight);
+                    if (cheapOk) {
+                        if (debug) UndeadNights.LOGGER.info("findEndFast: candidate {} accepted by cheap path check", candidate);
+                        return candidate;
+                    } else {
+                        if (debug) UndeadNights.LOGGER.info("findEndFast: candidate {} failed cheap path check", candidate);
+                    }
+                } catch (Throwable t) {
+                    if (debug) UndeadNights.LOGGER.info("findEndFast: candidate {} cheap path check threw: {}", candidate, t.toString());
+                }
+            }
+
+            // Fallback: limited A* confirmation but cap the number of such checks
+            if (astarChecks < MAX_ASTAR_CHECKS) {
+                astarChecks++;
+                int aStarMaxNodes = Math.max(300, Math.min(2000, distance * 8));
+                List<BlockPos> realPath = findPathAStar(level, start, candidate, mobWidth, mobHeight, aStarMaxNodes, Math.max(1, maxDown), Math.max(1, maxUp), 0);
+                if (realPath == null || realPath.isEmpty()) {
+                    if (debug) UndeadNights.LOGGER.info("findEndFast: candidate {} A* returned empty path", candidate);
+                    // no valid path -> skip candidate
+                    double penalized = candidateScore - 5.0;
+                    if (penalized > bestOverallScore) { bestOverallScore = penalized; bestOverallCandidate = candidate; }
+                    continue;
+                }
+                int pathSteps = Math.max(0, realPath.size() - 1);
+                if (Math.abs(pathSteps - distance) > 3) {
+                    if (debug) UndeadNights.LOGGER.info("findEndFast: candidate {} A* pathSteps {} deviates from required {}", candidate, pathSteps, distance);
+                    // path length deviates too much -> skip
+                    double penalized = candidateScore - 2.0;
+                    if (penalized > bestOverallScore) { bestOverallScore = penalized; bestOverallCandidate = candidate; }
+                    continue;
+                }
+                if (debug) UndeadNights.LOGGER.info("findEndFast: candidate {} accepted by A* (steps={})", candidate, pathSteps);
+                return candidate;
+            }
+
+            // No A* confirmations left and cheap checks failed -> keep as fallback candidate
+            if (candidateScore > bestOverallScore) { bestOverallScore = candidateScore; bestOverallCandidate = candidate; if (debug) UndeadNights.LOGGER.info("findEndFast: candidate {} recorded as fallback (score={})", candidate, candidateScore); }
+             continue;
+         }
+
+         // If we reached here no confirmed candidate was found. Return the best-scoring fallback if available.
+        if (debug) UndeadNights.LOGGER.info("findEndFast: returning fallback candidate {} (score={})", bestOverallCandidate, bestOverallScore);
+        return bestOverallCandidate;
+     }
+
+    private static boolean tryComputePath(Level level, BlockPos start, BlockPos end, long pTime) {
+        //BlockPos blockpos = pTarget.getTarget().currentBlockPosition();
+
+        HordeZombieEntity pMob = new HordeZombieEntity(ModEntities.HORDE_ZOMBIE.get(), level);
+        pMob.setPos(start.getX() + 0.5, start.getY(), start.getZ() + 0.5);
+
+        Path path = pMob.getNavigation().createPath(end, 0);
+        float speedModifier = 1.2f;//pTarget.getSpeedModifier();
+        Brain<?> brain = pMob.getBrain();
+        if (reachedTarget(pMob, end,0)) {
+            brain.eraseMemory(MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE);
         } else {
-            xzList.sort(java.util.Comparator.comparingInt(a -> a[2]));
-        }
-
-        // ThreadLocalRandom for final selection
-        java.util.concurrent.ThreadLocalRandom trnd = java.util.concurrent.ThreadLocalRandom.current();
-
-        // small candidates list to avoid large memory usage
-        java.util.List<BlockPos> candidates = new java.util.ArrayList<>();
-        final int MAX_CANDIDATES = 512;
-
-        // Heightmap cache: map keyed by (x,z) packed into a long to avoid repeated level.getHeight calls
-        java.util.Map<Long, Integer> heightCacheBlocking = new java.util.HashMap<>(xzList.size());
-        java.util.Map<Long, Integer> heightCacheNoLeaves = new java.util.HashMap<>(xzList.size());
-        java.util.function.BiFunction<Integer,Integer,Integer> getSurfaceY = (xx, zz) -> {
-            long key = (((long)xx) << 32) ^ (zz & 0xffffffffL);
-            return heightCacheBlocking.computeIfAbsent(key, k -> level.getHeight(Heightmap.Types.MOTION_BLOCKING, xx, zz));
-        };
-        java.util.function.BiFunction<Integer,Integer,Integer> getSurfaceYNoLeaves = (xx, zz) -> {
-            long key = (((long)xx) << 32) ^ (zz & 0xffffffffL);
-            return heightCacheNoLeaves.computeIfAbsent(key, k -> level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, xx, zz));
-        };
-
-        for (int[] c : xzList) {
-            int x = c[0];
-            int z = c[1];
-
-            if (!includeCaves) {
-                // Surface only: use heightmap (fast) and check a tiny vertical neighborhood
-                int surfaceY = getSurfaceY.apply(x, z);
-                if (surfaceY < minY || surfaceY > maxY) continue;
-
-                BlockPos pos = new BlockPos(x, surfaceY, z);
-                BlockState state = level.getBlockState(pos);
-                // if the surface block itself is solid (collision), spawn on the block above
-                if (!state.getCollisionShape(level, pos).isEmpty()) pos = pos.above();
-
-                if (isValidSpawnPos(level, pos, mobWidth, mobHeight, allowWater)) {
-                    if (!randomize) return pos; // prefer nearest immediately when not randomized
-                    candidates.add(pos);
-                }
-            } else {
-                // Include caves: start scan around the provided center Y (so deep centers are found)
-                int surfaceY = getSurfaceY.apply(x, z);
-                // Prefer starting at the requested center Y (clamped to world bounds)
-                int requestedY = Math.min(Math.max(center.getY(), minY), maxY - 1);
-                int startY = requestedY;
-
-                // Compute a scan depth that ensures we search sufficiently downward when center is deep.
-                // Base depth at least 32, but expand if the surface is far above the requestedY.
-                int scanDepth = Math.max(32, Math.abs(surfaceY - startY) + 32);
-                scanDepth = Math.min(scanDepth, Math.max(32, maxY - minY)); // cap to world height range
-
-                boolean foundInColumn = false;
-
-                // Build a Y-list that scans down from startY into the cave (and a tiny check above).
-                int minScanY = Math.max(minY, startY - scanDepth + 1);
-                java.util.List<Integer> ys = new java.util.ArrayList<>(Math.max(1, startY - minScanY + 1));
-                for (int y = startY; y >= minScanY; y--) ys.add(y);
-                // Also check one block above startY (handles thin ceilings)
-                if (startY + 1 <= maxY - 1) ys.add(startY + 1);
-                if (randomize) java.util.Collections.shuffle(ys, shuffler);
-
-                for (int y : ys) {
-                    BlockPos pos = new BlockPos(x, y, z);
-                    BlockState state = level.getBlockState(pos);
-                    boolean isWater = state.is(Blocks.WATER) || state.getFluidState().is(FluidTags.WATER);
-                    if (!allowWater && isWater) continue;
-
-                    // If feet block itself is inside a solid block and not water, skip quickly
-                    if (!state.getCollisionShape(level, pos).isEmpty() && !isWater) continue;
-
-                    if (isValidSpawnPos(level, pos, mobWidth, mobHeight, allowWater)) {
-                        if (!randomize) return pos; // immediate return when ordered search
-                        candidates.add(pos);
-                        foundInColumn = true;
-                        break; // don't search deeper once we found a candidate in this column
-                    }
-                }
-
-                // optional small check above surface if we haven't found anything (handles leaf-covered surfaces)
-                if (!foundInColumn && startY + 1 <= maxY) {
-                    BlockPos pos = new BlockPos(x, startY + 1, z);
-                    if (isValidSpawnPos(level, pos, mobWidth, mobHeight, allowWater)) {
-                        if (!randomize) return pos;
-                        candidates.add(pos);
-                    }
-                }
+            boolean flag = path != null && path.canReach();
+            if (flag) {
+                brain.eraseMemory(MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE);
+            } else if (!brain.hasMemoryValue(MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE)) {
+                brain.setMemory(MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE, pTime);
             }
 
-            if (candidates.size() >= MAX_CANDIDATES) break;
-        }
-
-        if (candidates.isEmpty()) return null;
-        // If randomized, shuffle candidates with the nano-time shuffler and return the first one.
-        if (randomize) {
-            java.util.Collections.shuffle(candidates, shuffler);
-            // debug log for problematic coordinate to inspect candidate count
-            BlockPos query = new BlockPos(cx, center.getY(), cz);
-            if (query.getX() == 917 && query.getY() == -49 && query.getZ() == 211) {
-                UndeadNights.LOGGER.info("findSpawnablePosition debug: center={} radius={} candidates={}", query, radius, candidates.size());
+            if (path != null) {
+                return true;
             }
-            return candidates.get(0);
+
+            Vec3 vec3 = DefaultRandomPos.getPosTowards((PathfinderMob)pMob, 10, 7, Vec3.atBottomCenterOf(end), (double)((float)Math.PI / 2F));
+            if (vec3 != null) {
+                path = pMob.getNavigation().createPath(vec3.x, vec3.y, vec3.z, 0);
+                return path != null;
+            }
         }
 
-        // nearest preference: candidates were collected in increasing distance order if not randomized
-        BlockPos best = null;
-        double bestDist = Double.MAX_VALUE;
-        for (BlockPos p : candidates) {
-            double dx = p.getX() - cx;
-            double dz = p.getZ() - cz;
-            double d2 = dx*dx + dz*dz;
-            if (d2 < bestDist) { bestDist = d2; best = p; }
-        }
-        return best;
+        return false;
+    }
+
+    private static boolean reachedTarget(Mob pMob, BlockPos pTarget, float closeEnoughDist) {
+        return pTarget.distManhattan(pMob.blockPosition()) <= closeEnoughDist;
     }
 
     /**
-     * Return true if the given BlockPos is a valid spawn/stand position for an entity with the given size.
-     * - bottomY = pos.getY() (feet)
-     * - requires the entity AABB to be free and a solid supporting block below
-     * - if allowWater==false, water cells inside the entity volume are rejected
-     *
-     * This simplified version relies on the stricter AABB test and a targeted water check for performance.
+     * Try to find an end blockpos at approximately 'distance' steps away from start using
+     * Minecraft's actual mob pathfinding (PathNavigation) for confirmation.
+     * This function creates a temporary HordeZombieEntity (not added to the world) and
+     * asks its navigation to compute a path to sampled candidate positions. Returns the
+     * first candidate the navigation can path to, or null if none found.
      */
+    public static BlockPos findEndPositionUsingMinecraftPathfinding(Level level, ServerPlayer player, BlockPos start, int distance) {
+        if (level == null || start == null || distance <= 0) return null;
+        final boolean debug = MainConfig.getPrintDebugMessages();
+        final ThreadLocalRandom rnd = ThreadLocalRandom.current();
+        final int attempts = 300; // sampling attempts
+        final int maxYDelta = 6; // how much to search up/down for standable Y
+
+        // quick start validation
+        if (!isAABBFree(level, new AABB(start.getX() + 0.5 - 0.3, start.getY(), start.getZ() + 0.5 - 0.3, start.getX() + 0.5 + 0.3, start.getY() + 1.8, start.getZ() + 0.5 + 0.3))) {
+            if (debug) UndeadNights.LOGGER.info("findEndUsingMinecraftPF: start pos AABB not free: {}", start);
+            return null;
+        }
+
+        BlockPos target = new BlockPos(921, -45, 192);
+
+        // create a temporary mob used for pathfinding computations (do not add to world)
+        HordeZombieEntity probe = new HordeZombieEntity(ModEntities.HORDE_ZOMBIE.get(), level);
+        probe.finalizeSpawn((ServerLevelAccessor) level, level.getCurrentDifficultyAt(target), MobSpawnType.MOB_SUMMONED, null, null);
+        level.addFreshEntity(probe);
+
+        for (int i = 0; i < attempts; i++) {
+            // sample a candidate at approximate chebyshev distance
+            int dx = rnd.nextInt(-distance - 3, distance + 4);
+            int dz = rnd.nextInt(-distance - 3, distance + 4);
+            int cheb = Math.max(Math.abs(dx), Math.abs(dz));
+            // bias towards values near the requested distance
+            if (Math.abs(cheb - distance) > 4) continue;
+
+            int cx = start.getX() + dx;
+            int cz = start.getZ() + dz;
+
+            // scan vertically around start Y to find a standable block
+            int baseY = start.getY();
+            for (int dy = -maxYDelta; dy <= maxYDelta; dy++) {
+                int cy = baseY + dy;
+                BlockPos cand = new BlockPos(cx, cy, cz);
+                BlockState feet = level.getBlockState(cand);
+                if (feet.is(Blocks.LAVA) || feet.getFluidState().is(FluidTags.LAVA)) continue;
+                if (!hasSolidBlockBelow(level, cand)) continue;
+                if (!isAABBFreeForSpawn(level, new AABB(cand.getX() + 0.5 - 0.3, cand.getY() + 0.001, cand.getZ() + 0.5 - 0.3, cand.getX() + 0.5 + 0.3, cand.getY() + 1.8 - 0.001, cand.getZ() + 0.5 + 0.3))) continue;
+
+                try {
+                    // createPath may return null or an empty path if unreachable
+                    var nav = probe.getNavigation();
+                    probe.setPos(cand.getX(), cand.getY(), cand.getZ());
+                    Path path = nav.createPath(player, 0);
+                    for (int j = 0; j < 10; j++) {
+                        path = nav.createPath(player, 0);
+                    }
+                    if (path != null) {
+                        if (debug) UndeadNights.LOGGER.info("findEndUsingMinecraftPF: candidate {} accepted by vanilla navigation (attempt {})", cand, i);
+                        probe.remove(Entity.RemovalReason.DISCARDED);
+                        return cand;
+                    } else {
+                        if (debug) UndeadNights.LOGGER.info("findEndUsingMinecraftPF: candidate {} rejected by vanilla navigation (null/empty)", cand);
+                    }
+                } catch (Throwable t) {
+                    if (debug) UndeadNights.LOGGER.info("findEndUsingMinecraftPF: navigation threw for candidate {}: {}", cand, t.toString());
+
+                }
+            }
+        }
+
+        probe.remove(Entity.RemovalReason.DISCARDED);
+        if (debug) UndeadNights.LOGGER.info("findEndUsingMinecraftPF: no candidate found (distance={})", distance);
+        return null;
+    }
+
+    /*
+    @Nullable
+    public Path createPath(Entity pEntity, int pAccuracy) {
+        return this.createPath(ImmutableSet.of(pEntity.blockPosition()), 16, true, pAccuracy);
+    }
+
+
+
+
+    @Nullable
+    protected static Path createPath(Set<BlockPos> pTargets, int pRegionOffset, boolean pOffsetUpward, int pAccuracy) {
+        return createPath(pTargets, pRegionOffset, pOffsetUpward, pAccuracy, (float)128);
+    }
+
+    @Nullable
+    protected static Path createPath(Set<BlockPos> pTargets, int pRegionOffset, boolean pOffsetUpward, int pAccuracy, float pFollowRange) {
+        if (pTargets.isEmpty()) {
+            return null;
+        } else if (this.mob.getY() < (double)this.level.getMinBuildHeight()) {
+            return null;
+        } else if (!this.canUpdatePath()) {
+            return null;
+        } else if (this.path != null && !this.path.isDone() && pTargets.contains(this.targetPos)) {
+            return this.path;
+        } else {
+            this.level.getProfiler().push("pathfind");
+            BlockPos blockpos = pOffsetUpward ? this.mob.blockPosition().above() : this.mob.blockPosition();
+            int i = (int)(pFollowRange + (float)pRegionOffset);
+            PathNavigationRegion pathnavigationregion = new PathNavigationRegion(this.level, blockpos.offset(-i, -i, -i), blockpos.offset(i, i, i));
+            Path path = this.pathFinder.findPath(pathnavigationregion, this.mob, pTargets, pFollowRange, pAccuracy, this.maxVisitedNodesMultiplier);
+            this.level.getProfiler().pop();
+            if (path != null && path.getTarget() != null) {
+                this.targetPos = path.getTarget();
+                this.reachRange = pAccuracy;
+                this.resetStuckTimeout();
+            }
+
+            return path;
+        }
+    }
+
+     */
+
+    /**
+     * Quick, cheap standability check used as a prefilter before the expensive full AABB checks.
+     * It checks:
+     *  - block below has collision or is slab/stair/fence/door
+     *  - the foot block and up to 2 blocks above (depending on mobHeight) don't have full collision shapes
+     * The intent is to filter out obvious bad candidates quickly.
+     */
+    private static boolean quickStandable(Level level, BlockPos pos, float mobWidth, float mobHeight) {
+        if (level == null || pos == null) return false;
+        // below
+        BlockPos below = pos.below();
+        if (below.getY() < level.getMinBuildHeight()) return false;
+        BlockState belowState = level.getBlockState(below);
+        boolean belowSolid = !belowState.getCollisionShape(level, below).isEmpty()
+                || belowState.is(BlockTags.SLABS)
+                || belowState.is(BlockTags.STAIRS)
+                || belowState.getBlock() instanceof FenceBlock
+                || belowState.getBlock() instanceof FenceGateBlock
+                || belowState.getBlock() instanceof DoorBlock;
+        if (!belowSolid) return false;
+
+        // quick check for headspace: only check a couple of blocks above
+        int checks = Math.min(2, Math.max(1, (int)Math.ceil(mobHeight)));
+        for (int dy = 0; dy < checks; dy++) {
+            BlockPos p = pos.above(dy);
+            BlockState s = level.getBlockState(p);
+            if (!s.getCollisionShape(level, p).isEmpty()) {
+                // allow non-solid such as fence/fencegate/door by their shapes being small; treat as blocking here
+                return false;
+            }
+            if (s.is(Blocks.LAVA) || s.getFluidState().is(FluidTags.LAVA)) return false;
+        }
+        return true;
+    }
+
+    public static BlockPos findSpawnablePosition(Level level, BlockPos center, int radius) {
+        return findSpawnablePosition(level, center, radius, 5);
+    }
+
+    public static BlockPos findSpawnablePosition(Level level, BlockPos center, int radius, boolean allowWater, float mobWidth, float mobHeight) {
+        // preserve signature for callers but delegate to deltaY-based search with default deltaY=5
+        return findSpawnablePosition(level, center, radius, 5);
+    }
+
+    /**
+     * Find a spawnable block position within X/Z radius and Y +/- deltaY around center.
+     * This function intentionally does NOT use heightmaps; it searches directly and
+     * returns the first valid position found (randomized). Lava is never allowed.
+     */
+    public static BlockPos findSpawnablePosition(Level level, BlockPos center, int radius, int deltaY) {
+        if (level == null || center == null) return null;
+        final int minY = level.getMinBuildHeight();
+        final int maxY = level.getMaxBuildHeight() - 1;
+
+        ThreadLocalRandom rnd = ThreadLocalRandom.current();
+        final float mobWidth = 0.6f;
+        final float mobHeight = 1.8f;
+        final boolean allowWater = MainConfig.getHordeWavesCanSpawnInWater();
+
+        // randomized attempts first to avoid deterministic results
+        final int attempts = 200;
+        for (int i = 0; i < attempts; i++) {
+            int dx = rnd.nextInt(-radius, radius + 1);
+            int dz = rnd.nextInt(-radius, radius + 1);
+            int dy = deltaY > 0 ? rnd.nextInt(-deltaY, deltaY + 1) : 0;
+
+            int x = center.getX() + dx;
+            int z = center.getZ() + dz;
+            int y = center.getY() + dy;
+            if (y < minY || y > maxY) continue;
+
+            BlockPos cand = new BlockPos(x, y, z);
+            BlockState feet = level.getBlockState(cand);
+            if (feet.is(Blocks.LAVA) || feet.getFluidState().is(FluidTags.LAVA)) continue;
+            if (isValidSpawnPos(level, cand, mobWidth, mobHeight, allowWater)) return cand;
+        }
+
+        // fallback: deterministic spiral scan (X/Z) with Y window if randomized attempts fail
+        for (int r = 0; r <= radius; r++) {
+            for (int dx = -r; dx <= r; dx++) {
+                int[] zs = (r == 0) ? new int[]{0} : new int[]{-r, r};
+                for (int zOff : zs) {
+                    int x = center.getX() + dx;
+                    int z = center.getZ() + zOff;
+                    for (int dy = -deltaY; dy <= deltaY; dy++) {
+                        int y = center.getY() + dy;
+                        if (y < minY || y > maxY) continue;
+                        BlockPos cand = new BlockPos(x, y, z);
+                        BlockState feet = level.getBlockState(cand);
+                        if (feet.is(Blocks.LAVA) || feet.getFluidState().is(FluidTags.LAVA)) continue;
+                        if (isValidSpawnPos(level, cand, mobWidth, mobHeight, allowWater)) return cand;
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+
+
     private static boolean isValidSpawnPos(Level level, BlockPos pos, float mobWidth, float mobHeight, boolean allowWater) {
         if (level == null || pos == null) return false;
         int minY = level.getMinBuildHeight();
@@ -794,9 +1109,10 @@ public class Helpers {
 
         BlockState feetState = level.getBlockState(pos);
         boolean feetIsWater = feetState.is(Blocks.WATER) || feetState.getFluidState().is(FluidTags.WATER);
+        boolean feetIsLava = feetState.is(Blocks.LAVA) || feetState.getFluidState().is(FluidTags.LAVA);
+        if (feetIsLava) return false;
         if (feetIsWater && !allowWater) return false;
 
-        // feet block itself must not be a blocking collision (otherwise we'd spawn inside a block)
         VoxelShape feetShape = feetState.getCollisionShape(level, pos);
         if (!feetShape.isEmpty() && !feetIsWater) return false;
 
@@ -806,14 +1122,11 @@ public class Helpers {
         double topY = bottomY + mobHeight;
         double halfWidth = mobWidth / 2.0;
 
-        // small epsilon to avoid integer-boundary edge cases
         final double eps = 1e-3;
         AABB box = new AABB(cx - halfWidth + eps, bottomY + eps, cz - halfWidth + eps, cx + halfWidth - eps, topY - eps, cz + halfWidth - eps);
 
-        // strict AABB collision test for spawn (iterates necessary blocks internally)
         if (!isAABBFreeForSpawn(level, box)) return false;
 
-        // If water isn't allowed, do a small vertical check in the column covered by the AABB to detect fluids.
         if (!allowWater) {
             int bottomBlock = (int) Math.floor(box.minY);
             int topBlock = (int) Math.floor(box.maxY);
@@ -823,9 +1136,7 @@ public class Helpers {
             }
         }
 
-        // require a supporting block below
-        if (!hasSolidBlockBelow(level, pos)) return false;
-
-        return true;
+        return hasSolidBlockBelow(level, pos);
     }
 }
+

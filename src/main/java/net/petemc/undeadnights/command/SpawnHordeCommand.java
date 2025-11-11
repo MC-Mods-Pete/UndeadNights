@@ -39,6 +39,9 @@ public class SpawnHordeCommand {
             Objects.requireNonNull(source.getEntity()).sendSystemMessage(Component.translatable("message.undeadnights.command_spawn_horde_all"));
             if (MainConfig.getPrintDebugMessages()) {
                 UndeadNights.LOGGER.info("Command to spawn hordes for all players issued.");
+                if (MainConfig.getHordeWavesCanSpawnInCaves()) {
+                    Objects.requireNonNull(source.getEntity()).sendSystemMessage(Component.literal("Note: Cave spawning is ENABLED for hordes. Finding a spawn location may take longer."));
+                }
             }
             //spawnHorde = true;
             for (Entity entity : source.getLevel().players()) {
