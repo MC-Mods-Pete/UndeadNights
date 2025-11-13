@@ -890,8 +890,9 @@ public class Helpers {
      * asks its navigation to compute a path to sampled candidate positions. Returns the
      * first candidate the navigation can path to, or null if none found.
      */
-    public static BlockPos findEndPositionUsingMinecraftPathfinding(Level level, ServerPlayer player, BlockPos start, int distance) {
-        if (level == null || start == null || distance <= 0) return null;
+    public static BlockPos findEndPositionUsingMinecraftPathfinding(Level level, ServerPlayer player, int distance) {
+        BlockPos start = player.blockPosition();
+        if (level == null || distance <= 0) return null;
         final boolean debug = MainConfig.getPrintDebugMessages();
         final ThreadLocalRandom rnd = ThreadLocalRandom.current();
         final int attempts = 300; // sampling attempts
@@ -934,11 +935,11 @@ public class Helpers {
                 try {
                     // createPath may return null or an empty path if unreachable
                     var nav = probe.getNavigation();
-                    probe.setPos(cand.getX(), cand.getY(), cand.getZ());
+                    // place probe at candidate center before asking it to path to the player
+                    probe.setPos(cand.getX() + 0.5, cand.getY(), cand.getZ() + 0.5);
+                    // single navigation check to player (candidate -> player)
                     Path path = nav.createPath(player, 0);
-                    for (int j = 0; j < 10; j++) {
-                        path = nav.createPath(player, 0);
-                    }
+
                     if (path != null) {
                         if (debug) UndeadNights.LOGGER.info("findEndUsingMinecraftPF: candidate {} accepted by vanilla navigation (attempt {})", cand, i);
                         probe.remove(Entity.RemovalReason.DISCARDED);

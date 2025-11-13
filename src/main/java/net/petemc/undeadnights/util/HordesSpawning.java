@@ -136,7 +136,7 @@ public class HordesSpawning {
             // cave spawning check
             if (MainConfig.getHordeWavesCanSpawnInCaves() && playerInCave) {
                 //possibleSpawnLocation = Helpers.findEndPositionForPathAStar(level, player.blockPosition(), MainConfig.getCaveSpawnDistance(), false, 0.6f, 1.8f, 20000, 1, 4, 10);
-                possibleSpawnLocation = Helpers.findEndPositionUsingMinecraftPathfinding(level, player, player.blockPosition(), MainConfig.getCaveSpawnDistance());
+                possibleSpawnLocation = Helpers.findEndPositionUsingMinecraftPathfinding(level, player, MainConfig.getCaveSpawnDistance());
                 if (possibleSpawnLocation == null) {
                     UndeadNights.LOGGER.info("Cave horde spawn location calculation for player {} failed, trying again.", player.getName().getString());
                     d = 0;

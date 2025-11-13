@@ -22,7 +22,7 @@ import net.petemc.undeadnights.entity.HordeZombieEntity;
 
 public class BreakBlockGoal extends Goal {
     private final Zombie mob;
-    private final float breakProgressPerTick = 0.04f;
+    private final float breakProgressPerTick = 0.05f;
     private BlockPos targetBlock;
     private float scaledTargetDestroyTime;
     private float breakProgress;
@@ -107,7 +107,7 @@ public class BreakBlockGoal extends Goal {
             return false;
         }
 
-        if (this.mob.getRandom().nextFloat() < 0.3F) {
+        if (this.mob.getRandom().nextFloat() < 0.4F) {
             return false;
         }
 
