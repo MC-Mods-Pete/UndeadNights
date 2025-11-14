@@ -890,13 +890,14 @@ public class Helpers {
      * asks its navigation to compute a path to sampled candidate positions. Returns the
      * first candidate the navigation can path to, or null if none found.
      */
-    public static BlockPos findEndPositionUsingMinecraftPathfinding(Level level, ServerPlayer player, int distance) {
-        BlockPos start = player.blockPosition();
-        if (level == null || distance <= 0) return null;
+    public static BlockPos findEndPositionUsingMinecraftPathfinding(Level level, ServerPlayer player, int distance, boolean allowEndInWater) {
+        if (level == null || player == null || distance <= 0) return null;
         final boolean debug = MainConfig.getPrintDebugMessages();
         final ThreadLocalRandom rnd = ThreadLocalRandom.current();
-        final int attempts = 300; // sampling attempts
-        final int maxYDelta = 6; // how much to search up/down for standable Y
+        final int attempts = 600; // sampling attempts
+        final int maxYDelta = 8; // how much to search up/down for standable Y
+
+        BlockPos start = player.blockPosition();
 
         // quick start validation
         if (!isAABBFree(level, new AABB(start.getX() + 0.5 - 0.3, start.getY(), start.getZ() + 0.5 - 0.3, start.getX() + 0.5 + 0.3, start.getY() + 1.8, start.getZ() + 0.5 + 0.3))) {
@@ -904,11 +905,9 @@ public class Helpers {
             return null;
         }
 
-        BlockPos target = new BlockPos(921, -45, 192);
-
         // create a temporary mob used for pathfinding computations (do not add to world)
         HordeZombieEntity probe = new HordeZombieEntity(ModEntities.HORDE_ZOMBIE.get(), level);
-        probe.finalizeSpawn((ServerLevelAccessor) level, level.getCurrentDifficultyAt(target), MobSpawnType.MOB_SUMMONED, null, null);
+        probe.finalizeSpawn((ServerLevelAccessor) level, level.getCurrentDifficultyAt(start), MobSpawnType.MOB_SUMMONED, null, null);
         level.addFreshEntity(probe);
 
         for (int i = 0; i < attempts; i++) {
@@ -929,6 +928,8 @@ public class Helpers {
                 BlockPos cand = new BlockPos(cx, cy, cz);
                 BlockState feet = level.getBlockState(cand);
                 if (feet.is(Blocks.LAVA) || feet.getFluidState().is(FluidTags.LAVA)) continue;
+                if (!allowEndInWater && (feet.is(Blocks.WATER) || feet.getFluidState().is(FluidTags.WATER))) continue;
+                if (MainConfig.getBlockLightLevelsInfluenceMonsterSpawns() && !HordesSpawning.isDarkEnoughToSpawn((ServerLevelAccessor) level, cand)) continue;
                 if (!hasSolidBlockBelow(level, cand)) continue;
                 if (!isAABBFreeForSpawn(level, new AABB(cand.getX() + 0.5 - 0.3, cand.getY() + 0.001, cand.getZ() + 0.5 - 0.3, cand.getX() + 0.5 + 0.3, cand.getY() + 1.8 - 0.001, cand.getZ() + 0.5 + 0.3))) continue;
 
@@ -948,8 +949,7 @@ public class Helpers {
                         if (debug) UndeadNights.LOGGER.info("findEndUsingMinecraftPF: candidate {} rejected by vanilla navigation (null/empty)", cand);
                     }
                 } catch (Throwable t) {
-                    if (debug) UndeadNights.LOGGER.info("findEndUsingMinecraftPF: navigation threw for candidate {}: {}", cand, t.toString());
-
+                    UndeadNights.LOGGER.warn("findEndUsingMinecraftPF: navigation threw for candidate {}: {}", cand, t.toString());
                 }
             }
         }
@@ -964,9 +964,6 @@ public class Helpers {
     public Path createPath(Entity pEntity, int pAccuracy) {
         return this.createPath(ImmutableSet.of(pEntity.blockPosition()), 16, true, pAccuracy);
     }
-
-
-
 
     @Nullable
     protected static Path createPath(Set<BlockPos> pTargets, int pRegionOffset, boolean pOffsetUpward, int pAccuracy) {
@@ -1101,7 +1098,6 @@ public class Helpers {
         return null;
     }
 
-
     private static boolean isValidSpawnPos(Level level, BlockPos pos, float mobWidth, float mobHeight, boolean allowWater) {
         if (level == null || pos == null) return false;
         int minY = level.getMinBuildHeight();
@@ -1139,5 +1135,89 @@ public class Helpers {
 
         return hasSolidBlockBelow(level, pos);
     }
-}
 
+    /**
+     * Heuristic to determine if a player at the given position is inside a cave.
+     * Note: player-built houses (or similar player structures) are explicitly
+     * excluded and do NOT count as caves.
+     *
+     * Logic:
+     *  - Quick surface check: if the position is at/near surface, not a cave.
+     *  - Uses existing caveCheckStageOne/Two to identify likely caves.
+     *  - House detection heuristic: scans a small area around the position and
+     *    looks for typical building blocks (wood planks, glass, doors, fences,
+     *    torches, lanterns). If multiple building/lighting blocks are present,
+     *    we assume it's a house and return false (not a cave).
+     */
+    public static boolean isPlayerInCave(Level level, BlockPos pos) {
+        if (level == null || pos == null) return false;
+
+        // If the player is very close to or at the surface, it's not a cave
+        int surfaceY = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, pos.getX(), pos.getZ());
+        if (pos.getY() >= surfaceY - 2) return false;
+
+        // quick existing checks: if stage one or two indicate not cave -> not cave
+        if (!caveCheckStageOne(level, pos)) return false;
+        if (!caveCheckStageTwo(level, pos)) return false;
+
+        // House detection heuristic: collect evidence of player-built structure
+        // Scan radius and vertical window
+        final int hx = 6; // horizontal scan radius
+        final int hy = 3; // vertical scan +/- from pos.y
+
+        // Typical building materials / fixtures that indicate a constructed house
+        var buildingMaterials = ImmutableSet.of(
+                Blocks.OAK_PLANKS, Blocks.SPRUCE_PLANKS, Blocks.BIRCH_PLANKS, Blocks.JUNGLE_PLANKS,
+                Blocks.ACACIA_PLANKS, Blocks.DARK_OAK_PLANKS, Blocks.CRIMSON_PLANKS, Blocks.WARPED_PLANKS,
+                Blocks.GLASS, Blocks.GLASS_PANE,
+                Blocks.BRICKS, Blocks.STONE_BRICKS, Blocks.MOSSY_STONE_BRICKS, Blocks.CRACKED_STONE_BRICKS,
+                Blocks.TERRACOTTA, Blocks.WHITE_TERRACOTTA, Blocks.BRICK_STAIRS, Blocks.STONE_BRICK_STAIRS
+        );
+
+        int buildCount = 0;
+        int lightCount = 0;
+        int doorOrEntranceCount = 0;
+
+        for (int dx = -hx; dx <= hx; dx++) {
+            for (int dz = -hx; dz <= hx; dz++) {
+                for (int dy = -hy; dy <= hy; dy++) {
+                    BlockPos p = pos.offset(dx, dy, dz);
+                    BlockState s = level.getBlockState(p);
+                    Block b = s.getBlock();
+
+                    // Never count obviously-natural cave fluids as building
+                    if (b == Blocks.WATER || b == Blocks.LAVA) continue;
+
+                    if (buildingMaterials.contains(b)) buildCount++;
+
+                    // Lighting / fixtures commonly placed by players
+                    if (b == Blocks.TORCH || b == Blocks.WALL_TORCH || b == Blocks.LANTERN || b == Blocks.SOUL_LANTERN || b == Blocks.GLOWSTONE || b == Blocks.SEA_LANTERN || b == Blocks.REDSTONE_LAMP) {
+                        lightCount++;
+                    }
+
+                    // Doors, fence gates, fences indicate entrances / constructions
+                    if (b instanceof DoorBlock || b instanceof FenceGateBlock || b instanceof FenceBlock) {
+                        doorOrEntranceCount++;
+                    }
+
+                    // Early exit if very strong evidence of a building
+                    if (buildCount >= 8 && (lightCount >= 1 || doorOrEntranceCount >= 1)) {
+                        return false; // considered a house -> not a cave
+                    }
+                }
+            }
+        }
+
+        // Final decision: if we saw several building blocks + fixtures, treat as house
+        if (buildCount >= 6 && (lightCount >= 1 || doorOrEntranceCount >= 1)) return false;
+
+        // Otherwise, it's a cave by our combined heuristics
+        return true;
+    }
+
+    /** Convenience overload that accepts a ServerPlayer. */
+    public static boolean isPlayerInCave(Level level, ServerPlayer player) {
+        if (player == null) return false;
+        return isPlayerInCave(level, player.blockPosition());
+    }
+}

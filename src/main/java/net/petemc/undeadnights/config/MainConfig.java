@@ -166,8 +166,8 @@ public class MainConfig
             .define("hordeWavesCanSpawnInCaves", false);
 
     private static final ForgeConfigSpec.IntValue CAVE_SPAWN_DISTANCE = BUILDER_SERVER
-            .comment("Distance a horde will spawn away from the player when in a cave | default: 45")
-            .defineInRange("caveSpawnDistance", 45, 10, 100);
+            .comment("Distance a horde will spawn away from the player when in a cave | default: 50")
+            .defineInRange("caveSpawnDistance", 50, 10, 100);
 
     private static final ForgeConfigSpec.BooleanValue BLOCK_LIGHT_LEVELS_INFLUENCE_MONSTER_SPAWNS = BUILDER_SERVER
             .comment("If true, the light level of the block position can prevent horde mobs from spawning | default: false")

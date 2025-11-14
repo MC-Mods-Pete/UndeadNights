@@ -90,22 +90,22 @@ public class HordesSpawning {
     }
 
     // spawn a single horde mob at the given location (Asynchronous wrapper)
-    public static CompletableFuture<UndeadSpawner.SpawnHordeResult> spawnHordeAsync(ServerLevel level, ServerPlayer player, RandomSource randomSource) {
-        return CompletableFuture.supplyAsync(() -> spawnHorde(
+    public static CompletableFuture<UndeadSpawner.SpawnHordeResult> asynchronousHordeSpawner(ServerLevel level, ServerPlayer player, RandomSource randomSource) {
+        return CompletableFuture.supplyAsync(() -> spawnHordeImplementation(
                 level,
                 player,
                 randomSource
         ), ForkJoinPool.commonPool());
     }
 
-    // spawn a single horde mob at the given location
-    public static UndeadSpawner.SpawnHordeResult spawnHorde(ServerLevel level, ServerPlayer player, RandomSource randomSource) {
+    // spawn a horde for the given player at a suitable location
+    public static UndeadSpawner.SpawnHordeResult spawnHordeImplementation(ServerLevel level, ServerPlayer player, RandomSource randomSource) {
         int randomValue;
         int spawnCounter = 0;
         BlockPos possibleSpawnLocation;
         boolean foundHordeSpawnLocation = false;
         int currentHordeCounter = UndeadNights.globalSpawnCounter;
-        int maxChecks = 20;
+        int maxChecks = 30;
 
         for (int i= 0; i < maxChecks; i++) {
             // for the given min/max distance, calculate the x and z coordinates deltas
@@ -136,9 +136,11 @@ public class HordesSpawning {
             // cave spawning check
             if (MainConfig.getHordeWavesCanSpawnInCaves() && playerInCave) {
                 //possibleSpawnLocation = Helpers.findEndPositionForPathAStar(level, player.blockPosition(), MainConfig.getCaveSpawnDistance(), false, 0.6f, 1.8f, 20000, 1, 4, 10);
-                possibleSpawnLocation = Helpers.findEndPositionUsingMinecraftPathfinding(level, player, MainConfig.getCaveSpawnDistance());
+                possibleSpawnLocation = Helpers.findEndPositionUsingMinecraftPathfinding(level, player, MainConfig.getCaveSpawnDistance(), MainConfig.getHordeWavesCanSpawnInWater());
                 if (possibleSpawnLocation == null) {
-                    UndeadNights.LOGGER.info("Cave horde spawn location calculation for player {} failed, trying again.", player.getName().getString());
+                    if (MainConfig.getPrintDebugMessages()) {
+                        UndeadNights.LOGGER.info("Cave horde spawn location calculation for player {} failed, trying again.", player.getName().getString());
+                    }
                     d = 0;
                     continue;
                 }
