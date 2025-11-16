@@ -31,7 +31,7 @@ import net.petemc.undeadnights.item.ModItems;
 import net.petemc.undeadnights.potion.ModPotions;
 import net.petemc.undeadnights.sound.UndeadNightsSounds;
 import net.petemc.undeadnights.util.StateSaverAndLoader;
-import net.petemc.undeadnights.world.spawner.UndeadSpawner;
+import net.petemc.undeadnights.world.spawner.HordeSpawner;
 import org.slf4j.Logger;
 
 @Mod(UndeadNights.MOD_ID)
@@ -93,7 +93,7 @@ public class UndeadNights {
             UndeadNights.serverState = StateSaverAndLoader.getServerState(event.getServer());
 
             // TODO remove, only for testing
-            UndeadNights.serverState.setFirstDifficultyLevelPrinted(false);
+            //UndeadNights.serverState.setFirstDifficultyLevelPrinted(false);
             //UndeadNights.serverState.setCurrentDifficultyLevelIndex(0);
 
             UndeadNights.difficultyConfig.setCurrentDifficultyLevel(UndeadNights.difficultyConfig.getDifficultyLevels().get(UndeadNights.serverState.getCurrentDifficultyLevelIndex()));
@@ -130,7 +130,7 @@ public class UndeadNights {
 				UndeadNights.LOGGER.info("INIT HordeNight: {} SpawnZombies: {} RespawnZombies: {}", UndeadNights.serverState.getHordeNight(), UndeadNights.serverState.getSpawnZombies(), UndeadNights.serverState.getRespawnZombies());
 			    UndeadNights.LOGGER.info("INIT Difficulty level: {}", UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultyName());
             }
-			UndeadSpawner.hordeIdFromHordesConfig = HordeConfig.getDefaultHorde();
+			HordeSpawner.hordeIdFromHordesConfig = HordeConfig.getDefaultHorde();
 			//UndeadSpawner.prevNormalizedTimeOfDay = event.getServer().overworld().getDayTime() - 1;
 			HordeMobsCommand.hordeZombiesCanBreakBlocks = UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeMobs().isBlockBreaking();
 			HordeMobsCommand.hordeZombiesBlockBreakingTier = UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeMobs().getBlockBreakingTier();

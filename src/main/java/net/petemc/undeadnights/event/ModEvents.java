@@ -1,6 +1,5 @@
 package net.petemc.undeadnights.event;
 
-import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -8,7 +7,6 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.goal.FloatGoal;
 import net.minecraft.world.entity.monster.Zombie;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -17,9 +15,6 @@ import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.event.entity.EntityLeaveLevelEvent;
 import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.event.entity.living.ZombieEvent;
-import net.minecraftforge.event.entity.player.PlayerSleepInBedEvent;
-import net.minecraftforge.event.entity.player.SleepingLocationCheckEvent;
-import net.minecraftforge.event.entity.player.SleepingTimeCheckEvent;
 import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -61,7 +56,9 @@ public class ModEvents {
                             UndeadNights.serverState.hordeMobsToRemove.remove(event.getEntity().getUUID());
                             event.getEntity().remove(Entity.RemovalReason.DISCARDED);
                             event.setCanceled(true);
-                            UndeadNights.LOGGER.info("LOAD canceled, Entity marked for removal: {}", event.getEntity().getUUID());
+                            if (MainConfig.getPrintDebugMessages()) {
+                                UndeadNights.LOGGER.info("LOAD canceled, Entity marked for removal: {}", event.getEntity().getUUID());
+                            }
                         } else {
                             UndeadNights.globalSpawnCounter++;
                             if (event.getEntity() instanceof Zombie zombie) {
@@ -117,8 +114,6 @@ public class ModEvents {
             new StatusCommand(event.getDispatcher());
             new SetDefaultHordeCommand(event.getDispatcher());
             new DifficultyLevelCommand(event.getDispatcher());
-            // Debug command to test A* pathfinding in-game
-            new PathDebugCommand(event.getDispatcher());
 
             ConfigCommand.register(event.getDispatcher());
         }

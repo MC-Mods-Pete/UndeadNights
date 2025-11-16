@@ -162,7 +162,7 @@ public class MainConfig
             .define("hordeWavesCanSpawnOnTrees", false);
 
     private static final ForgeConfigSpec.BooleanValue HORDE_WAVES_CAN_SPAWN_IN_CAVES = BUILDER_SERVER
-            .comment("If true, horde waves can spawn in caves | default: false")
+            .comment("If true, horde waves can spawn in caves [EXPERIMENTAL]| default: false")
             .define("hordeWavesCanSpawnInCaves", false);
 
     private static final ForgeConfigSpec.IntValue CAVE_SPAWN_DISTANCE = BUILDER_SERVER

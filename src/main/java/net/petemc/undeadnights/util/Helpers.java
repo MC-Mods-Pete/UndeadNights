@@ -8,17 +8,9 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.Brain;
-import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
-import net.minecraft.world.entity.ai.memory.WalkTarget;
-import net.minecraft.world.entity.ai.navigation.GroundPathNavigation;
-import net.minecraft.world.entity.ai.navigation.PathNavigation;
 import net.minecraft.world.entity.ai.util.DefaultRandomPos;
-import net.minecraft.world.entity.ai.util.LandRandomPos;
-import net.minecraft.world.entity.ai.util.RandomPos;
-import net.minecraft.world.entity.monster.Strider;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.PathNavigationRegion;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -37,7 +29,6 @@ import net.petemc.undeadnights.UndeadNights;
 import net.petemc.undeadnights.entity.HordeZombieEntity;
 import net.petemc.undeadnights.entity.ModEntities;
 
-import javax.annotation.Nullable;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -49,22 +40,18 @@ public class Helpers {
         int z = pos.getZ();
         int y;
 
-        //UndeadNights.LOGGER.info("--------------> Player position {} {} {}", x, pos.getY(), z);
-
         y = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z);
-        //UndeadNights.LOGGER.info("----------------------------------------> Player is on surface (MOTION_BLOCKING_NO_LEAVES) {} {} {}", y, pos.getY(), level.getBlockState(pos));
         if (y == pos.getY()) {
             return false; // on surface
         }
 
         y = level.getHeight(Heightmap.Types.MOTION_BLOCKING, x, z);
-        //UndeadNights.LOGGER.info("----------------------------------------> Player is on surface (MOTION_BLOCKING) {} {} {}", y, pos.getY(), level.getBlockState(pos));
         if (y == pos.getY()) {
             return false; // on surface
         }
 
         BlockPos.MutableBlockPos checkPos = new BlockPos.MutableBlockPos(x, pos.getY() + 1, z);
-        while (checkPos.getY() < y) { //level.getMaxBuildHeight()) {
+        while (checkPos.getY() < y) {
             BlockState state = level.getBlockState(checkPos);
 
             if (state.isAir()) {
@@ -102,12 +89,10 @@ public class Helpers {
     }
 
     public static boolean caveCheckStageTwo(Level level, BlockPos pos) {
-        //UndeadNights.LOGGER.info("--------------------> Cave2 check at position {} {} {}", pos.getX(), pos.getY(), pos.getZ());
         AABB box = new AABB(pos).inflate(10, 0, 10);
         AtomicBoolean isCave = new AtomicBoolean(true);
         BlockPos.MutableBlockPos.betweenClosedStream(box)
             .forEach(c -> {
-                //int y2 = level.getHeight(Heightmap.Types.MOTION_BLOCKING, c.getX(), c.getZ());
                 int y1 = level.getHeight(Heightmap.Types.MOTION_BLOCKING, c.getX(), c.getZ());
                 if ((c.getY() + 5) >= y1) {
                     isCave.set(false);
@@ -883,81 +868,7 @@ public class Helpers {
         return pTarget.distManhattan(pMob.blockPosition()) <= closeEnoughDist;
     }
 
-    /**
-     * Try to find an end blockpos at approximately 'distance' steps away from start using
-     * Minecraft's actual mob pathfinding (PathNavigation) for confirmation.
-     * This function creates a temporary HordeZombieEntity (not added to the world) and
-     * asks its navigation to compute a path to sampled candidate positions. Returns the
-     * first candidate the navigation can path to, or null if none found.
-     */
-    public static BlockPos findEndPositionUsingMinecraftPathfinding(Level level, ServerPlayer player, int distance, boolean allowEndInWater) {
-        if (level == null || player == null || distance <= 0) return null;
-        final boolean debug = MainConfig.getPrintDebugMessages();
-        final ThreadLocalRandom rnd = ThreadLocalRandom.current();
-        final int attempts = 600; // sampling attempts
-        final int maxYDelta = 8; // how much to search up/down for standable Y
 
-        BlockPos start = player.blockPosition();
-
-        // quick start validation
-        if (!isAABBFree(level, new AABB(start.getX() + 0.5 - 0.3, start.getY(), start.getZ() + 0.5 - 0.3, start.getX() + 0.5 + 0.3, start.getY() + 1.8, start.getZ() + 0.5 + 0.3))) {
-            if (debug) UndeadNights.LOGGER.info("findEndUsingMinecraftPF: start pos AABB not free: {}", start);
-            return null;
-        }
-
-        // create a temporary mob used for pathfinding computations (do not add to world)
-        HordeZombieEntity probe = new HordeZombieEntity(ModEntities.HORDE_ZOMBIE.get(), level);
-        probe.finalizeSpawn((ServerLevelAccessor) level, level.getCurrentDifficultyAt(start), MobSpawnType.MOB_SUMMONED, null, null);
-        level.addFreshEntity(probe);
-
-        for (int i = 0; i < attempts; i++) {
-            // sample a candidate at approximate chebyshev distance
-            int dx = rnd.nextInt(-distance - 3, distance + 4);
-            int dz = rnd.nextInt(-distance - 3, distance + 4);
-            int cheb = Math.max(Math.abs(dx), Math.abs(dz));
-            // bias towards values near the requested distance
-            if (Math.abs(cheb - distance) > 4) continue;
-
-            int cx = start.getX() + dx;
-            int cz = start.getZ() + dz;
-
-            // scan vertically around start Y to find a standable block
-            int baseY = start.getY();
-            for (int dy = -maxYDelta; dy <= maxYDelta; dy++) {
-                int cy = baseY + dy;
-                BlockPos cand = new BlockPos(cx, cy, cz);
-                BlockState feet = level.getBlockState(cand);
-                if (feet.is(Blocks.LAVA) || feet.getFluidState().is(FluidTags.LAVA)) continue;
-                if (!allowEndInWater && (feet.is(Blocks.WATER) || feet.getFluidState().is(FluidTags.WATER))) continue;
-                if (MainConfig.getBlockLightLevelsInfluenceMonsterSpawns() && !HordesSpawning.isDarkEnoughToSpawn((ServerLevelAccessor) level, cand)) continue;
-                if (!hasSolidBlockBelow(level, cand)) continue;
-                if (!isAABBFreeForSpawn(level, new AABB(cand.getX() + 0.5 - 0.3, cand.getY() + 0.001, cand.getZ() + 0.5 - 0.3, cand.getX() + 0.5 + 0.3, cand.getY() + 1.8 - 0.001, cand.getZ() + 0.5 + 0.3))) continue;
-
-                try {
-                    // createPath may return null or an empty path if unreachable
-                    var nav = probe.getNavigation();
-                    // place probe at candidate center before asking it to path to the player
-                    probe.setPos(cand.getX() + 0.5, cand.getY(), cand.getZ() + 0.5);
-                    // single navigation check to player (candidate -> player)
-                    Path path = nav.createPath(player, 0);
-
-                    if (path != null) {
-                        if (debug) UndeadNights.LOGGER.info("findEndUsingMinecraftPF: candidate {} accepted by vanilla navigation (attempt {})", cand, i);
-                        probe.remove(Entity.RemovalReason.DISCARDED);
-                        return cand;
-                    } else {
-                        if (debug) UndeadNights.LOGGER.info("findEndUsingMinecraftPF: candidate {} rejected by vanilla navigation (null/empty)", cand);
-                    }
-                } catch (Throwable t) {
-                    UndeadNights.LOGGER.warn("findEndUsingMinecraftPF: navigation threw for candidate {}: {}", cand, t.toString());
-                }
-            }
-        }
-
-        probe.remove(Entity.RemovalReason.DISCARDED);
-        if (debug) UndeadNights.LOGGER.info("findEndUsingMinecraftPF: no candidate found (distance={})", distance);
-        return null;
-    }
 
     /*
     @Nullable

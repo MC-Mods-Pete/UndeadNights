@@ -16,7 +16,7 @@ import java.util.Collection;
 import java.util.Objects;
 
 public class SpawnHordeCommand {
-    //public static boolean spawnHordeByCommand = false;
+    public static boolean spawnHordeByCommand = false;
     public static Collection<? extends Entity> entities = null;
 
     public SpawnHordeCommand(CommandDispatcher<CommandSourceStack> dispatcher) {
@@ -43,7 +43,7 @@ public class SpawnHordeCommand {
                     Objects.requireNonNull(source.getEntity()).sendSystemMessage(Component.literal("Note: Cave spawning is ENABLED for hordes. Finding a spawn location may take longer."));
                 }
             }
-            //spawnHordeByCommand = true;
+            spawnHordeByCommand = true;
             for (Entity entity : source.getLevel().players()) {
                 if (entity instanceof Player) {
                     UndeadNights.serverState.entitiesWithPendingHorde.add(entity.getUUID());
@@ -57,7 +57,7 @@ public class SpawnHordeCommand {
 
     private int spawnHorde(CommandSourceStack source, Collection<? extends Entity> pTargets) throws CommandSyntaxException {
         if (UndeadNights.globalSpawnCounter < MainConfig.getHordeMobsSpawnCap()) {
-            //spawnHorde = true;
+            spawnHordeByCommand = true;
             //entities = pTargets;
             if (!pTargets.isEmpty()) {
                 for (Entity entity : pTargets) {
