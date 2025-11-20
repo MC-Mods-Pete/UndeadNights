@@ -19,6 +19,8 @@ public class MainConfig
         return maxHordesPerHordeNight;
     }
 
+    public static boolean getAllDayLongHordeNights() { return allDayLongHordeNights; }
+
     public static boolean getSendHordeNightsCountdownMessage() {
         return sendHordeNightsCountdownMessage;
     }
@@ -69,9 +71,7 @@ public class MainConfig
 
     public static boolean getEnableAutomaticDifficultyProgression() { return enableAutomaticDifficultyProgression; }
 
-    public static boolean getPersistentMobs() {
-        return persistentMobs;
-    }
+    public static boolean getPersistentMobs() { return persistentMobs; }
 
     public static boolean getSecurityCraftCompatibility() {
         return securityCraftCompatibility;
@@ -128,6 +128,10 @@ public class MainConfig
     private static final ForgeConfigSpec.IntValue MAX_HORDES_PER_HORDE_NIGHTS = BUILDER_SERVER
             .comment("Maximum number of hordes that can spawn per horde night (0 = unlimited) | default: 0")
             .defineInRange("maxHordesPerHordeNight", 0, 0, 512);
+
+    private static final ForgeConfigSpec.BooleanValue ALL_DAY_LONG_HORDE_NIGHTS = BUILDER_SERVER
+            .comment("If true, horde nights will last the entire in-game day instead of only the night | default: false")
+            .define("allDayLongHordeNights", false);
 
     private static final ForgeConfigSpec.BooleanValue SEND_HORDE_NIGHTS_COUNTDOWN_MESSAGE = BUILDER_SERVER
             .comment("If true, each night a message will be sent to the player with how many nights are left before the next Horde Night | default: false")
@@ -240,6 +244,7 @@ public class MainConfig
     private static boolean undeadNightsEnabled = true;
     private static int gracePeriodBeforeFirstHordeNight = 0;
     private static int maxHordesPerHordeNight = 0;
+    private static boolean allDayLongHordeNights = false;
     private static boolean sendHordeNightsCountdownMessage = false;
     private static boolean hordeSpawnedMessageAndSound = true;
     private static int distanceMin = 70;
@@ -288,6 +293,8 @@ public class MainConfig
             maxBlockLightLevelForMonsterSpawns = MAX_BLOCK_LIGHT_LEVEL_FOR_MONSTER_SPAWNS.get();
             hordeNightsDisableSleeping = HORDE_NIGHTS_DISABLE_SLEEPING.get();
             enableAutomaticDifficultyProgression = ENABLE_AUTOMATIC_DIFFICULTY_PROGRESSION.get();
+            // load new option
+            allDayLongHordeNights = ALL_DAY_LONG_HORDE_NIGHTS.get();
 	        persistentMobs = PERSISTENT_MOBS.get();
             securityCraftCompatibility = SECURITY_CRAFT_COMPATIBILITY.get();
             hordeZombiesSpawnNaturally = HORDE_ZOMBIES_SPAWN_NATURALLY.get();

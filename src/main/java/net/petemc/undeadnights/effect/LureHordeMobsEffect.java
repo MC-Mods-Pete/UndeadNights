@@ -1,5 +1,7 @@
 package net.petemc.undeadnights.effect;
 
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectCategory;
@@ -15,9 +17,41 @@ import net.petemc.undeadnights.casts.UndeadNightsExtendedPlayer;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ForkJoinPool;
 
 public class LureHordeMobsEffect extends MobEffect {
+    private static final HashMap<UUID, CompletableFuture<Boolean>> cachedNearbyHordeMobsPerPlayer = new HashMap<>();
+
+    // Asynchronous method to find nearby horde mobs and set player as target
+    public static CompletableFuture<Boolean> asynchronousSetPlayerAsTargetForNearbyHordeMobs(ServerLevel level, ServerPlayer player) {
+        return CompletableFuture.supplyAsync(() -> setPlayerAsTargetForNearbyHordeMobs(
+                level,
+                player
+        ), ForkJoinPool.commonPool());
+    }
+
+    // Method to find nearby horde mobs and set player as target
+    private static Boolean setPlayerAsTargetForNearbyHordeMobs(ServerLevel level, ServerPlayer pPlayer) {
+        final Vec3 entityPosition = pPlayer.position();
+        final AABB entitySearchArea = new AABB(entityPosition, entityPosition).inflate(15d);
+
+        List<Entity> sortedEntityList = level.getEntitiesOfClass(Entity.class, entitySearchArea, entityUUIDCheck ->
+                        UndeadNights.serverState.spawnedHordeMobs.contains(entityUUIDCheck.getUUID()))
+                .stream().sorted(Comparator.comparingDouble(entityDistSort -> entityDistSort.distanceToSqr(entityPosition))).toList();
+
+        for (Entity hordeMobIterator : sortedEntityList) {
+            if (hordeMobIterator instanceof Mob mob) {
+                mob.setTarget(pPlayer);
+            }
+        }
+
+        return true;
+    }
+
     public LureHordeMobsEffect(MobEffectCategory statusEffectCategory, int color) {
         super(statusEffectCategory, color);
     }
@@ -45,6 +79,20 @@ public class LureHordeMobsEffect extends MobEffect {
                     }
                 }
 
+                double randomValue = Math.random();
+                if (randomValue < (chance / 10)) {
+                    if (!cachedNearbyHordeMobsPerPlayer.containsKey(pPlayer.getUUID())) {
+                        CompletableFuture<Boolean> future = asynchronousSetPlayerAsTargetForNearbyHordeMobs((ServerLevel) world, (ServerPlayer) pPlayer);
+                        cachedNearbyHordeMobsPerPlayer.put(pPlayer.getUUID(), future);
+                    } else {
+                        CompletableFuture<Boolean> existingFuture = cachedNearbyHordeMobsPerPlayer.get(pPlayer.getUUID());
+                        if (existingFuture.isDone()) {
+                            cachedNearbyHordeMobsPerPlayer.remove(pPlayer.getUUID());
+                        }
+                    }
+                }
+
+                /*
                 final Vec3 entityPosition = pPlayer.position();
                 final AABB entitySearchArea = new AABB(entityPosition, entityPosition).inflate(15d);
 
@@ -60,6 +108,7 @@ public class LureHordeMobsEffect extends MobEffect {
                         }
                     }
                 }
+                */
             }
         }
         super.applyEffectTick(pLivingEntity, pAmplifier);

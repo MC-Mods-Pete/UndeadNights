@@ -10,14 +10,12 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.petemc.undeadnights.UndeadNights;
 import net.petemc.undeadnights.config.MainConfig;
-import net.petemc.undeadnights.util.StateSaverAndLoader;
 
 import java.util.Collection;
 import java.util.Objects;
 
 public class SpawnHordeCommand {
     public static boolean spawnHordeByCommand = false;
-    public static Collection<? extends Entity> entities = null;
 
     public SpawnHordeCommand(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(Commands.literal("undeadnights")
@@ -47,6 +45,7 @@ public class SpawnHordeCommand {
             for (Entity entity : source.getLevel().players()) {
                 if (entity instanceof Player) {
                     UndeadNights.serverState.entitiesWithPendingHorde.add(entity.getUUID());
+                    UndeadNights.serverState.entitiesWithReceivedHorde.remove(entity.getUUID());
                 }
             }
         } else {
@@ -58,11 +57,11 @@ public class SpawnHordeCommand {
     private int spawnHorde(CommandSourceStack source, Collection<? extends Entity> pTargets) throws CommandSyntaxException {
         if (UndeadNights.globalSpawnCounter < MainConfig.getHordeMobsSpawnCap()) {
             spawnHordeByCommand = true;
-            //entities = pTargets;
             if (!pTargets.isEmpty()) {
                 for (Entity entity : pTargets) {
                     if (entity instanceof Player) {
                         UndeadNights.serverState.entitiesWithPendingHorde.add(entity.getUUID());
+                        UndeadNights.serverState.entitiesWithReceivedHorde.remove(entity.getUUID());
                     }
                 }
             }

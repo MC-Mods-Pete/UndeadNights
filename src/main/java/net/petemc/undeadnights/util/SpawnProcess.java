@@ -103,6 +103,12 @@ public class SpawnProcess {
                     d = 0;
                     continue;
                 }
+                if (MainConfig.getBlockLightLevelsInfluenceMonsterSpawns()) {
+                    if (!SpawnLocationFinder.isDarkEnoughToSpawn(level, possibleSpawnLocation)) {
+                        d = 0;
+                        continue;
+                    }
+                }
                 if (MainConfig.getPrintDebugMessages()) {
                     player.sendSystemMessage(Component.literal("[DEBUG] Cave horde spawn location calculated.").withStyle(ChatFormatting.DARK_AQUA));
                 }
@@ -119,10 +125,6 @@ public class SpawnProcess {
                 }
                 foundHordeSpawnLocation = SpawnLocationFinder.checkSpawnLocation(level, possibleSpawnLocation.getX(), possibleSpawnLocation.getY() - 1, possibleSpawnLocation.getZ());
             }
-
-            //if (foundHordeSpawnLocation) {
-            //    foundHordeSpawnLocation = Pathfinding.canPathfind(level, possibleSpawnLocation, player.blockPosition(),0.8f, 1.6f, 20000, 4, 1, 10);
-            //}
 
             if (!foundHordeSpawnLocation) {
                 if (MainConfig.getPrintDebugMessages()) {

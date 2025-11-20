@@ -122,6 +122,7 @@ public class HordeSpawner implements CustomSpawner {
         UndeadNights.serverState.setPrevNormalizedTimeOfDay(normalizedTimeOfDay);
 
         boolean itIsNight = normalizedTimeOfDay >= 12000 && normalizedTimeOfDay < 22500;
+        boolean allDayLong = (MainConfig.getAllDayLongHordeNights() && UndeadNights.serverState.getHordeNight() && (normalizedTimeOfDay >= 22500 || normalizedTimeOfDay < 11000));
 
         final RandomSource randomSource = level.random;
         int randomValue = 0;
@@ -170,7 +171,7 @@ public class HordeSpawner implements CustomSpawner {
         }
 
         // is it night...?
-        if (itIsNight) {
+        if (itIsNight || allDayLong) {
             UndeadNights.serverState.setPerformDifficultySwitchCheck(true);
             // if it's already a horde night, check if we should respawn new waves
             if (UndeadNights.serverState.getRespawnZombies() && UndeadNights.serverState.getHordeNight() &&
@@ -293,7 +294,7 @@ public class HordeSpawner implements CustomSpawner {
             }
 
             // spawn the waves
-            if (UndeadNights.serverState.getSpawnZombies() && UndeadNights.serverState.getHordeNight() && normalizedTimeOfDay >= 12542) {
+            if (UndeadNights.serverState.getSpawnZombies() && UndeadNights.serverState.getHordeNight() && (normalizedTimeOfDay >= 12542 || allDayLong)) {
                 if (UndeadNights.serverState.getHordesCounter() != 0) {
                     if ((UndeadNights.serverState.getHordesCounter() - 1) == 0) {
                         return 0;
@@ -302,6 +303,7 @@ public class HordeSpawner implements CustomSpawner {
                 for (ServerPlayer player : level.getPlayers(LivingEntity::isAlive)) {
                     UndeadNights.serverState.entitiesWithPendingHorde.add(player.getUUID());
                     UndeadNights.serverState.entitiesWithPendingWave.add(player.getUUID());
+                    UndeadNights.serverState.entitiesWithReceivedHorde.remove(player.getUUID());
                     UndeadNights.serverState.setFirstWaveHasSpawned(true);
                 }
                 UndeadNights.serverState.setHordesCounter(UndeadNights.serverState.getHordesCounter() - 1);
@@ -321,7 +323,11 @@ public class HordeSpawner implements CustomSpawner {
         } else {
             if (UndeadNights.serverState.getHordeNight()) {
                 for (ServerPlayer player : level.getPlayers(LivingEntity::isAlive)) {
-                    player.sendSystemMessage(Component.translatable("message.undeadnights.horde_night_over"));
+                    if (!MainConfig.getAllDayLongHordeNights()) {
+                        player.sendSystemMessage(Component.translatable("message.undeadnights.horde_night_over"));
+                    } else {
+                        player.sendSystemMessage(Component.translatable("message.undeadnights.horde_time_over"));
+                    }
                     if (UndeadNights.serverState.entitiesWithPendingWave.contains(player.getUUID())) {
                         UndeadNights.serverState.entitiesWithPendingWave.remove(player.getUUID());
                         UndeadNights.serverState.entitiesWithPendingHorde.remove(player.getUUID());
