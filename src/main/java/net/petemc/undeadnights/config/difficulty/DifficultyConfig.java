@@ -66,7 +66,9 @@ public class DifficultyConfig {
                             100,
                             true,
                             45,
-                            7),
+                            7,
+                            false,
+                            0),
                     new DifficultySettingsHordes(
                             false,
                             15,
@@ -161,6 +163,8 @@ public class DifficultyConfig {
         difficultySettingsHordeNights.addProperty("spawnAdditionalWaves", hordeNightsValues.isSpawnAdditionalWaves());
         difficultySettingsHordeNights.addProperty("cooldownBetweenWaves", hordeNightsValues.getCooldownBetweenWaves());
         difficultySettingsHordeNights.addProperty("chanceForAdditionalWave", hordeNightsValues.getChanceForAdditionalWave());
+        difficultySettingsHordeNights.addProperty("allDayLongHordeNights", hordeNightsValues.getAllDayLongHordeNights());
+        difficultySettingsHordeNights.addProperty("maxHordesPerHordeNight", hordeNightsValues.getMaxHordesPerHordeNight());
         difficultyLevel.add("difficultySettingsHordeNights", difficultySettingsHordeNights);
 
         DifficultySettingsHordeMobs hordeMobsValues = defaultDifficultyLevelValues.getDifficultySettingsHordeMobs();

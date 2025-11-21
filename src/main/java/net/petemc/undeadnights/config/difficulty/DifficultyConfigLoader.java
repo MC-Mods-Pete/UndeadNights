@@ -121,6 +121,8 @@ public class DifficultyConfigLoader {
                         settingsHordeNights.setSpawnAdditionalWaves(settingsHordeNights.isSpawnAdditionalWaves() == null ? lowerSettingsHordeNights.isSpawnAdditionalWaves() : settingsHordeNights.isSpawnAdditionalWaves());
                         settingsHordeNights.setCooldownBetweenWaves(settingsHordeNights.getCooldownBetweenWaves() == null ? lowerSettingsHordeNights.getCooldownBetweenWaves() : settingsHordeNights.getCooldownBetweenWaves());
                         settingsHordeNights.setChanceForAdditionalWave(settingsHordeNights.getChanceForAdditionalWave() == null ? lowerSettingsHordeNights.getChanceForAdditionalWave() : settingsHordeNights.getChanceForAdditionalWave());
+                        settingsHordeNights.setAllDayLongHordeNights(settingsHordeNights.getAllDayLongHordeNights() == null ? lowerSettingsHordeNights.getAllDayLongHordeNights() : settingsHordeNights.getAllDayLongHordeNights());
+                        settingsHordeNights.setMaxHordesPerHordeNight(settingsHordeNights.getMaxHordesPerHordeNight() == null ? lowerSettingsHordeNights.getMaxHordesPerHordeNight() : settingsHordeNights.getMaxHordesPerHordeNight());
                     }
                     if (targetDifficultyLevel.getDifficultySettingsHordes() == null) {
                         targetDifficultyLevel.setDifficultySettingsHordes(sourceDifficultyLevel.getDifficultySettingsHordes());

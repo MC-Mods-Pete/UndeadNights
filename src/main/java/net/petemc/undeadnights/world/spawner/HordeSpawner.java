@@ -122,7 +122,7 @@ public class HordeSpawner implements CustomSpawner {
         UndeadNights.serverState.setPrevNormalizedTimeOfDay(normalizedTimeOfDay);
 
         boolean itIsNight = normalizedTimeOfDay >= 12000 && normalizedTimeOfDay < 22500;
-        boolean allDayLong = (MainConfig.getAllDayLongHordeNights() && UndeadNights.serverState.getHordeNight() && (normalizedTimeOfDay >= 22500 || normalizedTimeOfDay < 11000));
+        boolean allDayLong = (UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeNights().getAllDayLongHordeNights() && UndeadNights.serverState.getHordeNight() && (normalizedTimeOfDay >= 22500 || normalizedTimeOfDay < 11000));
 
         final RandomSource randomSource = level.random;
         int randomValue = 0;
@@ -323,7 +323,7 @@ public class HordeSpawner implements CustomSpawner {
         } else {
             if (UndeadNights.serverState.getHordeNight()) {
                 for (ServerPlayer player : level.getPlayers(LivingEntity::isAlive)) {
-                    if (!MainConfig.getAllDayLongHordeNights()) {
+                    if (!UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeNights().getAllDayLongHordeNights()) {
                         player.sendSystemMessage(Component.translatable("message.undeadnights.horde_night_over"));
                     } else {
                         player.sendSystemMessage(Component.translatable("message.undeadnights.horde_time_over"));
@@ -334,8 +334,8 @@ public class HordeSpawner implements CustomSpawner {
                     }
                 }
                 UndeadNights.serverState.setDaysCounter(UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeNights().getDaysBetweenHordeNights());
-                if (MainConfig.getMaxHordesPerHordeNight() != 0) {
-                    UndeadNights.serverState.setHordesCounter(MainConfig.getMaxHordesPerHordeNight() + 1);
+                if (UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeNights().getMaxHordesPerHordeNight() != 0) {
+                    UndeadNights.serverState.setHordesCounter(UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeNights().getMaxHordesPerHordeNight() + 1);
                 } else {
                     UndeadNights.serverState.setHordesCounter(0);
                 }

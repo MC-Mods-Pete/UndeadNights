@@ -1,8 +1,5 @@
 package net.petemc.undeadnights.config.difficulty;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class DifficultyLevel {
     private String difficultyName = null;//"Phase 1";
     private Integer minStartDay = null;
