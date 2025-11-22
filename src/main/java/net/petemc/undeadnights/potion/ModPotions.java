@@ -7,7 +7,6 @@ import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 import net.petemc.undeadnights.UndeadNights;
-import net.petemc.undeadnights.config.MainConfig;
 import net.petemc.undeadnights.effect.ModEffects;
 
 public class ModPotions {
@@ -16,6 +15,9 @@ public class ModPotions {
 
     public static final RegistryObject<Potion> LURE_HORDE_POTION = POTIONS.register("lure_horde_potion",
             () -> new Potion(new MobEffectInstance(ModEffects.LURE_HORDE.get(), UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsLureEffect().getDurationForLureHordeEffect() * 20, 0)));
+
+    public static final RegistryObject<Potion> STRONG_LURE_HORDE_POTION = POTIONS.register("strong_lure_horde_potion",
+            () -> new Potion(new MobEffectInstance(ModEffects.STRONG_LURE_HORDE.get(), UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsLureEffect().getDurationForLureHordeEffect() * 2 * 20, 0)));
 
     public static void register(IEventBus eventBus) {
         POTIONS.register(eventBus);

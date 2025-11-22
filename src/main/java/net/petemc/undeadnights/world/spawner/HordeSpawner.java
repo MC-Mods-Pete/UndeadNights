@@ -163,7 +163,8 @@ public class HordeSpawner implements CustomSpawner {
             for (var playerUUID : UndeadNights.serverState.entitiesWithReceivedHorde.stream().toList()) {
                 Entity entity = level.getEntity(playerUUID);
                 if (entity instanceof ServerPlayer serverPlayer) {
-                    if (!serverPlayer.hasEffect(ModEffects.LURE_HORDE.get())) {
+                    if (!serverPlayer.hasEffect(ModEffects.LURE_HORDE.get()) &&
+                            !serverPlayer.hasEffect(ModEffects.STRONG_LURE_HORDE.get())) {
                         UndeadNights.serverState.entitiesWithReceivedHorde.remove(playerUUID);
                     }
                 }

@@ -73,6 +73,7 @@ public class UndeadNights {
 		event.enqueueWork(() -> {
 			ModEntities.initModEntities();
 			PotionBrewing.addMix(Potions.AWKWARD, ModItems.SLIMY_ROTTEN_FLESH.get(), ModPotions.LURE_HORDE_POTION.get());
+            PotionBrewing.addMix(ModPotions.LURE_HORDE_POTION.get(), ModItems.SLIMY_ROTTEN_FLESH.get(), ModPotions.STRONG_LURE_HORDE_POTION.get());
 		});
 	}
 

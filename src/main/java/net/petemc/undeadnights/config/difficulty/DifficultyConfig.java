@@ -81,7 +81,8 @@ public class DifficultyConfig {
                             0.07,
                             60,
                             true,
-                            0.2));
+                            0.2,
+                            true));
 
     private int internalConfigVersion;
 
@@ -206,6 +207,7 @@ public class DifficultyConfig {
         difficultySettingsLureEffect.addProperty("durationForLureHordeEffect", lureEffectValues.getDurationForLureHordeEffect());
         difficultySettingsLureEffect.addProperty("lureHordeEffectSpawnsHorde", lureEffectValues.isLureHordeEffectSpawnsHorde());
         difficultySettingsLureEffect.addProperty("chanceForLureEffectToSpawnHorde", lureEffectValues.getChanceForLureEffectToSpawnHorde());
+        difficultySettingsLureEffect.addProperty("strongLureHordeEffectSpawnsHorde", lureEffectValues.isStrongLureHordeEffectSpawnsHorde());
         difficultyLevel.add("difficultySettingsLureEffect", difficultySettingsLureEffect);
         difficultyLevelArray.add(difficultyLevel);
 

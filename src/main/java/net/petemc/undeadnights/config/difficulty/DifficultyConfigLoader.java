@@ -78,7 +78,7 @@ public class DifficultyConfigLoader {
 
             if (UndeadNights.difficultyConfig.getDifficultyLevels().isEmpty()) {
                 UndeadNights.LOGGER.warn("The difficulty config contains no difficulty levels. Please add at least one difficulty level.");
-            } else if (UndeadNights.difficultyConfig.getDifficultyLevels().size() > 1) {
+            } else { //if (UndeadNights.difficultyConfig.getDifficultyLevels().size() >= 1) {
                 for (int i = 0; UndeadNights.difficultyConfig.getDifficultyLevels().size() > i; i++) {
                     DifficultyLevel sourceDifficultyLevel;
                     if (i == 0) {
@@ -88,7 +88,7 @@ public class DifficultyConfigLoader {
                     }
                     DifficultyLevel targetDifficultyLevel = UndeadNights.difficultyConfig.getDifficultyLevels().get(i);
 
-                    targetDifficultyLevel.setDifficultyName(targetDifficultyLevel.getDifficultyName() == null ? "Phase " + (i) + "..." : targetDifficultyLevel.getDifficultyName());
+                    targetDifficultyLevel.setDifficultyName(targetDifficultyLevel.getDifficultyName() == null ? "Level " + (i) + "..." : targetDifficultyLevel.getDifficultyName());
                     targetDifficultyLevel.setMinStartDay(targetDifficultyLevel.getMinStartDay() == null ? sourceDifficultyLevel.getMinStartDay() : targetDifficultyLevel.getMinStartDay());
                     targetDifficultyLevel.setMaxStartDay(targetDifficultyLevel.getMaxStartDay() == null ? sourceDifficultyLevel.getMaxStartDay() : targetDifficultyLevel.getMaxStartDay());
                     targetDifficultyLevel.setChanceForDifficultyLevelSwitch(targetDifficultyLevel.getChanceForDifficultyLevelSwitch() == null ? sourceDifficultyLevel.getChanceForDifficultyLevelSwitch() : targetDifficultyLevel.getChanceForDifficultyLevelSwitch());
@@ -146,6 +146,7 @@ public class DifficultyConfigLoader {
                         settingsLureEffect.setDurationForLureHordeEffect(settingsLureEffect.getDurationForLureHordeEffect() == null ? lowerSettingsLureEffect.getDurationForLureHordeEffect() : settingsLureEffect.getDurationForLureHordeEffect());
                         settingsLureEffect.setLureHordeEffectSpawnsHorde(settingsLureEffect.isLureHordeEffectSpawnsHorde() == null ? lowerSettingsLureEffect.isLureHordeEffectSpawnsHorde() : settingsLureEffect.isLureHordeEffectSpawnsHorde());
                         settingsLureEffect.setChanceForLureEffectToSpawnHorde(settingsLureEffect.getChanceForLureEffectToSpawnHorde() == null ? lowerSettingsLureEffect.getChanceForLureEffectToSpawnHorde() : settingsLureEffect.getChanceForLureEffectToSpawnHorde());
+                        settingsLureEffect.setStrongLureHordeEffectSpawnsHorde(settingsLureEffect.isStrongLureHordeEffectSpawnsHorde() == null ? lowerSettingsLureEffect.isStrongLureHordeEffectSpawnsHorde() : settingsLureEffect.isStrongLureHordeEffectSpawnsHorde());
                     }
                 }
             }

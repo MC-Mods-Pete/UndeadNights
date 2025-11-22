@@ -12,8 +12,13 @@
   "item.minecraft.splash_potion.effect.lure_horde_potion": "Wurftrank der Horden-Anlockung",
   "item.minecraft.lingering_potion.effect.lure_horde_potion": "Verweiltrank der Horden-Anlockung",
   "item.minecraft.tipped_arrow.effect.lure_horde_potion": "Pfeil der Horden-Anlockung",
+  "item.minecraft.potion.effect.strong_lure_horde_potion": "Starker Horden-Anlocktrank",
+  "item.minecraft.splash_potion.effect.strong_lure_horde_potion": "Wurftrank der starken Horden-Anlockung",
+  "item.minecraft.lingering_potion.effect.strong_lure_horde_potion": "Verweiltrank der starken Horden-Anlockung",
+  "item.minecraft.tipped_arrow.effect.strong_lure_horde_potion": "Pfeil der starken Horden-Anlockung",
 
   "effect.undeadnights.lure_horde": "Horden-Anlockung",
+  "effect.undeadnights.strong_lure_horde": "Starke Horden-Anlockung",
 
   "message.undeadnights.days_of_grace_remaining": "%s Tage Schonfrist verbleiben!",
   "message.undeadnights.nights_remaining": "%s Nächte verbleiben, bis zur nächsten Nacht der Untoten!",

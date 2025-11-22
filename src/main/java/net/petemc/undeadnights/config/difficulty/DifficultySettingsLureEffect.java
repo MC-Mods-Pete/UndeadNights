@@ -7,18 +7,20 @@ public class DifficultySettingsLureEffect {
     private Integer durationForLureHordeEffect = null;
     private Boolean lureHordeEffectSpawnsHorde = null;
     private Double chanceForLureEffectToSpawnHorde = null;
+    private Boolean strongLureHordeEffectSpawnsHorde = null;
 
     public DifficultySettingsLureEffect() {
         // Empty constructor
     }
 
-    public DifficultySettingsLureEffect(Boolean enableLureHordeEffect, Boolean nonHordeZombiesCanCauseLureHordeEffect, Double chanceForLureHordeEffect, Integer durationForLureHordeEffect, Boolean lureHordeEffectSpawnsHorde, Double chanceForLureEffectToSpawnHorde) {
+    public DifficultySettingsLureEffect(Boolean enableLureHordeEffect, Boolean nonHordeZombiesCanCauseLureHordeEffect, Double chanceForLureHordeEffect, Integer durationForLureHordeEffect, Boolean lureHordeEffectSpawnsHorde, Double chanceForLureEffectToSpawnHorde, Boolean strongLureHordeEffectSpawnsHorde) {
         this.enableLureHordeEffect = enableLureHordeEffect;
         this.nonHordeZombiesCanCauseLureHordeEffect = nonHordeZombiesCanCauseLureHordeEffect;
         this.chanceForLureHordeEffect = chanceForLureHordeEffect;
         this.durationForLureHordeEffect = durationForLureHordeEffect;
         this.lureHordeEffectSpawnsHorde = lureHordeEffectSpawnsHorde;
         this.chanceForLureEffectToSpawnHorde = chanceForLureEffectToSpawnHorde;
+        this.strongLureHordeEffectSpawnsHorde = strongLureHordeEffectSpawnsHorde;
     }
     
     public Boolean isEnableLureHordeEffect() { return enableLureHordeEffect; }
@@ -38,4 +40,7 @@ public class DifficultySettingsLureEffect {
 
     public Double getChanceForLureEffectToSpawnHorde() { return chanceForLureEffectToSpawnHorde; }
     public void setChanceForLureEffectToSpawnHorde(Double chanceForLureEffectToSpawnHorde) { this.chanceForLureEffectToSpawnHorde = chanceForLureEffectToSpawnHorde; }
+
+    public Boolean isStrongLureHordeEffectSpawnsHorde() { return strongLureHordeEffectSpawnsHorde; }
+    public void setStrongLureHordeEffectSpawnsHorde(Boolean strongLureHordeEffectSpawnsHorde) { this.strongLureHordeEffectSpawnsHorde = strongLureHordeEffectSpawnsHorde; }
 }
