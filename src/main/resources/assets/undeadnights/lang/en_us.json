@@ -75,6 +75,8 @@
   "text.autoconfig.undeadnights.option.maxBlockLightLevelForMonsterSpawns.@Tooltip": "Maximum block light level so a monster can spawn | default: 0",
   "text.autoconfig.undeadnights.option.hordeNightsDisableSleeping": "Prevent players from sleeping through horde nights",
   "text.autoconfig.undeadnights.option.hordeNightsDisableSleeping.@Tooltip": "If enabled, Players can't sleep through horde nights | default: enabled",
+  "text.autoconfig.undeadnights.option.preventDespawnWhenInsideMaxTrackingRange": "Prevent horde mobs from despawning when inside max tracking range",
+  "text.autoconfig.undeadnights.option.preventDespawnWhenInsideMaxTrackingRange.@Tooltip": "If enabled, horde mobs will not despawn when inside their max tracking range | default: enabled",
   "text.autoconfig.undeadnights.option.persistentMobs": "Make the horde mobs persistent",
   "text.autoconfig.undeadnights.option.persistentMobs.@Tooltip": "If enabled, the horde mobs will be persistent and not despawn | default: disabled",
   "text.autoconfig.undeadnights.option.hordeZombiesBurnInDaylight": "Will horde zombies burn in daylight",

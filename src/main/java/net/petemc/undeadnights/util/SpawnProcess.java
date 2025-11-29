@@ -331,7 +331,7 @@ public class SpawnProcess {
             if (MainConfig.getPrintDebugMessages()) {
                 UndeadNights.LOGGER.info("Player {} is in cave, attempting to spawn horde mob in cave.", player.getName().getString());
             }
-            pos = Helpers.findSpawnablePosition(level, pos, 8, 5);
+            pos = SpawnLocationFinder.findSpawnablePosition(level, pos, 8, 5);
         } else {
             if (MainConfig.getPrintDebugMessages()) {
                 UndeadNights.LOGGER.info("Player {} is not in cave, attempting to spawn horde mob on surface.", player.getName().getString());
@@ -339,9 +339,10 @@ public class SpawnProcess {
             pos = SpawnLocationFinder.findNearbySurfaceSpawnPosition(level, pos, randomSource, playerInCave);
         }
 
+        Double trackingRange = mobSpawnData.trackingRange() != 0.0 ? mobSpawnData.trackingRange() : UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeMobs().getHordeMobsTrackingRange();
         BlockPos finalPos = pos;
         if (MainConfig.getPrintDebugMessages()) {
-            UndeadNights.LOGGER.info("Spawning horde mob {} at position {}, {}, {}", mobSpawnData.mobId(), finalPos.getX(), finalPos.getY(), finalPos.getZ());
+            UndeadNights.LOGGER.info("Spawning horde mob {} at position {}, {}, {} with TrackingRange: {}", mobSpawnData.mobId(), finalPos.getX(), finalPos.getY(), finalPos.getZ(), trackingRange);
         }
         Entity entity = EntityType.loadEntityRecursive(nbtCompound, level, entityX -> {
             entityX.moveTo(finalPos.getX(),finalPos.getY(),finalPos.getZ(), entityX.getYRot(), entityX.getXRot());
@@ -386,11 +387,13 @@ public class SpawnProcess {
                     mob.goalSelector.addGoal(1, new BreakBlockGoal((Zombie) mob));
                 }
 
+                Objects.requireNonNull(mob.getAttribute(Attributes.FOLLOW_RANGE)).setBaseValue(trackingRange);
+
                 if ((!mobSpawnData.mobId().equals("undeadnights:horde_zombie")) &&
                         (!mobSpawnData.mobId().equals("undeadnights:elite_zombie")) &&
                         (!mobSpawnData.mobId().equals("undeadnights:demolition_zombie"))) {
                     mob.targetSelector.addGoal(1, new NearestAttackableTargetGoal<>(mob, Player.class, false, false));
-                    Objects.requireNonNull(mob.getAttribute(Attributes.FOLLOW_RANGE)).setBaseValue(128.0f);
+
 
                     int playerCount = 1;
                     if (!mob.level().isClientSide) {

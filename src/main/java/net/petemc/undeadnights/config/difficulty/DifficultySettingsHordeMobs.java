@@ -7,6 +7,7 @@ public class DifficultySettingsHordeMobs {
     private Double damageAttributeScaleFactor = null;
     private Double speedAttributeScaleFactor = null;
     private Double armorAttributeScaleFactor = null;
+    private Double hordeMobsTrackingRange = null;
     private Boolean hordeZombiesBurnInTheSun = null;
     private Boolean vanillaZombiesBurnInTheSun = null;
     private Boolean hordeZombiesAreFasterOnWater = null;
@@ -32,6 +33,9 @@ public class DifficultySettingsHordeMobs {
     public Double getArmorAttributeScaleFactor() { return armorAttributeScaleFactor; }
     public void setArmorAttributeScaleFactor(Double armorAttributeScaleFactor) { this.armorAttributeScaleFactor = armorAttributeScaleFactor; }
 
+    public Double getHordeMobsTrackingRange() { return hordeMobsTrackingRange; }
+    public void setHordeMobsTrackingRange(Double hordeMobsTrackingRange) { this.hordeMobsTrackingRange = hordeMobsTrackingRange; }
+
     public Boolean isHordeZombiesBurnInTheSun() { return hordeZombiesBurnInTheSun; }
     public void setHordeZombiesBurnInTheSun(Boolean hordeZombiesBurnInTheSun) { this.hordeZombiesBurnInTheSun = hordeZombiesBurnInTheSun; }
 
@@ -54,13 +58,14 @@ public class DifficultySettingsHordeMobs {
         // Empty constructor
     }
 
-    public DifficultySettingsHordeMobs(Boolean updateHordeMobAttributes, Boolean updateAttributesOfThirdPartyMobs, Double healthAttributeScaleFactor, Double damageAttributeScaleFactor, Double speedAttributeScaleFactor, Double armorAttributeScaleFactor, Boolean hordeZombiesBurnInTheSun, Boolean vanillaZombiesBurnInTheSun, Boolean hordeZombiesAreFasterOnWater, Boolean hordeMobsCanClimbEachOther, Boolean blockBreaking, Integer blockBreakingTier) {
+    public DifficultySettingsHordeMobs(Boolean updateHordeMobAttributes, Boolean updateAttributesOfThirdPartyMobs, Double healthAttributeScaleFactor, Double damageAttributeScaleFactor, Double speedAttributeScaleFactor, Double armorAttributeScaleFactor, Double hordeMobsTrackingRange, Boolean hordeZombiesBurnInTheSun, Boolean vanillaZombiesBurnInTheSun, Boolean hordeZombiesAreFasterOnWater, Boolean hordeMobsCanClimbEachOther, Boolean blockBreaking, Integer blockBreakingTier) {
         this.updateHordeMobAttributes = updateHordeMobAttributes;
         this.updateAttributesOfThirdPartyMobs = updateAttributesOfThirdPartyMobs;
         this.healthAttributeScaleFactor = healthAttributeScaleFactor;
         this.damageAttributeScaleFactor = damageAttributeScaleFactor;
         this.speedAttributeScaleFactor = speedAttributeScaleFactor;
         this.armorAttributeScaleFactor = armorAttributeScaleFactor;
+        this.hordeMobsTrackingRange = hordeMobsTrackingRange;
         this.hordeZombiesBurnInTheSun = hordeZombiesBurnInTheSun;
         this.vanillaZombiesBurnInTheSun = vanillaZombiesBurnInTheSun;
         this.hordeZombiesAreFasterOnWater = hordeZombiesAreFasterOnWater;

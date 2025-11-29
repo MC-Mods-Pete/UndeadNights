@@ -8,6 +8,7 @@ public class DifficultySettingsHordeNights {
     private Integer chanceForAdditionalWave = null;
     private Boolean allDayLongHordeNights = null;
     private Integer maxHordesPerHordeNight = null;
+    private Integer numberOfPlayersToGetHordePerHordeEvent = null;
 
     public Integer getDaysBetweenHordeNights() { return daysBetweenHordeNights; }
     public void setDaysBetweenHordeNights(Integer daysBetweenHordeNights) { this.daysBetweenHordeNights = daysBetweenHordeNights; }
@@ -30,11 +31,14 @@ public class DifficultySettingsHordeNights {
     public Integer getMaxHordesPerHordeNight() { return maxHordesPerHordeNight; }
     public void setMaxHordesPerHordeNight(Integer maxHordesPerHordeNight) { this.maxHordesPerHordeNight = maxHordesPerHordeNight; }
 
+    public Integer getNumberOfPlayersToGetHordePerHordeEvent() { return numberOfPlayersToGetHordePerHordeEvent; }
+    public void setNumberOfPlayersToGetHordePerHordeEvent(Integer numberOfPlayersToGetHordePerHordeEvent) { this.numberOfPlayersToGetHordePerHordeEvent = numberOfPlayersToGetHordePerHordeEvent; }
+
     public DifficultySettingsHordeNights() {
         // Empty constructor
     }
 
-    public DifficultySettingsHordeNights(Integer daysBetweenHordeNights, Integer chanceForHordeNight, Boolean spawnAdditionalWaves, Integer cooldownBetweenWaves, Integer chanceForAdditionalWave, Boolean allDayLongHordeNights, Integer maxHordesPerHordeNight) {
+    public DifficultySettingsHordeNights(Integer daysBetweenHordeNights, Integer chanceForHordeNight, Boolean spawnAdditionalWaves, Integer cooldownBetweenWaves, Integer chanceForAdditionalWave, Boolean allDayLongHordeNights, Integer maxHordesPerHordeNight, Integer numberOfPlayersToGetHordePerHordeEvent) {
         this.daysBetweenHordeNights = daysBetweenHordeNights;
         this.chanceForHordeNight = chanceForHordeNight;
         this.spawnAdditionalWaves = spawnAdditionalWaves;
@@ -42,5 +46,6 @@ public class DifficultySettingsHordeNights {
         this.chanceForAdditionalWave = chanceForAdditionalWave;
         this.allDayLongHordeNights = allDayLongHordeNights;
         this.maxHordesPerHordeNight = maxHordesPerHordeNight;
+        this.numberOfPlayersToGetHordePerHordeEvent = numberOfPlayersToGetHordePerHordeEvent;
     }
 }

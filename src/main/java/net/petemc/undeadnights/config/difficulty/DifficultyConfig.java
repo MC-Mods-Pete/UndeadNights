@@ -55,6 +55,7 @@ public class DifficultyConfig {
                             1.0,
                             1.0,
                             1.0,
+                            128.0,
                             false,
                             true,
                             false,
@@ -68,7 +69,8 @@ public class DifficultyConfig {
                             45,
                             7,
                             false,
-                            0),
+                            0,
+                            5),
                     new DifficultySettingsHordes(
                             false,
                             15,
@@ -166,6 +168,7 @@ public class DifficultyConfig {
         difficultySettingsHordeNights.addProperty("chanceForAdditionalWave", hordeNightsValues.getChanceForAdditionalWave());
         difficultySettingsHordeNights.addProperty("allDayLongHordeNights", hordeNightsValues.getAllDayLongHordeNights());
         difficultySettingsHordeNights.addProperty("maxHordesPerHordeNight", hordeNightsValues.getMaxHordesPerHordeNight());
+        difficultySettingsHordeNights.addProperty("numberOfPlayersToGetHordePerHordeEvent", hordeNightsValues.getNumberOfPlayersToGetHordePerHordeEvent());
         difficultyLevel.add("difficultySettingsHordeNights", difficultySettingsHordeNights);
 
         DifficultySettingsHordeMobs hordeMobsValues = defaultDifficultyLevelValues.getDifficultySettingsHordeMobs();
@@ -176,6 +179,7 @@ public class DifficultyConfig {
         difficultySettingsHordeMobs.addProperty("damageAttributeScaleFactor", hordeMobsValues.getDamageAttributeScaleFactor());
         difficultySettingsHordeMobs.addProperty("speedAttributeScaleFactor", hordeMobsValues.getSpeedAttributeScaleFactor());
         difficultySettingsHordeMobs.addProperty("armorAttributeScaleFactor", hordeMobsValues.getArmorAttributeScaleFactor());
+        difficultySettingsHordeMobs.addProperty("hordeMobsTrackingRange", hordeMobsValues.getHordeMobsTrackingRange());
         difficultySettingsHordeMobs.addProperty("hordeZombiesBurnInTheSun", hordeMobsValues.isHordeZombiesBurnInTheSun());
         difficultySettingsHordeMobs.addProperty("vanillaZombiesBurnInTheSun", hordeMobsValues.isVanillaZombiesBurnInTheSun());
         difficultySettingsHordeMobs.addProperty("hordeZombiesAreFasterOnWater", hordeMobsValues.isHordeZombiesAreFasterOnWater());

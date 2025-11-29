@@ -75,6 +75,8 @@
   "text.autoconfig.undeadnights.option.maxBlockLightLevelForMonsterSpawns.@Tooltip": "Maximaler Block-Lichtlevel, damit ein Monster spawnen kann | Standard: 0",
   "text.autoconfig.undeadnights.option.hordeNightsDisableSleeping": "Spieler können Horden-Nächte nicht verschlafen",
   "text.autoconfig.undeadnights.option.hordeNightsDisableSleeping.@Tooltip": "Wenn aktiviert, können Spieler Horden-Nächte nicht verschlafen | Standard: aktiviert",
+  "text.autoconfig.undeadnights.option.preventDespawnWhenInsideMaxTrackingRange": "Verhindere Despawn von Horden-Mobs innerhalb der maximalen Tracking-Reichweite",
+  "text.autoconfig.undeadnights.option.preventDespawnWhenInsideMaxTrackingRange.@Tooltip": "Wenn aktiviert, despawnen Horden-Mobs nicht, wenn sich ein Spieler innerhalb der maximalen Tracking-Reichweite befindet | Standard: aktiviert",
   "text.autoconfig.undeadnights.option.persistentMobs": "Horden-Mobs sind persistent",
   "text.autoconfig.undeadnights.option.persistentMobs.@Tooltip": "Wenn aktiviert, sind Horden-Mobs persistent und despawnen nicht | Standard: deaktiviert",
   "text.autoconfig.undeadnights.option.hordeZombiesBurnInDaylight": "Horden-Zombies verbrennen bei Tageslicht",

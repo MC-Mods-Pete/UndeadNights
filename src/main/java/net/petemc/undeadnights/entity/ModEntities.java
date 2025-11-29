@@ -34,9 +34,9 @@ public class ModEntities {
 
 
     public static void initModEntities() {
-        HordeZombieEntity.init();
-        EliteZombieEntity.init();
-        DemolitionZombieEntity.init();
+        HordeZombieEntity.initSpawnConditions();
+        EliteZombieEntity.initSpawnConditions();
+        DemolitionZombieEntity.initSpawnConditions();
     }
 
     public static void register(IEventBus eventBus) {

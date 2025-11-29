@@ -265,7 +265,7 @@ public class HordeSpawner implements CustomSpawner {
                         if (!SpawnLocationFinder.checkSpawnLocation(level, pos.getX(), pos.getY() - 1, pos.getZ())) {
                             return 0;
                         } else {
-                            SpawnProcess.spawnHordeMob(level, randomSource, pos, player, new HordeConfig.MobSpawnData("undeadnights:horde_zombie",100, 0, 0, "none", ""));
+                            SpawnProcess.spawnHordeMob(level, randomSource, pos, player, new HordeConfig.MobSpawnData("undeadnights:horde_zombie",100, 0, 0, UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeMobs().getHordeMobsTrackingRange(), "none", ""));
                             if (MainConfig.getPrintDebugMessages()) {
                                 UndeadNights.LOGGER.info("A stray horde zombie spawned!");
                             }
@@ -301,7 +301,17 @@ public class HordeSpawner implements CustomSpawner {
                         return 0;
                     }
                 }
-                for (ServerPlayer player : level.getPlayers(LivingEntity::isAlive)) {
+                int playerWithHordes = UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeNights().getNumberOfPlayersToGetHordePerHordeEvent();
+                boolean allPlayersGetHordes = (playerWithHordes == 0);
+                List<ServerPlayer> players = level.getPlayers(LivingEntity::isAlive);
+                Collections.shuffle(players);
+                for (ServerPlayer player : players) {
+                    if (!allPlayersGetHordes) {
+                        if (playerWithHordes == 0) {
+                            break;
+                        }
+                        playerWithHordes--;
+                    }
                     UndeadNights.serverState.entitiesWithPendingHorde.add(player.getUUID());
                     UndeadNights.serverState.entitiesWithPendingWave.add(player.getUUID());
                     UndeadNights.serverState.entitiesWithReceivedHorde.remove(player.getUUID());

@@ -104,6 +104,7 @@ public class DifficultyConfigLoader {
                         settingsHordeMobs.setDamageAttributeScaleFactor(settingsHordeMobs.getDamageAttributeScaleFactor() == null ? lowerSettingsHordeMobs.getDamageAttributeScaleFactor() : settingsHordeMobs.getDamageAttributeScaleFactor());
                         settingsHordeMobs.setSpeedAttributeScaleFactor(settingsHordeMobs.getSpeedAttributeScaleFactor() == null ? lowerSettingsHordeMobs.getSpeedAttributeScaleFactor() : settingsHordeMobs.getSpeedAttributeScaleFactor());
                         settingsHordeMobs.setArmorAttributeScaleFactor(settingsHordeMobs.getArmorAttributeScaleFactor() == null ? lowerSettingsHordeMobs.getArmorAttributeScaleFactor() : settingsHordeMobs.getArmorAttributeScaleFactor());
+                        settingsHordeMobs.setHordeMobsTrackingRange(settingsHordeMobs.getHordeMobsTrackingRange() == null ? lowerSettingsHordeMobs.getHordeMobsTrackingRange() : settingsHordeMobs.getHordeMobsTrackingRange());
                         settingsHordeMobs.setHordeZombiesBurnInTheSun(settingsHordeMobs.isHordeZombiesBurnInTheSun() == null ? lowerSettingsHordeMobs.isHordeZombiesBurnInTheSun() : settingsHordeMobs.isHordeZombiesBurnInTheSun());
                         settingsHordeMobs.setVanillaZombiesBurnInTheSun(settingsHordeMobs.isVanillaZombiesBurnInTheSun() == null ? lowerSettingsHordeMobs.isVanillaZombiesBurnInTheSun() : settingsHordeMobs.isVanillaZombiesBurnInTheSun());
                         settingsHordeMobs.setHordeZombiesAreFasterOnWater(settingsHordeMobs.isHordeZombiesAreFasterOnWater() == null ? lowerSettingsHordeMobs.isHordeZombiesAreFasterOnWater() : settingsHordeMobs.isHordeZombiesAreFasterOnWater());
@@ -123,6 +124,7 @@ public class DifficultyConfigLoader {
                         settingsHordeNights.setChanceForAdditionalWave(settingsHordeNights.getChanceForAdditionalWave() == null ? lowerSettingsHordeNights.getChanceForAdditionalWave() : settingsHordeNights.getChanceForAdditionalWave());
                         settingsHordeNights.setAllDayLongHordeNights(settingsHordeNights.getAllDayLongHordeNights() == null ? lowerSettingsHordeNights.getAllDayLongHordeNights() : settingsHordeNights.getAllDayLongHordeNights());
                         settingsHordeNights.setMaxHordesPerHordeNight(settingsHordeNights.getMaxHordesPerHordeNight() == null ? lowerSettingsHordeNights.getMaxHordesPerHordeNight() : settingsHordeNights.getMaxHordesPerHordeNight());
+                        settingsHordeNights.setNumberOfPlayersToGetHordePerHordeEvent(settingsHordeNights.getNumberOfPlayersToGetHordePerHordeEvent() == null ? lowerSettingsHordeNights.getNumberOfPlayersToGetHordePerHordeEvent() : settingsHordeNights.getNumberOfPlayersToGetHordePerHordeEvent());
                     }
                     if (targetDifficultyLevel.getDifficultySettingsHordes() == null) {
                         targetDifficultyLevel.setDifficultySettingsHordes(sourceDifficultyLevel.getDifficultySettingsHordes());

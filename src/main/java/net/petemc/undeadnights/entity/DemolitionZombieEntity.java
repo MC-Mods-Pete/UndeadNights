@@ -28,6 +28,7 @@ import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.petemc.undeadnights.UndeadNights;
+import net.petemc.undeadnights.config.HordeConfig;
 import net.petemc.undeadnights.config.MainConfig;
 import net.petemc.undeadnights.entity.ai.goal.TntIgniteAndThrowGoal;
 import org.jetbrains.annotations.NotNull;
@@ -45,27 +46,26 @@ public class DemolitionZombieEntity extends Zombie  {
 
     @Nullable
     @Override
-    public SpawnGroupData finalizeSpawn(ServerLevelAccessor level, @NotNull DifficultyInstance difficulty, @NotNull MobSpawnType mobSpawnType, @Nullable SpawnGroupData spawnGroupData, @Nullable CompoundTag compoundTag) {
-        RandomSource randomsource = level.getRandom();
+    public SpawnGroupData finalizeSpawn(@NotNull ServerLevelAccessor level, @NotNull DifficultyInstance difficulty, @NotNull MobSpawnType mobSpawnType, @Nullable SpawnGroupData spawnGroupData, @Nullable CompoundTag compoundTag) {
         spawnGroupData = super.finalizeSpawn(level, difficulty, mobSpawnType, spawnGroupData, compoundTag);
         float f = difficulty.getSpecialMultiplier();
-        this.setCanPickUpLoot(randomsource.nextFloat() < 0.55F * f);
+        this.setCanPickUpLoot(random.nextFloat() < 0.55F * f);
         if (spawnGroupData == null) {
             spawnGroupData = new ZombieGroupData(false, false);
         }
 
         if (spawnGroupData instanceof ZombieGroupData) {
             this.setCanBreakDoors(true);
-            this.populateDefaultEquipmentSlots(randomsource, difficulty);
-            this.populateDefaultEquipmentEnchantments(randomsource, difficulty);
+            this.populateDefaultEquipmentSlots(random, difficulty);
+            this.populateDefaultEquipmentEnchantments(random, difficulty);
         }
 
         if (this.getItemBySlot(EquipmentSlot.HEAD).isEmpty()) {
             LocalDate localdate = LocalDate.now();
             int i = localdate.getDayOfMonth();
             int j = localdate.getMonth().getValue();
-            if (j == 10 && i == 31 && randomsource.nextFloat() < 0.25F) {
-                this.setItemSlot(EquipmentSlot.HEAD, new ItemStack(randomsource.nextFloat() < 0.1F ? Blocks.JACK_O_LANTERN : Blocks.CARVED_PUMPKIN));
+            if (j == 10 && i == 31 && random.nextFloat() < 0.25F) {
+                this.setItemSlot(EquipmentSlot.HEAD, new ItemStack(random.nextFloat() < 0.1F ? Blocks.JACK_O_LANTERN : Blocks.CARVED_PUMPKIN));
                 this.armorDropChances[EquipmentSlot.HEAD.getIndex()] = 0.0F;
             }
         }
@@ -113,7 +113,6 @@ public class DemolitionZombieEntity extends Zombie  {
             Objects.requireNonNull(this.getAttribute(Attributes.ARMOR)).addPermanentModifier(new AttributeModifier("Demolition zombie difficulty armor bonus", UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeMobs().getArmorAttributeScaleFactor() - 1.0 + armorScaleFactor, AttributeModifier.Operation.MULTIPLY_BASE));
         }
 
-
         this.handleAttributes(f);
         this.setHealth(this.getMaxHealth());
         this.setBaby(false);
@@ -122,8 +121,7 @@ public class DemolitionZombieEntity extends Zombie  {
 
     public static AttributeSupplier.@NotNull Builder createAttributes() {
         return Monster.createMonsterAttributes()
-                //.add(Attributes.MAX_HEALTH, 40.0D)          // default 20.F
-                .add(Attributes.FOLLOW_RANGE, 128.0D)       // default 35.0D
+                .add(Attributes.FOLLOW_RANGE, UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeMobs().getHordeMobsTrackingRange())       // default 35.0D
                 .add(Attributes.MOVEMENT_SPEED, 0.30D)      // default 0.23F
                 .add(Attributes.ATTACK_DAMAGE, 5.0D)        // default 3.0
                 .add(Attributes.ARMOR, 4.0D)                // default 2.0
@@ -142,18 +140,8 @@ public class DemolitionZombieEntity extends Zombie  {
         this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, false, false));
         this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, AbstractVillager.class, true));
         this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, IronGolem.class, true));
-    }
-
-    @Override
-    public boolean hurt(@NotNull DamageSource pSource, float pAmount) {
-        if (this.isOnFire()) {
-            Level level = this.level();
-            BlockPos pos = this.blockPosition();
-            this.remove(RemovalReason.KILLED);
-            level.explode(this, pos.getX(), pos.getY(), pos.getZ(), 5, true, Level.ExplosionInteraction.TNT);
-            return true;
-        }
-        return super.hurt(pSource, pAmount);
+        this.targetSelector.addGoal(4, new NearestAttackableTargetGoal<>(this, LivingEntity.class, true,
+                (entity) -> (HordeConfig.getTargetEntities().contains(entity.getType().toString()))));
     }
 
     @Override
@@ -243,6 +231,18 @@ public class DemolitionZombieEntity extends Zombie  {
         Objects.requireNonNull(this.getAttribute(Attributes.SPAWN_REINFORCEMENTS_CHANCE)).setBaseValue((double)0.0F);
     }
 
+    @Override
+    public boolean hurt(@NotNull DamageSource pSource, float pAmount) {
+        if (this.isOnFire()) {
+            Level level = this.level();
+            BlockPos pos = this.blockPosition();
+            this.remove(RemovalReason.KILLED);
+            level.explode(this, pos.getX(), pos.getY(), pos.getZ(), 5, true, Level.ExplosionInteraction.TNT);
+            return true;
+        }
+        return super.hurt(pSource, pAmount);
+    }
+
     public void setNumberTnt(int value) {
         this.numberTnt = value;
     }
@@ -251,7 +251,7 @@ public class DemolitionZombieEntity extends Zombie  {
         return this.numberTnt;
     }
 
-    public static void init() {
+    public static void initSpawnConditions() {
         SpawnPlacements.register(ModEntities.DEMOLITION_ZOMBIE.get(), SpawnPlacements.Type.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
                 (entityType, serverLevel, reason, pos, random) ->
                         MainConfig.getDemolitionZombiesSpawnNaturally()

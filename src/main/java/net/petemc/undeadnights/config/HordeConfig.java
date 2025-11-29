@@ -89,7 +89,7 @@ public class HordeConfig {
                         targetEntities.add("entity." + target);
                     }
                 } catch (Exception e) {
-                    UndeadNights.LOGGER.info("------ No target entities specified, defaulting to all players ------");
+                    UndeadNights.LOGGER.info("No target entities specified in horde mob config, no additional entities will be targeted.");
                     targetEntities.clear();
                 }
                 if (configVariant == 1) {
@@ -100,6 +100,12 @@ public class HordeConfig {
                         dimension = "minecraft:overworld";
                     }
                     String defaultMobId = json.get("defaultMobId").getAsString();
+                    Double defaultMobTrackingRange = null;
+                    try {
+                        defaultMobTrackingRange = json.get("defaultMobTrackingRange").getAsDouble();
+                    } catch (Exception e) {
+                        defaultMobTrackingRange = 0.0;
+                    }
                     String defaultMobExtraInfo = null;
                     try {
                         defaultMobExtraInfo = json.get("extraSpawnInfo").getAsString();
@@ -112,7 +118,7 @@ public class HordeConfig {
                     } catch (Exception e) {
                         nbt = "";
                     }
-                    defaultHordeMob = new MobSpawnData(defaultMobId, 100, 0, 0, defaultMobExtraInfo, nbt);
+                    defaultHordeMob = new MobSpawnData(defaultMobId, 100, 0, 0, defaultMobTrackingRange, defaultMobExtraInfo, nbt);
                     UndeadNights.LOGGER.info("Default horde mob {} was read from config.", defaultMobId);
 
                     hordeMobs.clear();
@@ -121,6 +127,12 @@ public class HordeConfig {
                         JsonObject mobObj = mobsArray.get(i).getAsJsonObject();
                         String mobId = mobObj.get("mobId").getAsString();
                         int mobChance = mobObj.get("spawnChance").getAsInt();
+                        Double mobTrackingRange = null;
+                        try {
+                            mobTrackingRange = mobObj.get("mobTrackingRange").getAsDouble();
+                        } catch (Exception e) {
+                            mobTrackingRange = 0.0;
+                        }
                         String mobExtraInfo = null;
                         try {
                             mobExtraInfo = mobObj.get("extraSpawnInfo").getAsString();
@@ -133,7 +145,7 @@ public class HordeConfig {
                             nbt = "";
                         }
                         UndeadNights.LOGGER.info("Horde mob {} with chance {}% was read from config.", mobId, mobChance);
-                        hordeMobs.add(new MobSpawnData(mobId, mobChance, 0, 0, mobExtraInfo, nbt));
+                        hordeMobs.add(new MobSpawnData(mobId, mobChance, 0, 0, mobTrackingRange, mobExtraInfo, nbt));
                     }
                     numberOfHordes = 1;
                     defaultHorde = 1;
@@ -165,6 +177,12 @@ public class HordeConfig {
                             } catch (Exception e) {
                                 mobChance = 100;
                             }
+                            Double mobTrackingRange = null;
+                            try {
+                                mobTrackingRange = mobObj.get("mobTrackingRange").getAsDouble();
+                            } catch (Exception e) {
+                                mobTrackingRange = 0.0;
+                            }
                             String nbt = null;
                             try {
                                 nbt = mobObj.get("nbtTags").getAsString();
@@ -180,7 +198,7 @@ public class HordeConfig {
                                 mobExtraInfo = "none";
                             }
                             UndeadNights.LOGGER.info("Horde mob {} with count range {}-{} was read from config.", mobId, mobCountMin, mobCountMax);
-                            subHorde.add(new MobSpawnData(mobId, mobChance, mobCountMin, mobCountMax, mobExtraInfo, nbt));
+                            subHorde.add(new MobSpawnData(mobId, mobChance, mobCountMin, mobCountMax, mobTrackingRange, mobExtraInfo, nbt));
                         }
                         hordes.add(new HordesData(j+1, hordeName, dimension, subHorde));
                     }
@@ -199,7 +217,7 @@ public class HordeConfig {
             UndeadNights.LOGGER.error("Reading horde mob config file {} failed with error: {}", CONFIG_FILE, errorMessage);
             configVariant = 1;
             maxWaveSize = 15;
-            defaultHordeMob = new MobSpawnData("undeadnights:horde_zombie", 100, 0, 0, "none", "");
+            defaultHordeMob = new MobSpawnData("undeadnights:horde_zombie", 100, 0, 0, 0.0, "none", "");
             UndeadNights.LOGGER.info("Horde config file will be ignored, a wave of {} {} will be spawned\nPlease check: https://github.com/MC-Mods-Pete/UndeadNights/wiki", maxWaveSize, defaultHordeMob.mobId);
             hordeMobs.clear();
         }
@@ -267,7 +285,7 @@ public class HordeConfig {
         return defaultHorde;
     }
 
-    public record MobSpawnData(String mobId, int chance, int countMin, int countMax, String extra, String nbt) {
+    public record MobSpawnData(String mobId, int chance, int countMin, int countMax, Double trackingRange, String extra, String nbt) {
     }
 
     public record HordesData(int hordeId, String hordeName, String dimension, List<MobSpawnData> hordeMobs) {

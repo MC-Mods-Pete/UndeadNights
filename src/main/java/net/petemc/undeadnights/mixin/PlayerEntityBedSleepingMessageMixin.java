@@ -10,7 +10,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(Player.BedSleepingProblem.class)
-public class PlayerEntityBedSleepingProblemMixin
+public class PlayerEntityBedSleepingMessageMixin
 {
     @Inject(method = "getMessage", at = @At(value = "RETURN"), cancellable = true)
     public void getMessage (CallbackInfoReturnable<Component> cir)

@@ -1,16 +1,22 @@
 package net.petemc.undeadnights.mixin;
 
+import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.chat.Component;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.world.entity.player.Player;
-import net.petemc.undeadnights.UndeadNights;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraft.world.phys.AABB;
 import net.petemc.undeadnights.casts.UndeadNightsExtendedPlayer;
-import net.petemc.undeadnights.util.Helpers;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Mixin(Player.class)
 public class PlayerEntityMixin implements UndeadNightsExtendedPlayer {
@@ -66,16 +72,14 @@ public class PlayerEntityMixin implements UndeadNightsExtendedPlayer {
             } else {
                 coolDown = 5 * 20;
 
-                this.isInCaveStageOne = Helpers.caveCheckStageOne(player.level(), player.blockPosition());
+                this.isInCaveStageOne = caveCheckStageOne(player.level(), player.blockPosition());
 
-                //UndeadNights.LOGGER.info("----------------------------------------> Player isInCaveStageOne: " + isInCaveStageOne + " " + player.getName());
                 if (isInCaveStageOne) {
                     if (delay > 0) {
                         delay--;
                     } else {
                         delay = 3;
-                        isInCaveStageTwo = Helpers.caveCheckStageTwo(player.level(), player.blockPosition());
-                        //UndeadNights.LOGGER.info("----------------------------------------> Player isInCaveStageTwo: " + isInCaveStageTwo + " " + player.getName());
+                        isInCaveStageTwo = caveCheckStageTwo(player.level(), player.blockPosition());
                         if (isInCaveStageTwo) {
                             undeadnights_setIsInCave(true);
                         }
@@ -85,25 +89,88 @@ public class PlayerEntityMixin implements UndeadNightsExtendedPlayer {
                     previousIsInCaveStageTwo = false;
                     undeadnights_setIsInCave(false);
                     delay = 3;
-                    //UndeadNights.LOGGER.info("----------------------------------------> Player isInCave2: FALSE " + player.getName());
                 }
 
                 if (previousIsInCaveStageOne != isInCaveStageOne) {
                     previousIsInCaveStageOne = isInCaveStageOne;
-                    if (isInCaveStageOne) {
-                        //player.sendSystemMessage(Component.literal("Cave detected!"));
-                    } else {
-                        //player.sendSystemMessage(Component.literal("Not in cave."));
-                    }
                 }
 
                 if (isInCaveStageTwo != previousIsInCaveStageTwo) {
-                    //UndeadNights.LOGGER.info("----------------------------------------> Player entered deep cave: " + player.getName());
                     previousIsInCaveStageTwo = isInCaveStageTwo;
-                    //player.sendSystemMessage(Component.literal("Deep cave detected!"));
                 }
             }
         }
+    }
+
+    // Stage one: quick check for obvious surface locations
+    @Unique
+    private static boolean caveCheckStageOne(Level level, BlockPos pos) {
+        int layersAbove = 0;
+        int x = pos.getX();
+        int z = pos.getZ();
+        int y;
+
+        y = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z);
+        if (y == pos.getY()) {
+            return false; // on surface
+        }
+
+        y = level.getHeight(Heightmap.Types.MOTION_BLOCKING, x, z);
+        if (y == pos.getY()) {
+            return false; // on surface
+        }
+
+        BlockPos.MutableBlockPos checkPos = new BlockPos.MutableBlockPos(x, pos.getY() + 1, z);
+        while (checkPos.getY() < y) {
+            BlockState state = level.getBlockState(checkPos);
+
+            if (state.isAir()) {
+                layersAbove = 0;
+                checkPos.move(0, 1, 0);
+                continue;
+            }
+            if (state.is(Blocks.WATER)) {
+                layersAbove = 0;
+                checkPos.move(0, 1, 0);
+                continue;
+            }
+            if ((state.is(Blocks.DEEPSLATE)) && (checkPos.getY() > 8)) {
+                layersAbove = 0;
+                checkPos.move(0, 1, 0);
+                continue;
+            }
+            if (state.is(Blocks.COBBLESTONE)) {
+                layersAbove = 0;
+                checkPos.move(0, 1, 0);
+                continue;
+            }
+            if (state.is(BlockTags.LEAVES)) {
+                layersAbove = 0;
+                checkPos.move(0, 1, 0);
+                continue;
+            }
+            layersAbove++;
+            if (layersAbove > 3) {
+                return true;
+            }
+            checkPos.move(0, 1, 0);
+        }
+        return false; // too few layers above -> do not consider as cave
+    }
+
+    // Stage two: more thorough check for surface proximity
+    @Unique
+    private static boolean caveCheckStageTwo(Level level, BlockPos pos) {
+        AABB box = new AABB(pos).inflate(10, 0, 10);
+        AtomicBoolean isCave = new AtomicBoolean(true);
+        BlockPos.MutableBlockPos.betweenClosedStream(box)
+                .forEach(c -> {
+                    int y1 = level.getHeight(Heightmap.Types.MOTION_BLOCKING, c.getX(), c.getZ());
+                    if ((c.getY() + 5) >= y1) {
+                        isCave.set(false);
+                    }
+                });
+        return isCave.get();
     }
 
     @Inject(method = "readAdditionalSaveData", at = @At("TAIL"))

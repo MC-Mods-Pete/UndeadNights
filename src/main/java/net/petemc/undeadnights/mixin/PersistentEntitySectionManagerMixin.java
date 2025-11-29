@@ -13,8 +13,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class PersistentEntitySectionManagerMixin
 {
     @Inject(method = "unloadEntity", at = @At("HEAD"))
-    public void getMessage (EntityAccess entityAccess, CallbackInfo ci)
-    {
+    public void unloadEntity (EntityAccess entityAccess, CallbackInfo ci) {
         if (UndeadNights.serverState.spawnedHordeMobs.contains(entityAccess.getUUID())) {
             UndeadNights.globalSpawnCounter--;
             if (MainConfig.getPrintDebugMessages()) {

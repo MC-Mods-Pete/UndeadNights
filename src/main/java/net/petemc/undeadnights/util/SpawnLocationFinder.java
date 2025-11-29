@@ -235,4 +235,97 @@ public class SpawnLocationFinder {
         }
         return true;
     }
+
+    /**
+     * Find a spawnable block position within X/Z radius and Y +/- deltaY around center.
+     * This function intentionally does NOT use heightmaps; it searches directly and
+     * returns the first valid position found (randomized). Lava is never allowed.
+     */
+    public static BlockPos findSpawnablePosition(Level level, BlockPos center, int radius, int deltaY) {
+        if (level == null || center == null) return null;
+        final int minY = level.getMinBuildHeight();
+        final int maxY = level.getMaxBuildHeight() - 1;
+
+        ThreadLocalRandom rnd = ThreadLocalRandom.current();
+        final float mobWidth = 0.6f;
+        final float mobHeight = 1.8f;
+        final boolean allowWater = MainConfig.getHordeWavesCanSpawnInWater();
+
+        // randomized attempts first to avoid deterministic results
+        final int attempts = 200;
+        for (int i = 0; i < attempts; i++) {
+            int dx = rnd.nextInt(-radius, radius + 1);
+            int dz = rnd.nextInt(-radius, radius + 1);
+            int dy = deltaY > 0 ? rnd.nextInt(-deltaY, deltaY + 1) : 0;
+
+            int x = center.getX() + dx;
+            int z = center.getZ() + dz;
+            int y = center.getY() + dy;
+            if (y < minY || y > maxY) continue;
+
+            BlockPos cand = new BlockPos(x, y, z);
+            BlockState feet = level.getBlockState(cand);
+            if (feet.is(Blocks.LAVA) || feet.getFluidState().is(FluidTags.LAVA)) continue;
+            if (isValidSpawnPos(level, cand, mobWidth, mobHeight, allowWater)) return cand;
+        }
+
+        // fallback: deterministic spiral scan (X/Z) with Y window if randomized attempts fail
+        for (int r = 0; r <= radius; r++) {
+            for (int dx = -r; dx <= r; dx++) {
+                int[] zs = (r == 0) ? new int[]{0} : new int[]{-r, r};
+                for (int zOff : zs) {
+                    int x = center.getX() + dx;
+                    int z = center.getZ() + zOff;
+                    for (int dy = -deltaY; dy <= deltaY; dy++) {
+                        int y = center.getY() + dy;
+                        if (y < minY || y > maxY) continue;
+                        BlockPos cand = new BlockPos(x, y, z);
+                        BlockState feet = level.getBlockState(cand);
+                        if (feet.is(Blocks.LAVA) || feet.getFluidState().is(FluidTags.LAVA)) continue;
+                        if (isValidSpawnPos(level, cand, mobWidth, mobHeight, allowWater)) return cand;
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private static boolean isValidSpawnPos(Level level, BlockPos pos, float mobWidth, float mobHeight, boolean allowWater) {
+        if (level == null || pos == null) return false;
+        int minY = level.getMinBuildHeight();
+        int maxY = level.getMaxBuildHeight();
+        if (pos.getY() < minY || pos.getY() >= maxY) return false;
+
+        BlockState feetState = level.getBlockState(pos);
+        boolean feetIsWater = feetState.is(Blocks.WATER) || feetState.getFluidState().is(FluidTags.WATER);
+        boolean feetIsLava = feetState.is(Blocks.LAVA) || feetState.getFluidState().is(FluidTags.LAVA);
+        if (feetIsLava) return false;
+        if (feetIsWater && !allowWater) return false;
+
+        VoxelShape feetShape = feetState.getCollisionShape(level, pos);
+        if (!feetShape.isEmpty() && !feetIsWater) return false;
+
+        double cx = pos.getX() + 0.5;
+        double cz = pos.getZ() + 0.5;
+        double bottomY = pos.getY();
+        double topY = bottomY + mobHeight;
+        double halfWidth = mobWidth / 2.0;
+
+        final double eps = 1e-3;
+        AABB box = new AABB(cx - halfWidth + eps, bottomY + eps, cz - halfWidth + eps, cx + halfWidth - eps, topY - eps, cz + halfWidth - eps);
+
+        if (!isAABBFreeForSpawn(level, box)) return false;
+
+        if (!allowWater) {
+            int bottomBlock = (int) Math.floor(box.minY);
+            int topBlock = (int) Math.floor(box.maxY);
+            for (int by = bottomBlock; by <= topBlock; by++) {
+                BlockState s = level.getBlockState(new BlockPos(pos.getX(), by, pos.getZ()));
+                if (s.is(Blocks.WATER) || s.getFluidState().is(FluidTags.WATER)) return false;
+            }
+        }
+
+        return hasSolidBlockBelow(level, pos);
+    }
 }
