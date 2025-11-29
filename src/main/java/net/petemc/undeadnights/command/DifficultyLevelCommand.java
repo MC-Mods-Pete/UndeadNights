@@ -50,6 +50,8 @@ public class DifficultyLevelCommand {
         UndeadNights.difficultyConfig.setCurrentDifficultyLevel(difficultyLevels.get(levelIndex));
         UndeadNights.serverState.setCurrentDifficultyLevelIndex(levelIndex);
         UndeadNights.serverState.setPossibleHordesIndex(-1);
+        HordeMobsCommand.hordeZombiesCanBreakBlocks = UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeMobs().isBlockBreaking();
+        HordeMobsCommand.hordeZombiesBlockBreakingTier = UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeMobs().getBlockBreakingTier();
         Objects.requireNonNull(source.getEntity())
             .sendSystemMessage(Component.literal("Difficulty level set to: " + difficultyLevels.get(levelIndex).getDifficultyName()));
         return 1;

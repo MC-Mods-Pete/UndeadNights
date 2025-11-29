@@ -4,6 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import net.minecraft.util.RandomSource;
 import net.petemc.undeadnights.UndeadNights;
+import net.petemc.undeadnights.command.HordeMobsCommand;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -125,20 +126,21 @@ public class DifficultyConfig {
 
         if (UndeadNights.serverState.getCurrentDifficultyLevelIndex()+1 < UndeadNights.difficultyConfig.getDifficultyLevels().size()) {
             DifficultyLevel nextDifficultyLevel = UndeadNights.difficultyConfig.getDifficultyLevels().get(UndeadNights.serverState.getCurrentDifficultyLevelIndex()+1);
-            if (currentDay >= nextDifficultyLevel.getMaxStartDay()) {
-                UndeadNights.difficultyConfig.setCurrentDifficultyLevel(nextDifficultyLevel);
-                UndeadNights.serverState.setCurrentDifficultyLevelIndex(UndeadNights.serverState.getCurrentDifficultyLevelIndex()+1);
-                return true;
-            }
+            boolean performSwitch = currentDay >= nextDifficultyLevel.getMaxStartDay();
             if ((currentDay >= nextDifficultyLevel.getMinStartDay()) &&
                     (currentDay < nextDifficultyLevel.getMaxStartDay())) {
                 int randomValue = randomSource.nextIntBetweenInclusive(1, 100);
                 if (randomValue > (100 - nextDifficultyLevel.getChanceForDifficultyLevelSwitch())) {
-                    UndeadNights.difficultyConfig.setCurrentDifficultyLevel(nextDifficultyLevel);
-                    UndeadNights.serverState.setCurrentDifficultyLevelIndex(UndeadNights.serverState.getCurrentDifficultyLevelIndex()+1);
-                    UndeadNights.LOGGER.info("Switching to new difficulty level: {}", nextDifficultyLevel.getDifficultyName());
-                    return true;
+                    performSwitch = true;
                 }
+            }
+            if (performSwitch) {
+                UndeadNights.difficultyConfig.setCurrentDifficultyLevel(nextDifficultyLevel);
+                UndeadNights.serverState.setCurrentDifficultyLevelIndex(UndeadNights.serverState.getCurrentDifficultyLevelIndex()+1);
+                HordeMobsCommand.hordeZombiesCanBreakBlocks = UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeMobs().isBlockBreaking();
+                HordeMobsCommand.hordeZombiesBlockBreakingTier = UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeMobs().getBlockBreakingTier();
+                UndeadNights.LOGGER.info("Switching to new difficulty level: {}", nextDifficultyLevel.getDifficultyName());
+                return true;
             }
         }
         return false;

@@ -11,7 +11,7 @@ import java.util.List;
 public class DifficultyConfigLoader {
     private static final File DIFFICULTY_CONFIG_FILE = new File("config/undeadnights_difficulty_config.json");
 
-    public static void loadDifficultyConfig() {
+    public static void loadConfig() {
          if (!DIFFICULTY_CONFIG_FILE.exists()) {
              var defaultConfObject = DifficultyConfig.createDefaultConfigJsonObject();
              try (FileWriter writer = new FileWriter(DIFFICULTY_CONFIG_FILE)) {

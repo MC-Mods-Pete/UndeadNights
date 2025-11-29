@@ -62,10 +62,11 @@ public class UndeadNights {
 
 		MinecraftForge.EVENT_BUS.register(this);
 		modEventBus.addListener(this::addCreative);
+
+        // Load configs
 		context.registerConfig(ModConfig.Type.SERVER, MainConfig.SPEC_SERVER);
 		HordeConfig.loadConfig();
-
-        DifficultyConfigLoader.loadDifficultyConfig();
+        DifficultyConfigLoader.loadConfig();
 	}
 
 	private void commonSetup(final FMLCommonSetupEvent event) {
