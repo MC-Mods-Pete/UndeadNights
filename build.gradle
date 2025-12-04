@@ -19,6 +19,13 @@ group = mod_group_id
 repositories {
     mavenLocal()
     maven { url "https://maven.shedaniel.me/"}
+
+    maven {
+        url "https://cursemaven.com"
+        content {
+            includeGroup "curse.maven"
+        }
+    }
 }
 
 base {
@@ -135,6 +142,10 @@ dependencies {
     // http://www.gradle.org/docs/current/userguide/artifact_dependencies_tutorial.html
     // http://www.gradle.org/docs/current/userguide/dependency_management.html
     //api "me.shedaniel.cloth:cloth-config-neoforge:16.0.141"
+
+    implementation "curse.maven:comforts-276951:${comforts_version}"
+
+    runtimeOnly "curse.maven:jade-324717:${jade_version}"
 }
 
 // This block of code expands all declared replace properties in the specified resource targets.
