@@ -75,7 +75,7 @@ public class SpawnLocationFinder {
         return new BlockPos(pos.getX() + (int) _x, level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, pos.getX() + (int) _x, pos.getZ() + (int) _z), pos.getZ() + (int) _z);
     }
 
-    public static BlockPos findNearbySurfaceSpawnPosition(ServerLevel level, BlockPos pos, RandomSource randomSource, boolean playerInCave) {
+    public static BlockPos findNearbySurfaceSpawnPosition(ServerLevel level, BlockPos pos, RandomExtention randomSource, boolean playerInCave) {
         int deltaX = randomSource.nextInt(5);
         int deltaZ = randomSource.nextInt(5);
         if (!randomSource.nextBoolean()) {

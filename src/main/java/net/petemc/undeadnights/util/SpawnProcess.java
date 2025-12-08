@@ -11,7 +11,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.util.RandomSource;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
@@ -49,7 +48,7 @@ public class SpawnProcess {
     private static double d = 0;
 
     // spawn a single horde mob at the given location (Asynchronous wrapper)
-    public static CompletableFuture<HordeSpawner.SpawnHordeResult> asynchronousHordeSpawner(ServerLevel level, ServerPlayer player, RandomSource randomSource) {
+    public static CompletableFuture<HordeSpawner.SpawnHordeResult> asynchronousHordeSpawner(ServerLevel level, ServerPlayer player, RandomExtention randomSource) {
         return CompletableFuture.supplyAsync(() -> spawnHordeImplementation(
                 level,
                 player,
@@ -57,8 +56,16 @@ public class SpawnProcess {
         ), ForkJoinPool.commonPool());
     }
 
+    public static HordeSpawner.SpawnHordeResult synchronousHordeSpawner(ServerLevel level, ServerPlayer player, RandomExtention randomSource) {
+        return spawnHordeImplementation(
+                level,
+                player,
+                randomSource
+        );
+    }
+
     // spawn a horde for the given player at a suitable location
-    public static HordeSpawner.SpawnHordeResult spawnHordeImplementation(ServerLevel level, ServerPlayer player, RandomSource randomSource) {
+    public static HordeSpawner.SpawnHordeResult spawnHordeImplementation(ServerLevel level, ServerPlayer player, RandomExtention randomSource) {
         int randomValue;
         int spawnCounter = 0;
         BlockPos possibleSpawnLocation;
@@ -299,7 +306,7 @@ public class SpawnProcess {
     }
 
     // spawn a single horde mob at the given location
-    public static int spawnHordeMob(ServerLevel level, RandomSource randomSource, BlockPos pos, Player player, HordeConfig.MobSpawnData mobSpawnData) {
+    public static int spawnHordeMob(ServerLevel level, RandomExtention randomSource, BlockPos pos, Player player, HordeConfig.MobSpawnData mobSpawnData) {
         EntityType<?> mobType = BuiltInRegistries.ENTITY_TYPE.get(ResourceLocation.parse(mobSpawnData.mobId()));
         if (mobType == null) {
             invalidHordeMobEntry = true;
@@ -467,6 +474,4 @@ public class SpawnProcess {
         }
         return 0;
     }
-
-
 }

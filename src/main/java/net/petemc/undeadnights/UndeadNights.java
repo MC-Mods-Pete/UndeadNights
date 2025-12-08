@@ -97,6 +97,10 @@ public class UndeadNights {
             //UndeadNights.serverState.setFirstDifficultyLevelPrinted(false);
             //UndeadNights.serverState.setCurrentDifficultyLevelIndex(0);
 
+            if (UndeadNights.serverState.getCurrentDifficultyLevelIndex() >= UndeadNights.difficultyConfig.getDifficultyLevels().size()) {
+                UndeadNights.LOGGER.warn("Current difficulty level index in server state is out of bounds, setting to max index");
+                UndeadNights.serverState.setCurrentDifficultyLevelIndex(UndeadNights.difficultyConfig.getDifficultyLevels().size() - 1);
+            }
             UndeadNights.difficultyConfig.setCurrentDifficultyLevel(UndeadNights.difficultyConfig.getDifficultyLevels().get(UndeadNights.serverState.getCurrentDifficultyLevelIndex()));
             UndeadNights.automaticDifficultyProgressionActive = MainConfig.getEnableAutomaticDifficultyProgression();
 
