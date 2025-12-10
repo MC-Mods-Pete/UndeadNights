@@ -434,15 +434,15 @@ public class UndeadSpawner implements CustomSpawner {
 
 
         if (!UndeadNights.serverState.entitiesWithPendingHorde.isEmpty()) {
-            for (var playerUUID : UndeadNights.serverState.entitiesWithPendingHorde.values().stream().toList()) {
-                if (!UndeadNights.serverState.entitiesWithReceivedHorde.containsKey(UUID.fromString(playerUUID))) {
-                    Entity entity = level.getEntity(UUID.fromString(playerUUID));
+            for (var playerUUID : UndeadNights.serverState.entitiesWithPendingHorde.keySet()) {
+                if (!UndeadNights.serverState.entitiesWithReceivedHorde.containsKey(playerUUID)) {
+                    Entity entity = level.getEntity(playerUUID);
                     if (entity instanceof ServerPlayer serverPlayer) {
                         if (spawnHorde(level, serverPlayer, randomSource) == -1) {
                             serverPlayer.sendSystemMessage(Component.translatable("message.undeadnights.command_spawn_horde_failed"));
                         }
-                        UndeadNights.serverState.entitiesWithReceivedHorde.put(UUID.fromString(playerUUID), playerUUID);
-                        UndeadNights.serverState.entitiesWithPendingHorde.remove(UUID.fromString(playerUUID));
+                        UndeadNights.serverState.entitiesWithReceivedHorde.put(playerUUID, playerUUID.toString());
+                        UndeadNights.serverState.entitiesWithPendingHorde.remove(playerUUID);
                     }
                 }
             }
