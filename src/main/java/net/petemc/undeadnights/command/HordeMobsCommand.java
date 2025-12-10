@@ -22,17 +22,17 @@ public class HordeMobsCommand {
 
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher, CommandRegistryAccess commandRegistryAccess, CommandManager.RegistrationEnvironment registrationEnvironment) {
         dispatcher.register(CommandManager.literal("undeadnights")
-                .requires(source -> source.hasPermissionLevel(2))
+                .requires(CommandManager.requirePermissionLevel(CommandManager.GAMEMASTERS_CHECK))
                 .then(CommandManager.literal("horde_mobs")
                 .then(CommandManager.literal("remove_all")
                 .executes(HordeMobsCommand::removeMobs))));
         dispatcher.register(CommandManager.literal("undeadnights")
-                .requires(source -> source.hasPermissionLevel(2))
+                .requires(CommandManager.requirePermissionLevel(CommandManager.GAMEMASTERS_CHECK))
                 .then(CommandManager.literal("horde_mobs")
                 .then(CommandManager.literal("print_config")
                 .executes(HordeMobsCommand::printConfig))));
         dispatcher.register(CommandManager.literal("undeadnights")
-                .requires(source -> source.hasPermissionLevel(2))
+                .requires(CommandManager.requirePermissionLevel(CommandManager.GAMEMASTERS_CHECK))
                 .then(CommandManager.literal("horde_mobs")
                 .then(CommandManager.literal("block_breaking")
                 .then(CommandManager.literal("enable")
@@ -40,7 +40,7 @@ public class HordeMobsCommand {
                     return blockBreaking(command.getSource(), true, 0);
                 })))));
         dispatcher.register(CommandManager.literal("undeadnights")
-                .requires(source -> source.hasPermissionLevel(2))
+                .requires(CommandManager.requirePermissionLevel(CommandManager.GAMEMASTERS_CHECK))
                 .then(CommandManager.literal("horde_mobs")
                 .then(CommandManager.literal("block_breaking")
                 .then(CommandManager.literal("disable")
@@ -48,7 +48,7 @@ public class HordeMobsCommand {
                     return blockBreaking(command.getSource(), false, 0);
                 })))));
         dispatcher.register(CommandManager.literal("undeadnights")
-                .requires(source -> source.hasPermissionLevel(2))
+                .requires(CommandManager.requirePermissionLevel(CommandManager.GAMEMASTERS_CHECK))
                 .then(CommandManager.literal("horde_mobs")
                 .then(CommandManager.literal("block_breaking")
                 .then(CommandManager.literal("set_tier")
