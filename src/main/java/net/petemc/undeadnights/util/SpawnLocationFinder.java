@@ -75,7 +75,7 @@ public class SpawnLocationFinder {
         return new BlockPos(pos.getX() + (int) _x, level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, pos.getX() + (int) _x, pos.getZ() + (int) _z), pos.getZ() + (int) _z);
     }
 
-    public static BlockPos findNearbySurfaceSpawnPosition(ServerLevel level, BlockPos pos, RandomSource randomSource, boolean playerInCave) {
+    public static BlockPos findNearbySurfaceSpawnPosition(ServerLevel level, BlockPos pos, RandomExtention randomSource, boolean playerInCave) {
         int deltaX = randomSource.nextInt(5);
         int deltaZ = randomSource.nextInt(5);
         if (!randomSource.nextBoolean()) {
@@ -120,6 +120,7 @@ public class SpawnLocationFinder {
         // create a temporary mob used for pathfinding computations (do not add to world)
         HordeZombieEntity probe = new HordeZombieEntity(ModEntities.HORDE_ZOMBIE.get(), level);
         probe.finalizeSpawn((ServerLevelAccessor) level, level.getCurrentDifficultyAt(start), MobSpawnType.MOB_SUMMONED, null, null);
+        probe.setTarget(player);
         level.addFreshEntity(probe);
 
         for (int i = 0; i < attempts; i++) {
@@ -146,11 +147,13 @@ public class SpawnLocationFinder {
                 if (!isAABBFreeForSpawn(level, new AABB(cand.getX() + 0.5 - 0.3, cand.getY() + 0.001, cand.getZ() + 0.5 - 0.3, cand.getX() + 0.5 + 0.3, cand.getY() + 1.8 - 0.001, cand.getZ() + 0.5 + 0.3))) continue;
 
                 try {
-                    // createPath may return null or an empty path if unreachable
-                    var nav = probe.getNavigation();
                     // place probe at candidate center before asking it to path to the player
                     probe.setPos(cand.getX() + 0.5, cand.getY(), cand.getZ() + 0.5);
-                    // single navigation check to player (candidate -> player)
+                    // ensure probe is considered on ground
+                    probe.setOnGround(true);
+                    // get navigation
+                    var nav = probe.getNavigation();
+                    // createPath may return null or an empty path if unreachable
                     Path path = nav.createPath(player, 0);
 
                     if (path != null) {
