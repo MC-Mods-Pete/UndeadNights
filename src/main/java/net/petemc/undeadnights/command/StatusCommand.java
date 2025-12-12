@@ -15,7 +15,7 @@ import net.petemc.undeadnights.world.spawner.UndeadSpawner;
 public class StatusCommand {
     public StatusCommand(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(Commands.literal("undeadnights")
-                .requires(source -> source.hasPermission(2))
+                .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
                 .then(Commands.literal("status")
                 .executes((command) -> {
                     return status(command.getSource());

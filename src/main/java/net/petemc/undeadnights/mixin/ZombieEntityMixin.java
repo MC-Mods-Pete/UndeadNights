@@ -2,7 +2,7 @@ package net.petemc.undeadnights.mixin;
 
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.monster.Zombie;
+import net.minecraft.world.entity.monster.zombie.Zombie;
 import net.petemc.undeadnights.attachment.ModAttachmentTypes;
 import net.petemc.undeadnights.casts.BlockBreakingZombie;
 import net.petemc.undeadnights.config.MainConfig;
@@ -18,8 +18,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(Zombie.class)
 public class ZombieEntityMixin implements BlockBreakingZombie
 {
-    @Inject(method = "hurtServer", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/monster/Zombie;setTarget(Lnet/minecraft/world/entity/LivingEntity;)V", shift = At.Shift.AFTER), cancellable = true)
-    public void hurtServer_disableReinforcements (ServerLevel level, DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
+    @Inject(method = "hurtServer", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/monster/zombie/Zombie;setTarget(Lnet/minecraft/world/entity/LivingEntity;)V", shift = At.Shift.AFTER), cancellable = true)
+    public void hurtServer_disableReinforcements(ServerLevel level, DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
         if ((Object) this instanceof HordeZombieEntity) {
             cir.setReturnValue(true);
         }

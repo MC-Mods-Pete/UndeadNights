@@ -8,7 +8,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.SpawnPlacementTypes;
 import net.minecraft.world.entity.ai.goal.FloatGoal;
-import net.minecraft.world.entity.monster.Zombie;
+import net.minecraft.world.entity.monster.zombie.Zombie;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.alchemy.PotionBrewing;
 import net.minecraft.world.item.alchemy.Potions;
@@ -108,7 +108,8 @@ public class ModEvents {
 
         @SubscribeEvent
         public static void onPlayerTrySleep(CanPlayerSleepEvent event) {
-            if (UndeadNights.serverState.getHordeNight() && MainConfig.getHordeNightsDisableSleeping()) {
+            if (UndeadNights.serverState.getHordeNight() && MainConfig.getHordeNightsDisableSleeping() &&
+                    !event.getEntity().isCreative() && !event.getEntity().isSpectator()) {
                 event.setProblem(Player.BedSleepingProblem.NOT_SAFE);
             }
         }

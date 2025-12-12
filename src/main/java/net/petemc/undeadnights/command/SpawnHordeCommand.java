@@ -19,13 +19,13 @@ public class SpawnHordeCommand {
 
     public SpawnHordeCommand(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(Commands.literal("undeadnights")
-                .requires(source -> source.hasPermission(2))
+                .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
                 .then(Commands.literal("spawn_horde")
                 .executes((command) -> {
                     return spawnHorde(command.getSource());
                 })));
         dispatcher.register(Commands.literal("undeadnights")
-                .requires(source -> source.hasPermission(2))
+                .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
                 .then(Commands.literal("spawn_horde")
                 .then(Commands.argument("targets", EntityArgument.entities()).executes((command) -> {
                     return spawnHorde(command.getSource(), EntityArgument.getEntities(command, "targets"));

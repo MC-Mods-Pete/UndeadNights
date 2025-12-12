@@ -8,7 +8,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.TagParser;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
@@ -20,7 +20,7 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.FloatGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.monster.Monster;
-import net.minecraft.world.entity.monster.Zombie;
+import net.minecraft.world.entity.monster.zombie.Zombie;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.CustomSpawner;
 import net.minecraft.world.level.Level;
@@ -106,11 +106,11 @@ public class UndeadSpawner implements CustomSpawner {
 
     
     private int spawnHordeMob(ServerLevel level, RandomSource randomSource, BlockPos pos, Player player, HordeConfig.MobSpawnData mobSpawnData) {
-        Optional<Holder.Reference<EntityType<?>>> optMobType = BuiltInRegistries.ENTITY_TYPE.get(ResourceLocation.parse(mobSpawnData.mobId()));
+        Optional<Holder.Reference<EntityType<?>>> optMobType = BuiltInRegistries.ENTITY_TYPE.get(Identifier.parse(mobSpawnData.mobId()));
         if (optMobType.isEmpty()) {
             invalidHordeMobEntry = true;
             UndeadNights.LOGGER.warn("Spawning entry {} from the config file failed! Spawning default horde zombie instead.", mobSpawnData.mobId());
-            optMobType = BuiltInRegistries.ENTITY_TYPE.get(ResourceLocation.parse("undeadnights:horde_zombie"));
+            optMobType = BuiltInRegistries.ENTITY_TYPE.get(Identifier.parse("undeadnights:horde_zombie"));
             if (optMobType.isEmpty()) {
                 UndeadNights.LOGGER.error("Spawning default horde zombie {} failed!", mobSpawnData.mobId());
                 return 0;
