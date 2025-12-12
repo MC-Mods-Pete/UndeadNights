@@ -19,6 +19,9 @@ public class ServerPlayerEntityMixin
     public void startSleepInBed(BlockPos pAt, CallbackInfoReturnable<Either<Player.BedSleepingProblem, Unit>> cir)
     {
         if (UndeadNights.serverState.getHordeNight() && MainConfig.getHordeNightsDisableSleeping()) {
+            if (MainConfig.getPrintDebugMessages()) {
+                UndeadNights.LOGGER.info("Prevented player from sleeping during Horde Night");
+            }
             cir.setReturnValue(Either.left(Player.BedSleepingProblem.NOT_SAFE));
         }
     }

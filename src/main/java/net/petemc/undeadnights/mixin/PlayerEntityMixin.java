@@ -12,7 +12,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(Player.BedSleepingProblem.class)
 public class PlayerEntityMixin
 {
-    @Inject(method = "getMessage", at = @At(value = "RETURN"), cancellable = true)
+    @Inject(method = "message", at = @At(value = "RETURN"), cancellable = true)
     public void getMessage (CallbackInfoReturnable<Component> cir)
     {
         if (UndeadNights.serverState.getHordeNight() && MainConfig.getHordeNightsDisableSleeping()) {

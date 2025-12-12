@@ -2,7 +2,7 @@ plugins {
     id 'eclipse'
     id 'idea'
     id 'maven-publish'
-    id 'net.minecraftforge.gradle' version '[6.0.36,6.2)'
+    id 'net.minecraftforge.gradle' version '[6.0.46,6.2)'
     id 'org.parchmentmc.librarian.forgegradle' version '1.+'
     id 'org.spongepowered.mixin' version '0.7.+'
 }
@@ -149,7 +149,7 @@ dependencies {
     // in your development environment, helping you catch issues early.
     // This relies on more obscure Java compiler APIs that may surface bugs. Update your JDK, report bugs to the OpenJDK
     // project and/or comment out this line if you encounter issues.
-    annotationProcessor 'net.minecraftforge:eventbus-validator:7.0-beta.9'
+    annotationProcessor 'net.minecraftforge:eventbus-validator:7.0-beta.12'
 
     // Apply Mixin AP
     annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'

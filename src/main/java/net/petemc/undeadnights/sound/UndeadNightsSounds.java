@@ -1,6 +1,6 @@
 package net.petemc.undeadnights.sound;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraftforge.eventbus.api.bus.BusGroup;
 import net.minecraftforge.registries.DeferredRegister;
@@ -16,7 +16,7 @@ public class UndeadNightsSounds {
     public static final Supplier<SoundEvent> HORDE_SCREAM = registerSoundEvent("horde_scream");
 
     private static Supplier<SoundEvent> registerSoundEvent(String name) {
-        ResourceLocation id = ResourceLocation.tryBuild(UndeadNights.MOD_ID, name);
+        Identifier id = Identifier.tryBuild(UndeadNights.MOD_ID, name);
         return SOUND_EVENTS.register(name, () -> SoundEvent.createVariableRangeEvent(id));
     }
 

@@ -1,7 +1,7 @@
 package net.petemc.undeadnights.entity;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Difficulty;
@@ -15,10 +15,10 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.*;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
-import net.minecraft.world.entity.animal.IronGolem;
+import net.minecraft.world.entity.animal.golem.IronGolem;
 import net.minecraft.world.entity.monster.Monster;
-import net.minecraft.world.entity.monster.Zombie;
-import net.minecraft.world.entity.npc.AbstractVillager;
+import net.minecraft.world.entity.monster.zombie.Zombie;
+import net.minecraft.world.entity.npc.villager.AbstractVillager;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -36,7 +36,7 @@ import org.jetbrains.annotations.Nullable;
 import java.time.LocalDate;
 import java.util.Objects;
 
-public class DemolitionZombieEntity extends Zombie  {
+public class DemolitionZombieEntity extends Zombie {
     private int numberTnt = 3;
 
     public DemolitionZombieEntity(EntityType<? extends Zombie> entityType, Level world) {
@@ -69,7 +69,7 @@ public class DemolitionZombieEntity extends Zombie  {
                 this.setDropChance(EquipmentSlot.HEAD, 0.0F);
             }
         }
-        Objects.requireNonNull(this.getAttribute(Attributes.MAX_HEALTH)).addPermanentModifier(new AttributeModifier(ResourceLocation.fromNamespaceAndPath(UndeadNights.MOD_ID, "demolition_zombie_health_bonus"), MainConfig.getMaxHealthDemolitionZombies() - 20.0F, AttributeModifier.Operation.ADD_VALUE));
+        Objects.requireNonNull(this.getAttribute(Attributes.MAX_HEALTH)).addPermanentModifier(new AttributeModifier(Identifier.fromNamespaceAndPath(UndeadNights.MOD_ID, "demolition_zombie_health_bonus"), MainConfig.getMaxHealthDemolitionZombies() - 20.0F, AttributeModifier.Operation.ADD_VALUE));
 
         this.handleAttributes(f);
         this.setHealth(this.getMaxHealth());

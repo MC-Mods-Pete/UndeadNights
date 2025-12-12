@@ -15,7 +15,7 @@ import net.petemc.undeadnights.world.spawner.UndeadSpawner;
 public class SetDefaultHordeCommand {
     public SetDefaultHordeCommand(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(Commands.literal("undeadnights")
-                .requires(source -> source.hasPermission(2))
+                .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
                 .then(Commands.literal("default_horde")
                 .then(Commands.argument("hordeId", IntegerArgumentType.integer(0))
                 .executes((command) -> {
