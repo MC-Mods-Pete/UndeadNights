@@ -9,6 +9,7 @@ import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
 import net.petemc.undeadnights.UndeadNights;
 import net.petemc.undeadnights.config.difficulty.DifficultyLevel;
+import net.petemc.undeadnights.config.difficulty.DifficultySettingDynamicScaling;
 
 import java.util.List;
 import java.util.Objects;
@@ -28,14 +29,29 @@ public class DifficultyLevelCommand {
                     .then(Commands.literal("enable")
                         .executes(ctx -> setAutoProgression(ctx.getSource(), true)))
                     .then(Commands.literal("disable")
-                        .executes(ctx -> setAutoProgression(ctx.getSource(), false))))));
+                        .executes(ctx -> setAutoProgression(ctx.getSource(), false))))
+                .then(Commands.literal("dynamic_scaling")
+                    .then(Commands.literal("enable")
+                        .executes(ctx -> setDynamicScaling(ctx.getSource(), true)))
+                    .then(Commands.literal("disable")
+                        .executes(ctx -> setDynamicScaling(ctx.getSource(), false)))
+                    .then(Commands.literal("reset")
+                        .executes(ctx -> resetDynamicScalingValues(ctx.getSource())))
+                )
+            ));
     }
 
     private int queryDifficulty(CommandSourceStack source) throws CommandSyntaxException {
         DifficultyLevel currentDifficultyLevel = UndeadNights.difficultyConfig.getCurrentDifficultyLevel();
         Objects.requireNonNull(source.getEntity())
-            .sendSystemMessage(Component.literal("Current difficulty level: " + currentDifficultyLevel.getDifficultyName() + "\n"
-            + "Automatic difficulty progression: " + (UndeadNights.automaticDifficultyProgressionActive ? "enabled" : "disabled") + "\n"));
+            .sendSystemMessage(Component.literal("Current difficulty level: " + currentDifficultyLevel.getDifficultyName() + " (max: " + UndeadNights.difficultyConfig.getDifficultyLevels().size() +")\n"
+            + "Automatic difficulty progression: " + (UndeadNights.automaticDifficultyProgressionActive ? "enabled" : "disabled") + "\n"
+            + "Dynamic scaling: " + (UndeadNights.difficultyConfig.getDynamicScaling().isDynamicScalingEnabled() ? "enabled" : "disabled") + "\n"
+            + "Current health scaling: +" + String.format("%.1f", UndeadNights.serverState.getCurrentHealthScale()*100) + "%\n"
+            + "Current speed scaling: +" + String.format("%.1f", UndeadNights.serverState.getCurrentSpeedScale()*100) + "%\n"
+            + "Current damage scaling: +" + String.format("%.1f", UndeadNights.serverState.getCurrentDamageScale()*100) + "%\n"
+            + "Current armor scaling: +" + String.format("%.1f", UndeadNights.serverState.getCurrentArmorScale()*100) + "%\n"
+            ));
         return 1;
     }
 
@@ -61,6 +77,24 @@ public class DifficultyLevelCommand {
         UndeadNights.automaticDifficultyProgressionActive = value;
         Objects.requireNonNull(source.getEntity())
             .sendSystemMessage(Component.literal("Automatic difficulty progression has been " + (value ? "enabled" : "disabled") + "."));
+        return 1;
+    }
+
+    private int setDynamicScaling(CommandSourceStack source, boolean value) {
+        DifficultySettingDynamicScaling dynamicScaling = UndeadNights.difficultyConfig.getDynamicScaling();
+        dynamicScaling.setDynamicScalingEnabled(value);
+        Objects.requireNonNull(source.getEntity())
+                .sendSystemMessage(Component.literal("Dynamic difficulty scaling has been " + (value ? "enabled" : "disabled") + "."));
+        return 1;
+    }
+
+    private int resetDynamicScalingValues(CommandSourceStack source) {
+        UndeadNights.serverState.setCurrentHealthScale(0.0f);
+        UndeadNights.serverState.setCurrentSpeedScale(0.0f);
+        UndeadNights.serverState.setCurrentDamageScale(0.0f);
+        UndeadNights.serverState.setCurrentArmorScale(0.0f);
+        Objects.requireNonNull(source.getEntity())
+                .sendSystemMessage(Component.literal("Dynamic difficulty scaling values have been reset to +0%."));
         return 1;
     }
 }
