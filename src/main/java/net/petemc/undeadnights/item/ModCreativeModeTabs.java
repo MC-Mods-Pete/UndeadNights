@@ -22,6 +22,10 @@ public class ModCreativeModeTabs {
                         entries.add(PotionUtil.setPotion(new ItemStack(Items.LINGERING_POTION), ModPotions.LURE_HORDE_POTION));
                         entries.add(PotionUtil.setPotion(new ItemStack(Items.SPLASH_POTION), ModPotions.LURE_HORDE_POTION));
                         entries.add(PotionUtil.setPotion(new ItemStack(Items.TIPPED_ARROW), ModPotions.LURE_HORDE_POTION));
+                        entries.add(PotionUtil.setPotion(new ItemStack(Items.POTION), ModPotions.STRONG_LURE_HORDE_POTION));
+                        entries.add(PotionUtil.setPotion(new ItemStack(Items.LINGERING_POTION), ModPotions.STRONG_LURE_HORDE_POTION));
+                        entries.add(PotionUtil.setPotion(new ItemStack(Items.SPLASH_POTION), ModPotions.STRONG_LURE_HORDE_POTION));
+                        entries.add(PotionUtil.setPotion(new ItemStack(Items.TIPPED_ARROW), ModPotions.STRONG_LURE_HORDE_POTION));
                         entries.add(ModItems.HORDE_ZOMBIE_SPAWN_EGG);
                         entries.add(ModItems.ELITE_ZOMBIE_SPAWN_EGG);
                         entries.add(ModItems.DEMOLITION_ZOMBIE_SPAWN_EGG);

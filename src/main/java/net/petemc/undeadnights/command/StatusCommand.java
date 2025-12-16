@@ -12,9 +12,7 @@ import net.minecraft.util.Formatting;
 import net.petemc.undeadnights.UndeadNights;
 import net.petemc.undeadnights.config.HordeConfig;
 import net.petemc.undeadnights.config.MainConfig;
-import net.petemc.undeadnights.world.spawner.UndeadSpawner;
-
-import java.util.Objects;
+import net.petemc.undeadnights.world.spawner.HordeSpawner;
 
 public class StatusCommand {
 
@@ -26,13 +24,13 @@ public class StatusCommand {
     }
 
     private static int status(CommandContext<ServerCommandSource> context) {
-        String message = "DayCounter: " + UndeadNights.serverState.getDaysCounter() + " (max " + MainConfig.getDaysBetweenHordeNights() + ")\n" +
+        String message = "DayCounter: " + UndeadNights.serverState.getDaysCounter() + " (max " + UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeNights().getDaysBetweenHordeNights() + ")\n" +
                 "Grace period: " + UndeadNights.serverState.getGracePeriod() + " (of " + MainConfig.getGracePeriodBeforeFirstHordeNight() + " days remaining)\n" +
                 "UndeadNights enabled: " + MainConfig.getUndeadNightsEnabled() + "\n" +
                 "Is it HordeNight: " + UndeadNights.serverState.getHordeNight() + "\n" +
                 "SpawnCounter: " + UndeadNights.globalSpawnCounter + " of max " + MainConfig.getHordeMobsSpawnCap() + "\n" +
                 "Block breaking: " + (HordeMobsCommand.hordeZombiesCanBreakBlocks ? ("enabled, tier: " + HordeMobsCommand.hordeZombiesBlockBreakingTier) : "disabled") + "\n" +
-                "Default Horde: " + UndeadSpawner.hordeToSpawn + ((UndeadSpawner.hordeToSpawn == 0) ? " (a horde will be chosen randomly)": "") + "\n";
+                "Default Horde: " + HordeSpawner.hordeIdFromHordesConfig + ((HordeSpawner.hordeIdFromHordesConfig == 0) ? " (a horde will be chosen randomly)": "") + "\n";
                 if (context.getSource().getEntity() instanceof ServerPlayerEntity serverPlayer) {
                         serverPlayer.sendMessage(Text.literal(message));
                     }

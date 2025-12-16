@@ -34,7 +34,7 @@ public class LivingEntityMixin
     @Inject(method = "getBaseMovementSpeedMultiplier", at = @At("HEAD"), cancellable = true)
     protected void getBaseMovementSpeedMultiplier(CallbackInfoReturnable<Float> cir) {
         if (((Entity) (Object) this) instanceof ZombieEntity) {
-            if (MainConfig.getHordeZombiesHaveIncreasedWaterMovementSpeed()) {
+            if (UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeMobs().isHordeZombiesAreFasterOnWater()) {
                 cir.setReturnValue(0.94f);
             }
         }
@@ -42,16 +42,16 @@ public class LivingEntityMixin
 
     @Inject(method = "onDeath", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/damage/DamageSource;getAttacker()Lnet/minecraft/entity/Entity;", shift = At.Shift.AFTER))
     public void onDeath_lureEffect(DamageSource pDamageSource, CallbackInfo ci) {
-        if ((pDamageSource != null) && (MainConfig.getEnableLureHordeEffect())) {
+        if ((pDamageSource != null) && (UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsLureEffect().isEnableLureHordeEffect())) {
             if (pDamageSource.getAttacker() instanceof ServerPlayerEntity player) {
                 boolean isZombie = (((Entity)(Object) this) instanceof ZombieEntity);
-                boolean flag = (MainConfig.getNonHordeZombiesCanCauseLureHordeEffect() && isZombie);
+                boolean flag = (UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsLureEffect().isNonHordeZombiesCanCauseLureHordeEffect() && isZombie);
                 if ((UndeadNights.serverState.spawnedHordeMobs.contains(((Entity)(Object) this).getUuid())) || flag) {
                     Random randomSource = player.getWorld().random;
                     double rand = randomSource.nextDouble();
-                    if (rand < MainConfig.getChanceForLureHordeEffect()) {
+                    if (rand < UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsLureEffect().getChanceForLureHordeEffect()) {
                         if (!player.hasStatusEffect(ModEffects.LURE_HORDE)) {
-                            player.addStatusEffect(new StatusEffectInstance(ModEffects.LURE_HORDE, MainConfig.getDurationForLureHordeEffect() * 20, 0));
+                            player.addStatusEffect(new StatusEffectInstance(ModEffects.LURE_HORDE, UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsLureEffect().getDurationForLureHordeEffect() * 20, 0));
                         }
                     }
                 }
@@ -86,7 +86,7 @@ public class LivingEntityMixin
                 }
             }
 
-            if (MainConfig.getHordeZombiesCanPushEachOtherUp()) {
+            if (UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeMobs().isHordeMobsCanClimbEachOther()) {
                 final Vec3d entityPosition = entity.getPos();
                 final Box entitySearchArea = new Box(entityPosition, entityPosition).expand(0.45 / 2d);
                 List<Entity> sortedEntityList = world.getEntitiesByClass(Entity.class, entitySearchArea, entityTagCheck ->

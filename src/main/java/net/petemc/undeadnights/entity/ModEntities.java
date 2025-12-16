@@ -32,8 +32,8 @@ public class ModEntities {
                     .build(Objects.requireNonNull(Identifier.of(UndeadNights.MOD_ID, "tnt_projectile")).toString()));
 
     public static void initModEntities() {
-        HordeZombieEntity.init();
-        EliteZombieEntity.init();
-        DemolitionZombieEntity.init();
+        HordeZombieEntity.initSpawnCondition();
+        EliteZombieEntity.initSpawnConditions();
+        DemolitionZombieEntity.initSpawnConditions();
     }
 }

@@ -13,28 +13,14 @@ public class MainConfig implements ConfigData
     @ConfigEntry.Gui.Excluded
     public static MainConfig INSTANCE;
 
-    public static void init() {
+    public static void loadConfig() {
         AutoConfig.register(MainConfig.class, JanksonConfigSerializer::new);
         INSTANCE = AutoConfig.getConfigHolder(MainConfig.class).getConfig();
     }
 
-    public static boolean getUndeadNightsEnabled() {
-        return INSTANCE.undeadNightsEnabled;
-    }
+    public static boolean getUndeadNightsEnabled() { return INSTANCE.undeadNightsEnabled; }
 
     public static int getGracePeriodBeforeFirstHordeNight() { return INSTANCE.gracePeriodBeforeFirstHordeNight; }
-
-    public static int getDaysBetweenHordeNights() {
-        return INSTANCE.daysBetweenHordeNights;
-    }
-
-    public static int getChanceForHordeNight() {
-        return INSTANCE.chanceForHordeNight;
-    }
-
-    public static int getMaxHordesPerHordeNight() {
-        return INSTANCE.maxHordesPerHordeNight;
-    }
 
     public static boolean getSendHordeNightsCountdownMessage() {
         return INSTANCE.sendHordeNightsCountdownMessage;
@@ -54,16 +40,8 @@ public class MainConfig implements ConfigData
         return INSTANCE.hordeMobsSpawnCap;
     }
 
-    public static boolean getSpawnAdditionalWaves() {
-        return INSTANCE.spawnAdditionalWaves;
-    }
-
-    public static int getCooldownBetweenWaves() {
-        return INSTANCE.cooldownBetweenWaves;
-    }
-
-    public static int getChanceForAdditionalWaves() {
-        return INSTANCE.chanceForAdditionalWaves;
+    public static boolean getIgnoreDoMobSpawningGamerule() {
+        return INSTANCE.ignoreDoMobSpawningGamerule;
     }
 
     public static boolean getHordeWavesCanSpawnInWater() {
@@ -74,101 +52,41 @@ public class MainConfig implements ConfigData
         return INSTANCE.hordeWavesCanSpawnOnTrees;
     }
 
-    public static boolean getBlockLightLevelsInfluenceMonsterSpawns() {
-        return INSTANCE.blockLightLevelsInfluenceMonsterSpawns;
+    public static boolean getHordeWavesCanSpawnInCaves() {
+        return INSTANCE.hordeWavesCanSpawnInCaves;
     }
 
-    public static int getMaxBlockLightLevelForMonsterSpawns() {
-        return INSTANCE.maxBlockLightLevelForMonsterSpawns;
-    }
+    public static int getCaveSpawnDistance() { return INSTANCE.caveSpawnDistance; }
 
-    public static boolean getHordeNightsDisableSleeping() {
-        return INSTANCE.hordeNightsDisableSleeping;
-    }
+    public static boolean getBlockLightLevelsInfluenceMonsterSpawns() { return INSTANCE.blockLightLevelsInfluenceMonsterSpawns; }
 
-    public static boolean getPersistentMobs() {
-        return INSTANCE.persistentMobs;
-    }
+    public static int getMaxBlockLightLevelForMonsterSpawns() { return INSTANCE.maxBlockLightLevelForMonsterSpawns; }
 
-    public static boolean getHordeZombiesBurnInDaylight() {
-        return INSTANCE.hordeZombiesBurnInDaylight;
-    }
+    public static boolean getHordeNightsDisableSleeping() { return INSTANCE.hordeNightsDisableSleeping; }
 
-    public static boolean getVanillaZombiesBurnInDaylight() {
-        return INSTANCE.vanillaZombiesBurnInDaylight;
-    }
+    public static boolean getEnableAutomaticDifficultyProgression() { return INSTANCE.enableAutomaticDifficultyProgression; }
 
-    public static boolean getHordeZombiesCanPushEachOtherUp() {
-        return INSTANCE.hordeZombiesCanPushEachOtherUp;
-    }
+    public static boolean getPreventDespawnWhenInsideMaxTrackingRange() { return INSTANCE.preventDespawnWhenInsideMaxTrackingRange; }
 
-    public static boolean getHordeZombiesCanBreakBlocks() {
-        return INSTANCE.hordeZombiesCanBreakBlocks;
-    }
+    public static boolean getPersistentMobs() { return INSTANCE.persistentMobs; }
 
-    public static int getZombiesBlockBreakTier() {
-        return INSTANCE.zombiesBlockBreakTier;
-    }
+    public static boolean getHordeZombiesSpawnNaturally() { return INSTANCE.hordeZombiesSpawnNaturally; }
 
-    public static boolean getHordeZombiesHaveIncreasedWaterMovementSpeed() { return INSTANCE.hordeZombiesHaveIncreasedWaterMovementSpeed; }
+    public static boolean getEliteZombiesSpawnNaturally() { return INSTANCE.eliteZombiesSpawnNaturally; }
 
-    public static boolean getEnableRandomHordes() {
-        return INSTANCE.enableRandomHordes;
-    }
-
-    public static int getChanceForRandomHordes() {
-        return INSTANCE.chanceForRandomHordes;
-    }
-
-    public static boolean getEnableLureHordeEffect() {
-        return INSTANCE.enableLureHordeEffect;
-    }
-
-    public static boolean getNonHordeZombiesCanCauseLureHordeEffect() { return INSTANCE.nonHordeZombiesCanCauseLureHordeEffect; }
-
-    public static boolean getLureHordeEffectSpawnsHorde() { return INSTANCE.lureHordeEffectSpawnsHorde; }
-
-    public static double getChanceForLureHordeEffect() {
-        return INSTANCE.chanceForLureHordeEffect;
-    }
-
-    public static int getDurationForLureHordeEffect() {
-        return INSTANCE.durationForLureHordeEffect;
-    }
-
-    public static double getChanceForLureEffectToSpawnHorde() {
-        return INSTANCE.chanceForLureEffectToSpawnHorde;
-    }
-
-    public static boolean getHordeZombiesSpawnNaturally() {
-        return INSTANCE.hordeZombiesSpawnNaturally;
-    }
-
-    public static boolean getEliteZombiesSpawnNaturally() {
-        return INSTANCE.eliteZombiesSpawnNaturally;
-    }
-
-    public static boolean getDemolitionZombiesSpawnNaturally() {
-        return INSTANCE.demolitionZombiesSpawnNaturally;
-    }
+    public static boolean getDemolitionZombiesSpawnNaturally() { return INSTANCE.demolitionZombiesSpawnNaturally; }
 
     public static boolean getNoNaturalSpawningBeforeFirstHordeNight() { return INSTANCE.noNaturalSpawningBeforeFirstHordeNight; }
 
-    public static double getMaxHealthHordeZombies() {
-        return INSTANCE.maxHealthHordeZombies;
-    }
+    public static double getMaxHealthHordeZombies() { return INSTANCE.maxHealthHordeZombies; }
 
-    public static double getMaxHealthEliteZombies() {
-        return INSTANCE.maxHealthEliteZombies;
-    }
+    public static double getMaxHealthEliteZombies() { return INSTANCE.maxHealthEliteZombies; }
 
-    public static double getMaxHealthDemolitionZombies() {
-        return INSTANCE.maxHealthDemolitionZombies;
-    }
+    public static double getMaxHealthDemolitionZombies() { return INSTANCE.maxHealthDemolitionZombies; }
 
-    public static boolean getPrintDebugMessages() {
-        return INSTANCE.printDebugMessages;
-    }
+    public static boolean getPrintDebugMessages() { return INSTANCE.printDebugMessages; }
+
+    public static boolean getDebugMakeHordeMobsGlow() { return INSTANCE.debugMakeHordeMobsGlow; }
 
 
     @ConfigEntry.Gui.Tooltip()
@@ -184,18 +102,6 @@ public class MainConfig implements ConfigData
             Note: if the grace period is set to 0 the first horde night will occur after")
             the number of days set with daysBetweenHordeNights below.")""")
     private int gracePeriodBeforeFirstHordeNight = 0;
-
-    @ConfigEntry.Gui.Tooltip()
-    @Comment("Days between horde nights (1 = every night is a horde night) | default: 5")
-    private int daysBetweenHordeNights = 5;
-
-    @ConfigEntry.Gui.Tooltip()
-    @Comment("Chance in % for a horde night | default: 100")
-    private int chanceForHordeNight = 100;
-
-    @ConfigEntry.Gui.Tooltip()
-    @Comment("Maximum number of hordes that can spawn per horde night (0 = unlimited) | default: 0")
-    private int maxHordesPerHordeNight = 0;
 
     @ConfigEntry.Gui.Tooltip()
     @Comment("If true, each night a message will be sent to the player with how many nights are left before the next Horde Night | default: false")
@@ -218,16 +124,8 @@ public class MainConfig implements ConfigData
     private int hordeMobsSpawnCap = 80;
 
     @ConfigEntry.Gui.Tooltip()
-    @Comment("If true, additional waves can spawn in a horde night | default: true")
-    private boolean spawnAdditionalWaves = true;
-
-    @ConfigEntry.Gui.Tooltip()
-    @Comment("Time in seconds between check for next possible wave in a horde night | default: 45")
-    private int cooldownBetweenWaves = 45;
-
-    @ConfigEntry.Gui.Tooltip()
-    @Comment("Chance in % for another horde wave | default: 7")
-    private int chanceForAdditionalWaves = 7;
+    @Comment("If true, the DoMobSpawning gamerule will be ignored for horde mob spawning | default: true")
+    private boolean ignoreDoMobSpawningGamerule = true;
 
     @ConfigEntry.Gui.Tooltip()
     @Comment("If true, horde waves can spawn in water | default: false")
@@ -236,6 +134,14 @@ public class MainConfig implements ConfigData
     @ConfigEntry.Gui.Tooltip()
     @Comment("If true, horde waves can spawn on trees | default: false")
     private boolean hordeWavesCanSpawnOnTrees = false;
+
+    @ConfigEntry.Gui.Tooltip()
+    @Comment("If true, horde waves can spawn in caves | default: false")
+    private boolean hordeWavesCanSpawnInCaves = false;
+
+    @ConfigEntry.Gui.Tooltip()
+    @Comment("Minimum distance from player for cave spawns (only used if hordeWavesCanSpawnInCaves is true) | default: 50")
+    private int caveSpawnDistance = 50;
 
     @ConfigEntry.Gui.Tooltip()
     @Comment("If true, the light level of the block position can prevent horde mobs from spawning | default: false")
@@ -250,64 +156,16 @@ public class MainConfig implements ConfigData
     private boolean hordeNightsDisableSleeping = true;
 
     @ConfigEntry.Gui.Tooltip()
+    @Comment("If true, the automatic difficulty progression is enabled | default: true")
+    private boolean enableAutomaticDifficultyProgression = true;
+
+    @ConfigEntry.Gui.Tooltip()
+    @Comment("If true, horde mobs will not despawn when inside the max tracking range of a player | default: false")
+    private boolean preventDespawnWhenInsideMaxTrackingRange = false;
+
+    @ConfigEntry.Gui.Tooltip()
     @Comment("If true, the horde mobs will be persistent and not despawn | default: false")
     private boolean persistentMobs = false;
-
-    @ConfigEntry.Gui.Tooltip()
-    @Comment("If true, the horde zombies will burn in daylight (only those added by this mod) | default: false")
-    private boolean hordeZombiesBurnInDaylight = false;
-
-    @ConfigEntry.Gui.Tooltip()
-    @Comment("If true, the vanilla zombies will burn in daylight | default: true")
-    private boolean vanillaZombiesBurnInDaylight = true;
-
-    @ConfigEntry.Gui.Tooltip()
-    @Comment("If true, (Horde, Elite and vanilla) zombies can push each other up (WWZ style) | default: true")
-    private boolean hordeZombiesCanPushEachOtherUp = true;
-
-    @ConfigEntry.Gui.Tooltip()
-    @Comment("If true, (Horde, Elite and vanilla) zombies can break blocks | default: false")
-    private boolean hordeZombiesCanBreakBlocks = false;
-
-    @ConfigEntry.Gui.Tooltip()
-    @Comment("Horde Zombie block break tier (0-4) | default: 1")
-    private int zombiesBlockBreakTier = 1;
-
-    @ConfigEntry.Gui.Tooltip()
-    @Comment("If true, Horde Zombies (incl. vanilla) have increased water movement speed | default: false")
-    private boolean hordeZombiesHaveIncreasedWaterMovementSpeed = false;
-
-    @ConfigEntry.Gui.Tooltip()
-    @Comment("If true, a random horde can spawn on none-horde nights | default: false")
-    private boolean enableRandomHordes = false;
-
-    @ConfigEntry.Gui.Tooltip()
-    @Comment("Chance in % for a random horde (checked once per night, on none-horde nights) | default: 15")
-    private int chanceForRandomHordes = 15;
-
-    @ConfigEntry.Gui.Tooltip()
-    @Comment("If true, killing a horde mob can give the player the lure horde effect (this will attract horde mobs in the area) | default: true")
-    private boolean enableLureHordeEffect = true;
-
-    @ConfigEntry.Gui.Tooltip()
-    @Comment("If true, killing zombies that were not spawned in a horde can also give the player the lure horde effect | default: true")
-    private boolean nonHordeZombiesCanCauseLureHordeEffect = true;
-
-    @ConfigEntry.Gui.Tooltip()
-    @Comment("Chance to get the lure horde effect, when the player kills a horde mob (1.0 = 100%) | default: 0.07")
-    private double chanceForLureHordeEffect = 0.07;
-
-    @ConfigEntry.Gui.Tooltip()
-    @Comment("Duration in seconds for the lure horde effect | default: 60")
-    private int durationForLureHordeEffect = 60;
-
-    @ConfigEntry.Gui.Tooltip()
-    @Comment("If true, getting the lure horde effect can spawn a horde | default: true")
-    private boolean lureHordeEffectSpawnsHorde = true;
-
-    @ConfigEntry.Gui.Tooltip()
-    @Comment("Chance for the lure horde effect to spawn a horde (1.0 = 100%) | default: 0.2")
-    private double chanceForLureEffectToSpawnHorde = 0.2;
 
     @ConfigEntry.Gui.Tooltip()
     @Comment("If true, Horde Zombies will spawn naturally | default: true")
@@ -340,4 +198,8 @@ public class MainConfig implements ConfigData
     @ConfigEntry.Gui.Tooltip()
     @Comment("If true, debug messages will be logged out | default: false")
     private boolean printDebugMessages = false;
+
+    @ConfigEntry.Gui.Tooltip()
+    @Comment("If true, horde mobs will glow (for debugging purposes) | default: false")
+    private boolean debugMakeHordeMobsGlow = false;
 }

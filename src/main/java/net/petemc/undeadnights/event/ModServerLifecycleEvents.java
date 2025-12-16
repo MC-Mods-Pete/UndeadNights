@@ -7,7 +7,7 @@ import net.petemc.undeadnights.command.HordeMobsCommand;
 import net.petemc.undeadnights.config.HordeConfig;
 import net.petemc.undeadnights.config.MainConfig;
 import net.petemc.undeadnights.util.StateSaverAndLoader;
-import net.petemc.undeadnights.world.spawner.UndeadSpawner;
+import net.petemc.undeadnights.world.spawner.HordeSpawner;
 
 public class ModServerLifecycleEvents {
 
@@ -23,10 +23,18 @@ public class ModServerLifecycleEvents {
     public static void executeServerStarted() {
         if (UndeadNights.serverState == null) {
             UndeadNights.serverState = StateSaverAndLoader.getServerState(pServer);
+
+            // TODO remove, only for testing
+            //UndeadNights.serverState.setFirstDifficultyLevelPrinted(false);
+            //UndeadNights.serverState.setCurrentDifficultyLevelIndex(0);
+
+            UndeadNights.difficultyConfig.setCurrentDifficultyLevel(UndeadNights.difficultyConfig.getDifficultyLevels().get(UndeadNights.serverState.getCurrentDifficultyLevelIndex()));
+            UndeadNights.automaticDifficultyProgressionActive = MainConfig.getEnableAutomaticDifficultyProgression();
+
             // check if the DaysCounter in the config was changed
-            if (UndeadNights.serverState.getLastMaxDaysCounter() != MainConfig.getDaysBetweenHordeNights()) {
-                UndeadNights.serverState.setDaysCounter(MainConfig.getDaysBetweenHordeNights());
-                UndeadNights.serverState.setLastMaxDaysCounter(MainConfig.getDaysBetweenHordeNights());
+            if (UndeadNights.serverState.getLastMaxDaysCounter() != UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeNights().getDaysBetweenHordeNights()) {
+                UndeadNights.serverState.setDaysCounter(UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeNights().getDaysBetweenHordeNights());
+                UndeadNights.serverState.setLastMaxDaysCounter(UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeNights().getDaysBetweenHordeNights());
             }
 
             // check if the Grace Period in the config was changed
@@ -36,13 +44,13 @@ public class ModServerLifecycleEvents {
             }
 
             // check if the maximum number of hordes per night in the config was changed
-            if (UndeadNights.serverState.getLastMaxHordesCounter() != MainConfig.getMaxHordesPerHordeNight()) {
-            if (MainConfig.getMaxHordesPerHordeNight() != 0) {
-                    UndeadNights.serverState.setHordesCounter(MainConfig.getMaxHordesPerHordeNight() + 1);
+            if (UndeadNights.serverState.getLastMaxHordesCounter() != UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeNights().getMaxHordesPerHordeNight()) {
+                if (UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeNights().getMaxHordesPerHordeNight() != 0) {
+                    UndeadNights.serverState.setHordesCounter(UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeNights().getMaxHordesPerHordeNight() + 1);
                 } else {
                     UndeadNights.serverState.setHordesCounter(0);
                 }
-                UndeadNights.serverState.setLastMaxHordesCounter(MainConfig.getMaxHordesPerHordeNight());
+                UndeadNights.serverState.setLastMaxHordesCounter(UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeNights().getMaxHordesPerHordeNight());
             }
 
             if (!MainConfig.getNoNaturalSpawningBeforeFirstHordeNight()) {
@@ -52,11 +60,12 @@ public class ModServerLifecycleEvents {
             if (MainConfig.getPrintDebugMessages()) {
                 UndeadNights.LOGGER.info("INIT DaysCounter: {} LastMaxDaysCounter: {}", UndeadNights.serverState.getDaysCounter(), UndeadNights.serverState.getLastMaxDaysCounter());
                 UndeadNights.LOGGER.info("INIT HordeNight: {} SpawnZombies: {} RespawnZombies: {}", UndeadNights.serverState.getHordeNight(), UndeadNights.serverState.getSpawnZombies(), UndeadNights.serverState.getRespawnZombies());
+                UndeadNights.LOGGER.info("INIT Difficulty level: {}", UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultyName());
             }
-            UndeadSpawner.hordeToSpawn = HordeConfig.getDefaultHorde();
-            //UndeadSpawner.prevNormalizedTimeOfDay = pServer.getOverworld().getTimeOfDay() - 1;
-            HordeMobsCommand.hordeZombiesCanBreakBlocks = MainConfig.getHordeZombiesCanBreakBlocks();
-            HordeMobsCommand.hordeZombiesBlockBreakingTier = MainConfig.getZombiesBlockBreakTier();
+            HordeSpawner.hordeIdFromHordesConfig = HordeConfig.getDefaultHorde();
+            //UndeadSpawner.prevNormalizedTimeOfDay = event.getServer().overworld().getDayTime() - 1;
+            HordeMobsCommand.hordeZombiesCanBreakBlocks = UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeMobs().isBlockBreaking();
+            HordeMobsCommand.hordeZombiesBlockBreakingTier = UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeMobs().getBlockBreakingTier();
         }
     }
 

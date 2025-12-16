@@ -1,11 +1,11 @@
 package net.petemc.undeadnights.command;
 
-import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.Text;
@@ -16,8 +16,7 @@ import java.util.Collection;
 import java.util.Objects;
 
 public class SpawnHordeCommand {
-    public static boolean spawnHorde = false;
-    public static Collection<? extends Entity> entities = null;
+    public static boolean spawnHordeByCommand = false;
 
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher, CommandRegistryAccess commandRegistryAccess, CommandManager.RegistrationEnvironment registrationEnvironment) {
         dispatcher.register(CommandManager.literal("undeadnights")
@@ -34,22 +33,39 @@ public class SpawnHordeCommand {
     }
 
     private static int spawnHorde(CommandContext<ServerCommandSource> context) {
+        ServerCommandSource source = context.getSource();
         if (UndeadNights.globalSpawnCounter < MainConfig.getHordeMobsSpawnCap()) {
-            spawnHorde = true;
-            Objects.requireNonNull(context.getSource().getEntity()).sendMessage(Text.translatable("message.undeadnights.command_spawn_horde_all"));
+            Objects.requireNonNull(source.getEntity()).sendMessage(Text.translatable("message.undeadnights.command_spawn_horde_all"));
             if (MainConfig.getPrintDebugMessages()) {
                 UndeadNights.LOGGER.info("Command to spawn hordes for all players issued.");
+                if (MainConfig.getHordeWavesCanSpawnInCaves()) {
+                    Objects.requireNonNull(source.getEntity()).sendMessage(Text.literal("Note: Cave spawning is ENABLED for hordes. Finding a spawn location may take longer."));
+                }
+            }
+            spawnHordeByCommand = true;
+            for (Entity entity : source.getWorld().getPlayers()) {
+                if (entity instanceof PlayerEntity) {
+                    UndeadNights.serverState.entitiesWithPendingHorde.add(entity.getUuid());
+                    UndeadNights.serverState.entitiesWithReceivedHorde.remove(entity.getUuid());
+                }
             }
         } else {
-            Objects.requireNonNull(context.getSource().getEntity()).sendMessage(Text.translatable("message.undeadnights.spawn_cap_reached"));
+            Objects.requireNonNull(source.getEntity()).sendMessage(Text.translatable("message.undeadnights.spawn_cap_reached"));
         }
-        return Command.SINGLE_SUCCESS;
+        return 0;
     }
 
-    private static int spawnHorde(ServerCommandSource source, Collection<? extends Entity> targets) {
+    private static int spawnHorde(ServerCommandSource source, Collection<? extends Entity> pTargets) {
         if (UndeadNights.globalSpawnCounter < MainConfig.getHordeMobsSpawnCap()) {
-            spawnHorde = true;
-            entities = targets;
+            spawnHordeByCommand = true;
+            if (!pTargets.isEmpty()) {
+                for (Entity entity : pTargets) {
+                    if (entity instanceof PlayerEntity) {
+                        UndeadNights.serverState.entitiesWithPendingHorde.add(entity.getUuid());
+                        UndeadNights.serverState.entitiesWithReceivedHorde.remove(entity.getUuid());
+                    }
+                }
+            }
             Objects.requireNonNull(source.getEntity()).sendMessage(Text.translatable("message.undeadnights.command_spawn_horde"));
             if (MainConfig.getPrintDebugMessages()) {
                 UndeadNights.LOGGER.info("Command to spawn hordes for certain players issued.");
@@ -57,6 +73,6 @@ public class SpawnHordeCommand {
         } else {
             Objects.requireNonNull(source.getEntity()).sendMessage(Text.translatable("message.undeadnights.spawn_cap_reached"));
         }
-        return Command.SINGLE_SUCCESS;
+        return 0;
     }
 }

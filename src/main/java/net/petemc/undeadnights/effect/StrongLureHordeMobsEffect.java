@@ -23,7 +23,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ForkJoinPool;
 
-public class LureHordeMobsEffect extends StatusEffect {
+public class StrongLureHordeMobsEffect extends StatusEffect {
     private static final HashMap<UUID, CompletableFuture<Boolean>> cachedNearbyHordeMobsPerPlayer = new HashMap<>();
 
     // Asynchronous method to find nearby horde mobs and set player as target
@@ -52,15 +52,26 @@ public class LureHordeMobsEffect extends StatusEffect {
         return true;
     }
 
-    public LureHordeMobsEffect(StatusEffectCategory statusEffectCategory, int color) {
+    public StrongLureHordeMobsEffect(StatusEffectCategory statusEffectCategory, int color) {
         super(statusEffectCategory, color);
     }
 
     @Override
     public void applyUpdateEffect(@NotNull LivingEntity pLivingEntity, int pAmplifier) {
         if (!pLivingEntity.getWorld().isClient()) {
+            boolean removeEffect = false;
+            if (pLivingEntity instanceof PlayerEntity player) {
+                if (player.hasStatusEffect(ModEffects.LURE_HORDE)) {
+                    player.removeStatusEffect(ModEffects.LURE_HORDE);
+                    removeEffect = true;
+                }
+            }
+
             double chance = 0.08D;
             if (pLivingEntity instanceof UndeadNightsExtendedPlayer hordeLurePlayer) {
+                if (removeEffect) {
+                    hordeLurePlayer.undeadnights_setHordeLureEffect(false);
+                }
                 if (!hordeLurePlayer.undeadnights_hasHordeLureEffect()) {
                     chance = 20.0D;
                 }
@@ -68,14 +79,9 @@ public class LureHordeMobsEffect extends StatusEffect {
             }
             if (pLivingEntity instanceof PlayerEntity pPlayer) {
                 WorldAccess world = pPlayer.getWorld();
-                Random randomSource = pPlayer.getRandom();
-                if (UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsLureEffect().isLureHordeEffectSpawnsHorde()) {
+                if (UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsLureEffect().isStrongLureHordeEffectSpawnsHorde()) {
                     if (!UndeadNights.serverState.entitiesWithReceivedHorde.contains(pPlayer.getUuid())) {
-                        if (randomSource.nextDouble() < UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsLureEffect().getChanceForLureEffectToSpawnHorde()) {
-                            UndeadNights.serverState.entitiesWithPendingHorde.add(pPlayer.getUuid());
-                        } else {
-                            UndeadNights.serverState.entitiesWithReceivedHorde.add(pPlayer.getUuid());
-                        }
+                        UndeadNights.serverState.entitiesWithPendingHorde.add(pPlayer.getUuid());
                     }
                 }
 

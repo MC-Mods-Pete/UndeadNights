@@ -38,6 +38,14 @@ repositories {
 			includeGroup "curse.maven"
 		}
 	}
+    maven {
+        name 'Ladysnake Mods'
+        url 'https://maven.ladysnake.org/releases'
+    }
+    maven {
+        name 'mavenCentral'
+        url 'https://repo.maven.apache.org/maven2/'
+    }
 }
 
 fabricApi {
@@ -58,7 +66,14 @@ dependencies {
 	}
 	include "me.shedaniel.cloth:cloth-config-fabric:${project.cloth_config_version}"
 
-	modImplementation "curse.maven:jade-324717:${project.jade_version}"
+    modImplementation "curse.maven:jade-324717:${project.jade_version}"
+
+    modImplementation "curse.maven:comforts-276951:${comforts_version}"
+    modImplementation "dev.onyxstudios.cardinal-components-api:cardinal-components-base:${cardinal_components_version}"
+    modImplementation "dev.onyxstudios.cardinal-components-api:cardinal-components-entity:${cardinal_components_version}"
+    modRuntimeOnly "curse.maven:spectrelib-993948:${spectrelib_version}"
+    modRuntimeOnly "com.electronwill.night-config:core:${night_config_version}"
+    modRuntimeOnly "com.electronwill.night-config:toml:${night_config_version}"
 }
 
 processResources {
