@@ -47,6 +47,7 @@ public class DifficultyLevelCommand {
             .sendSystemMessage(Component.literal("Current difficulty level: " + currentDifficultyLevel.getDifficultyName() + " (max: " + UndeadNights.difficultyConfig.getDifficultyLevels().size() +")\n"
             + "Automatic difficulty progression: " + (UndeadNights.automaticDifficultyProgressionActive ? "enabled" : "disabled") + "\n"
             + "Dynamic scaling: " + (UndeadNights.difficultyConfig.getDynamicScaling().isDynamicScalingEnabled() ? "enabled" : "disabled") + "\n"
+            + "Dynamic scaling day counter: " + UndeadNights.serverState.getCurrentDayScaleCounter() + " / " + String.format("%.0f", UndeadNights.difficultyConfig.getDynamicScaling().getDaysBetweenScaleIncreases()) + "\n"
             + "Current health scaling: +" + String.format("%.1f", UndeadNights.serverState.getCurrentHealthScale()*100) + "%\n"
             + "Current speed scaling: +" + String.format("%.1f", UndeadNights.serverState.getCurrentSpeedScale()*100) + "%\n"
             + "Current damage scaling: +" + String.format("%.1f", UndeadNights.serverState.getCurrentDamageScale()*100) + "%\n"
@@ -93,8 +94,9 @@ public class DifficultyLevelCommand {
         UndeadNights.serverState.setCurrentSpeedScale(0.0f);
         UndeadNights.serverState.setCurrentDamageScale(0.0f);
         UndeadNights.serverState.setCurrentArmorScale(0.0f);
+        UndeadNights.serverState.setCurrentDayScaleCounter(0);
         Objects.requireNonNull(source.getEntity())
-                .sendSystemMessage(Component.literal("Dynamic difficulty scaling values have been reset to +0%."));
+                .sendSystemMessage(Component.literal("Dynamic difficulty scaling values and day counter have been reset."));
         return 1;
     }
 }

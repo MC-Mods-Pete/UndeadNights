@@ -355,7 +355,7 @@ public class HordeSpawner implements CustomSpawner {
             if ((normalizedTimeOfDay >= 11500) && !level.getPlayers(LivingEntity::isAlive).isEmpty() && UndeadNights.automaticDifficultyProgressionActive) {
                 boolean flag = false;
                 if (UndeadNights.serverState.isPerformDifficultySwitchCheck()) {
-                    flag = UndeadNights.difficultyConfig.checkForDifficultyLevelSwitch((int) (level.getDayTime() / 24000L)+1, level.random);
+                    flag = UndeadNights.difficultyConfig.checkForDifficultyLevelSwitch((int) (level.getDayTime() / 24000L)+1, randomSource);
                     UndeadNights.serverState.setPerformDifficultySwitchCheck(false);
                 }
                 if ((flag || !UndeadNights.serverState.isFirstDifficultyLevelPrinted()) &&

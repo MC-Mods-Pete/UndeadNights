@@ -21,6 +21,7 @@ public class StateSaverAndLoader extends SavedData {
     private int possibleHordesIndex = -1;
     private int currentDifficultyLevelIndex = 0;
     private int currentDayScaleCounter = 0;
+    private int lastMaxDayScaleCounter = 0;
     private boolean hordeNight = false;
     private boolean nightIsStarting = false;
     private boolean firstWaveHasSpawned = false;
@@ -116,6 +117,12 @@ public class StateSaverAndLoader extends SavedData {
     public int getCurrentDayScaleCounter() { return currentDayScaleCounter; }
     public void setCurrentDayScaleCounter(int currentDayScaleCounter) {
         this.currentDayScaleCounter = currentDayScaleCounter;
+        this.setDirty();
+    }
+
+    public int getLastMaxDayScaleCounter() { return lastMaxDayScaleCounter; }
+    public void setLastMaxDayScaleCounter(int lastMaxDayScaleCounter) {
+        this.lastMaxDayScaleCounter = lastMaxDayScaleCounter;
         this.setDirty();
     }
 
@@ -255,6 +262,7 @@ public class StateSaverAndLoader extends SavedData {
         state.possibleHordesIndex = tag.getInt("lastHordeIndex");
         state.currentDifficultyLevelIndex = tag.getInt("currentDifficultyLevel");
         state.currentDayScaleCounter = tag.getInt("currentDayScaleCounter");
+        state.lastMaxDayScaleCounter = tag.getInt("lastMaxDayScaleCounter");
         state.hordeNight = tag.getBoolean("hordeNight");
         state.nightIsStarting = tag.getBoolean("nightIsStarting");
         state.firstWaveHasSpawned = tag.getBoolean("firstWaveHasSpawned");
@@ -318,6 +326,7 @@ public class StateSaverAndLoader extends SavedData {
         tag.putInt("lastHordeIndex", possibleHordesIndex);
         tag.putInt("currentDifficultyLevel", currentDifficultyLevelIndex);
         tag.putInt("currentDayScaleCounter", currentDayScaleCounter);
+        tag.putInt("lastMaxDayScaleCounter", lastMaxDayScaleCounter);
         tag.putBoolean("hordeNight", hordeNight);
         tag.putBoolean("nightIsStarting", nightIsStarting);
         tag.putBoolean("firstWaveHasSpawned", firstWaveHasSpawned);

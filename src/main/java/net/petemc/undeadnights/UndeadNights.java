@@ -105,6 +105,13 @@ public class UndeadNights {
 		UndeadNights.difficultyConfig.setCurrentDifficultyLevel(UndeadNights.difficultyConfig.getDifficultyLevels().get(UndeadNights.serverState.getCurrentDifficultyLevelIndex()));
 		UndeadNights.automaticDifficultyProgressionActive = MainConfig.getEnableAutomaticDifficultyProgression();
 
+		// check if the max DayScaleCounter was changed in the config
+		if (UndeadNights.serverState.getLastMaxDayScaleCounter() != UndeadNights.difficultyConfig.getDynamicScaling().getDaysBetweenScaleIncreases().intValue()) {
+			UndeadNights.LOGGER.info("Day scale counter max value changed in config, resetting current day scale counter to 0");
+			UndeadNights.serverState.setCurrentDayScaleCounter(0);
+			UndeadNights.serverState.setLastMaxDayScaleCounter(UndeadNights.difficultyConfig.getDynamicScaling().getDaysBetweenScaleIncreases().intValue());
+		}
+
 		// check if the DaysCounter in the config was changed
 		if (UndeadNights.serverState.getLastMaxDaysCounter() != UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeNights().getDaysBetweenHordeNights()) {
 			UndeadNights.serverState.setDaysCounter(UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeNights().getDaysBetweenHordeNights());
