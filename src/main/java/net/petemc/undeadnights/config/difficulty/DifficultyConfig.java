@@ -2,9 +2,9 @@ package net.petemc.undeadnights.config.difficulty;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import net.minecraft.util.math.random.Random;
 import net.petemc.undeadnights.UndeadNights;
 import net.petemc.undeadnights.command.HordeMobsCommand;
+import net.petemc.undeadnights.util.RandomExtention;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -102,9 +102,9 @@ public class DifficultyConfig {
     public void setDynamicScaling(DifficultySettingDynamicScaling dynamicScaling) { this.dynamicScaling = dynamicScaling; }
 
 
-    public boolean checkForDifficultyLevelSwitch(int currentDay, Random randomSource) {
+    public boolean checkForDifficultyLevelSwitch(int currentDay, RandomExtention randomSource) {
         UndeadNights.serverState.setCurrentDayScaleCounter(UndeadNights.serverState.getCurrentDayScaleCounter()+1);
-        if (UndeadNights.serverState.getCurrentDayScaleCounter() == UndeadNights.difficultyConfig.getDynamicScaling().getDaysBetweenScaleIncreases()) {
+        if (UndeadNights.serverState.getCurrentDayScaleCounter() >= UndeadNights.difficultyConfig.getDynamicScaling().getDaysBetweenScaleIncreases().intValue()) {
             UndeadNights.serverState.setCurrentDayScaleCounter(0);
             UndeadNights.serverState.setCurrentHealthScale(UndeadNights.serverState.getCurrentHealthScale() + UndeadNights.difficultyConfig.getDynamicScaling().getDaysHealthScaleIncrease());
             UndeadNights.serverState.setCurrentDamageScale(UndeadNights.serverState.getCurrentDamageScale() + UndeadNights.difficultyConfig.getDynamicScaling().getDaysDamageScaleIncrease());
@@ -129,7 +129,7 @@ public class DifficultyConfig {
             boolean performSwitch = currentDay >= nextDifficultyLevel.getMaxStartDay();
             if ((currentDay >= nextDifficultyLevel.getMinStartDay()) &&
                     (currentDay < nextDifficultyLevel.getMaxStartDay())) {
-                int randomValue = randomSource.nextBetween(1, 100);
+                int randomValue = randomSource.nextIntBetweenInclusive(1, 100);
                 if (randomValue > (100 - nextDifficultyLevel.getChanceForDifficultyLevelSwitch())) {
                     performSwitch = true;
                 }
