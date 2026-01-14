@@ -30,6 +30,7 @@ import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.petemc.undeadnights.UndeadNights;
+import net.petemc.undeadnights.config.HordeConfig;
 import net.petemc.undeadnights.config.MainConfig;
 import net.petemc.undeadnights.entity.ai.goal.BreakBlockGoal;
 import org.jetbrains.annotations.NotNull;
@@ -48,30 +49,71 @@ public class HordeZombieEntity extends Zombie {
     @Nullable
     @Override
     public SpawnGroupData finalizeSpawn(ServerLevelAccessor level, @NotNull DifficultyInstance difficulty, @NotNull MobSpawnType mobSpawnType, @Nullable SpawnGroupData spawnGroupData) {
-        RandomSource randomsource = level.getRandom();
         spawnGroupData = super.finalizeSpawn(level, difficulty, mobSpawnType, spawnGroupData);
         float f = difficulty.getSpecialMultiplier();
-        this.setCanPickUpLoot(randomsource.nextFloat() < 0.55F * f);
+        this.setCanPickUpLoot(random.nextFloat() < 0.55F * f);
         if (spawnGroupData == null) {
             spawnGroupData = new ZombieGroupData(false, false);
         }
 
         if (spawnGroupData instanceof ZombieGroupData) {
             this.setCanBreakDoors(true);
-            this.populateDefaultEquipmentSlots(randomsource, difficulty);
-            this.populateDefaultEquipmentEnchantments(level, randomsource, difficulty);
+            this.populateDefaultEquipmentSlots(random, difficulty);
+            this.populateDefaultEquipmentEnchantments(level, random, difficulty);
         }
 
         if (this.getItemBySlot(EquipmentSlot.HEAD).isEmpty()) {
             LocalDate localdate = LocalDate.now();
             int i = localdate.getDayOfMonth();
             int j = localdate.getMonth().getValue();
-            if (j == 10 && i == 31 && randomsource.nextFloat() < 0.25F) {
-                this.setItemSlot(EquipmentSlot.HEAD, new ItemStack(randomsource.nextFloat() < 0.1F ? Blocks.JACK_O_LANTERN : Blocks.CARVED_PUMPKIN));
+            if (j == 10 && i == 31 && random.nextFloat() < 0.25F) {
+                this.setItemSlot(EquipmentSlot.HEAD, new ItemStack(random.nextFloat() < 0.1F ? Blocks.JACK_O_LANTERN : Blocks.CARVED_PUMPKIN));
                 this.armorDropChances[EquipmentSlot.HEAD.getIndex()] = 0.0F;
             }
         }
-        Objects.requireNonNull(this.getAttribute(Attributes.MAX_HEALTH)).addPermanentModifier(new AttributeModifier(ResourceLocation.fromNamespaceAndPath(UndeadNights.MOD_ID, "horde_zombie_health_bonus"), MainConfig.getMaxHealthDemolitionZombies() - 20.0F, AttributeModifier.Operation.ADD_VALUE));
+        Objects.requireNonNull(this.getAttribute(Attributes.MAX_HEALTH)).addPermanentModifier(new AttributeModifier(ResourceLocation.fromNamespaceAndPath(UndeadNights.MOD_ID, "horde_zombie_health_bonus"), MainConfig.getMaxHealthHordeZombies() - 20.0F, AttributeModifier.Operation.ADD_VALUE));
+
+        int playerCount = 1;
+        if (!this.level().isClientSide) {
+            playerCount = this.level().players().size();
+        }
+
+        double healthScaleFactor = 0.0;
+        double damageScaleFactor = 0.0;
+        double speedScaleFactor = 0.0;
+        double armorScaleFactor = 0.0;
+
+        if (UndeadNights.difficultyConfig.getDynamicScaling().isDynamicScalingEnabled() && (playerCount > 1)) {
+            healthScaleFactor = UndeadNights.difficultyConfig.getDynamicScaling().getHealthScalePerPlayer() * (playerCount - 1);
+            damageScaleFactor = UndeadNights.difficultyConfig.getDynamicScaling().getDamageScalePerPlayer() * (playerCount - 1);
+            speedScaleFactor = UndeadNights.difficultyConfig.getDynamicScaling().getSpeedScalePerPlayer() * (playerCount - 1);
+            armorScaleFactor = UndeadNights.difficultyConfig.getDynamicScaling().getArmorScalePerPlayer() * (playerCount - 1);
+
+            healthScaleFactor = healthScaleFactor + UndeadNights.serverState.getCurrentHealthScale();
+            damageScaleFactor = damageScaleFactor + UndeadNights.serverState.getCurrentDayScaleCounter();
+            speedScaleFactor = speedScaleFactor + UndeadNights.serverState.getCurrentSpeedScale();
+            armorScaleFactor = armorScaleFactor + UndeadNights.serverState.getCurrentArmorScale();
+
+            if (healthScaleFactor > UndeadNights.difficultyConfig.getDynamicScaling().getMaxHealthScale()) {
+                healthScaleFactor = UndeadNights.difficultyConfig.getDynamicScaling().getMaxHealthScale();
+            }
+            if (damageScaleFactor > UndeadNights.difficultyConfig.getDynamicScaling().getMaxDamageScale()) {
+                damageScaleFactor = UndeadNights.difficultyConfig.getDynamicScaling().getMaxDamageScale();
+            }
+            if (speedScaleFactor > UndeadNights.difficultyConfig.getDynamicScaling().getMaxSpeedScale()) {
+                speedScaleFactor = UndeadNights.difficultyConfig.getDynamicScaling().getMaxSpeedScale();
+            }
+            if (armorScaleFactor > UndeadNights.difficultyConfig.getDynamicScaling().getMaxArmorScale()) {
+                armorScaleFactor = UndeadNights.difficultyConfig.getDynamicScaling().getMaxArmorScale();
+            }
+        }
+
+        if (UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeMobs().isUpdateHordeMobAttributes()) {
+            Objects.requireNonNull(this.getAttribute(Attributes.MAX_HEALTH)).addPermanentModifier(new AttributeModifier(ResourceLocation.fromNamespaceAndPath(UndeadNights.MOD_ID, "horde_zombie_difficulty_health_bonus"), UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeMobs().getHealthAttributeScaleFactor() - 1.0 + healthScaleFactor, AttributeModifier.Operation.ADD_MULTIPLIED_BASE));
+            Objects.requireNonNull(this.getAttribute(Attributes.MOVEMENT_SPEED)).addPermanentModifier(new AttributeModifier(ResourceLocation.fromNamespaceAndPath(UndeadNights.MOD_ID, "horde_zombie_difficulty_speed_bonus"), UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeMobs().getSpeedAttributeScaleFactor() - 1.0 + speedScaleFactor, AttributeModifier.Operation.ADD_MULTIPLIED_BASE));
+            Objects.requireNonNull(this.getAttribute(Attributes.ATTACK_DAMAGE)).addPermanentModifier(new AttributeModifier(ResourceLocation.fromNamespaceAndPath(UndeadNights.MOD_ID, "horde_zombie_difficulty_attack_damage_bonus"), UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeMobs().getDamageAttributeScaleFactor() - 1.0 + damageScaleFactor, AttributeModifier.Operation.ADD_MULTIPLIED_BASE));
+            Objects.requireNonNull(this.getAttribute(Attributes.ARMOR)).addPermanentModifier(new AttributeModifier(ResourceLocation.fromNamespaceAndPath(UndeadNights.MOD_ID, "horde_zombie_difficulty_armor_bonus"), UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeMobs().getArmorAttributeScaleFactor() - 1.0 + armorScaleFactor, AttributeModifier.Operation.ADD_MULTIPLIED_BASE));
+        }
 
         this.handleAttributes(f);
         this.setHealth(this.getMaxHealth());
@@ -81,8 +123,7 @@ public class HordeZombieEntity extends Zombie {
 
         public static AttributeSupplier.@NotNull Builder createAttributes() {
             return Monster.createMonsterAttributes()
-                    //.add(Attributes.MAX_HEALTH, 40.0D)          // default 20.0F
-                    .add(Attributes.FOLLOW_RANGE, 128.0D)       // default 35.0D
+                    .add(Attributes.FOLLOW_RANGE, UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeMobs().getHordeMobsTrackingRange())       // default 35.0D
                     .add(Attributes.MOVEMENT_SPEED, 0.30D)      // default 0.23F
                     .add(Attributes.ATTACK_DAMAGE, 5.0D)        // default 3.0
                     .add(Attributes.ARMOR, 4.0D)                // default 2.0
@@ -101,11 +142,8 @@ public class HordeZombieEntity extends Zombie {
         this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, false));
         this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, AbstractVillager.class, true));
         this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, IronGolem.class, true));
-    }
-
-    protected void defineSynchedData(SynchedEntityData.Builder builder) {
-        super.defineSynchedData(builder);
-        builder.define(DATA_FLAGS_ID, (byte)0);
+        this.targetSelector.addGoal(4, new NearestAttackableTargetGoal<>(this, LivingEntity.class, true,
+                (entity) -> (HordeConfig.getTargetEntities().contains(entity.getType().toString()))));
     }
 
     @Override
@@ -115,11 +153,12 @@ public class HordeZombieEntity extends Zombie {
 
     @Override
     protected boolean isSunSensitive() {
-        return MainConfig.getHordeZombiesBurnInDaylight();
+        return UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeMobs().isHordeZombiesBurnInTheSun();
     }
 
     @Override
-    public boolean canBreakDoors() {
+    public boolean canBreakDoors()
+    {
         return false;
     }
 
@@ -129,7 +168,12 @@ public class HordeZombieEntity extends Zombie {
 
     @Override
     protected float getWaterSlowDown() {
-        return MainConfig.getHordeZombiesHaveIncreasedWaterMovementSpeed() ? 0.94F : 0.8F;
+        return UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeMobs().isHordeZombiesAreFasterOnWater() ? 0.94F : 0.8F;
+    }
+
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(DATA_FLAGS_ID, (byte)0);
     }
 
     public boolean isBreakingBlock() {
@@ -145,11 +189,6 @@ public class HordeZombieEntity extends Zombie {
         }
 
         this.entityData.set(DATA_FLAGS_ID, b0);
-    }
-
-    @Override
-    public void randomizeReinforcementsChance() {
-        Objects.requireNonNull(this.getAttribute(Attributes.SPAWN_REINFORCEMENTS_CHANCE)).setBaseValue((double)0.0F);
     }
 
     @Override
@@ -203,8 +242,13 @@ public class HordeZombieEntity extends Zombie {
         }
     }
 
+    @Override
+    public void randomizeReinforcementsChance() {
+        Objects.requireNonNull(this.getAttribute(Attributes.SPAWN_REINFORCEMENTS_CHANCE)).setBaseValue((double)0.0F);
+    }
+
     /*
-    public static void init() {
+    public static void initSpawnConditions() {
         SpawnPlacements.register(ModEntities.HORDE_ZOMBIE.get(), SpawnPlacements.Type.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
                 (entityType, serverLevel, reason, pos, random) ->
                         MainConfig.getHordeZombiesSpawnNaturally()

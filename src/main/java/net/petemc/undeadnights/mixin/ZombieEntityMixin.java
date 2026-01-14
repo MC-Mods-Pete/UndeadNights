@@ -6,13 +6,12 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.monster.Zombie;
+import net.petemc.undeadnights.UndeadNights;
 import net.petemc.undeadnights.casts.BlockBreakingZombie;
-import net.petemc.undeadnights.config.MainConfig;
 import net.petemc.undeadnights.entity.DemolitionZombieEntity;
 import net.petemc.undeadnights.entity.EliteZombieEntity;
 import net.petemc.undeadnights.entity.HordeZombieEntity;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Unique;
+import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -43,7 +42,7 @@ public class ZombieEntityMixin implements BlockBreakingZombie
 
     @Inject(method = "isSunSensitive", at = @At("TAIL"), cancellable = true)
     public void isSunSensitive(CallbackInfoReturnable<Boolean> cir) {
-        cir.setReturnValue(MainConfig.getVanillaZombiesBurnInDaylight());
+        cir.setReturnValue(UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeMobs().isVanillaZombiesBurnInTheSun());
     }
 
     @Unique

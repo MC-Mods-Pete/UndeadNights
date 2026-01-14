@@ -2,7 +2,6 @@ package net.petemc.undeadnights.effect;
 
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.util.RandomSource;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.entity.Entity;
@@ -23,7 +22,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ForkJoinPool;
 
-public class LureHordeMobsEffect extends MobEffect {
+public class StrongLureHordeMobsEffect extends MobEffect {
     private static final HashMap<UUID, CompletableFuture<Boolean>> cachedNearbyHordeMobsPerPlayer = new HashMap<>();
 
     // Asynchronous method to find nearby horde mobs and set player as target
@@ -48,19 +47,29 @@ public class LureHordeMobsEffect extends MobEffect {
                 mob.setTarget(pPlayer);
             }
         }
-
         return true;
     }
 
-    public LureHordeMobsEffect(MobEffectCategory statusEffectCategory, int color) {
+    public StrongLureHordeMobsEffect(MobEffectCategory statusEffectCategory, int color) {
         super(statusEffectCategory, color);
     }
 
     @Override
     public boolean applyEffectTick(@NotNull LivingEntity pLivingEntity, int pAmplifier) {
         if (!pLivingEntity.level().isClientSide()) {
+            boolean removeEffect = false;
+            if (pLivingEntity instanceof Player player) {
+                if (player.hasEffect(ModEffects.LURE_HORDE.getHolder().get())) {
+                    player.removeEffect(ModEffects.LURE_HORDE.getHolder().get());
+                    removeEffect = true;
+                }
+            }
+
             double chance = 0.08D;
             if (pLivingEntity instanceof UndeadNightsExtendedPlayer hordeLurePlayer) {
+                if (removeEffect) {
+                    hordeLurePlayer.undeadnights_setHordeLureEffect(false);
+                }
                 if (!hordeLurePlayer.undeadnights_hasHordeLureEffect()) {
                     chance = 20.0D;
                 }
@@ -68,14 +77,9 @@ public class LureHordeMobsEffect extends MobEffect {
             }
             if (pLivingEntity instanceof Player pPlayer) {
                 LevelAccessor world = pPlayer.level();
-                RandomSource randomSource = pPlayer.getRandom();
-                if (UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsLureEffect().isLureHordeEffectSpawnsHorde()) {
+                if (UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsLureEffect().isStrongLureHordeEffectSpawnsHorde()) {
                     if (!UndeadNights.serverState.entitiesWithReceivedHorde.contains(pPlayer.getUUID())) {
-                        if (randomSource.nextDouble() < UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsLureEffect().getChanceForLureEffectToSpawnHorde()) {
-                            UndeadNights.serverState.entitiesWithPendingHorde.add(pPlayer.getUUID());
-                        } else {
-                            UndeadNights.serverState.entitiesWithReceivedHorde.add(pPlayer.getUUID());
-                        }
+                        UndeadNights.serverState.entitiesWithPendingHorde.add(pPlayer.getUUID());
                     }
                 }
 
@@ -91,6 +95,7 @@ public class LureHordeMobsEffect extends MobEffect {
                         }
                     }
                 }
+
                 /*
                 final Vec3 entityPosition = pPlayer.position();
                 final AABB entitySearchArea = new AABB(entityPosition, entityPosition).inflate(15d);

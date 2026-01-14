@@ -11,19 +11,17 @@ import net.petemc.undeadnights.entity.EliteZombieEntity;
 import net.petemc.undeadnights.entity.HordeZombieEntity;
 import net.petemc.undeadnights.entity.ModEntities;
 
+@Mod.EventBusSubscriber(modid = UndeadNights.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD)
 public class ModEvents {
-    @Mod.EventBusSubscriber(modid = UndeadNights.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD)
-    public static class ForgeEvents {
-        @SubscribeEvent
-        public static void spawnPlacementEvent(SpawnPlacementRegisterEvent event) {
-            event.register(ModEntities.HORDE_ZOMBIE.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
-                    HordeZombieEntity::checkHordeZombieSpawnRules, SpawnPlacementRegisterEvent.Operation.OR);
+    @SubscribeEvent
+    public static void spawnPlacementEvent(SpawnPlacementRegisterEvent event) {
+        event.register(ModEntities.HORDE_ZOMBIE.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+                HordeZombieEntity::checkHordeZombieSpawnRules, SpawnPlacementRegisterEvent.Operation.OR);
 
-            event.register(ModEntities.ELITE_ZOMBIE.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
-                    EliteZombieEntity::checkEliteZombieSpawnRules, SpawnPlacementRegisterEvent.Operation.OR);
+        event.register(ModEntities.ELITE_ZOMBIE.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+                EliteZombieEntity::checkEliteZombieSpawnRules, SpawnPlacementRegisterEvent.Operation.OR);
 
-            event.register(ModEntities.DEMOLITION_ZOMBIE.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
-                    DemolitionZombieEntity::checkDemolitionZombieSpawnRules, SpawnPlacementRegisterEvent.Operation.OR);
-        }
+        event.register(ModEntities.DEMOLITION_ZOMBIE.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+                DemolitionZombieEntity::checkDemolitionZombieSpawnRules, SpawnPlacementRegisterEvent.Operation.OR);
     }
 }

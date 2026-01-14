@@ -28,16 +28,17 @@ public class ModEntities {
                             .setTrackingRange(64)
                             .setUpdateInterval(1)
                             .sized(0.5F, 0.5F)
+                            .noSummon()
                             .build("tnt_projectile"));
 
-    /*
-    public static void initModEntities() {
-        HordeZombieEntity.init();
-        EliteZombieEntity.init();
-        DemolitionZombieEntity.init();
-    }
 
-     */
+/*
+    public static void initModEntities() {
+        HordeZombieEntity.initSpawnConditions();
+        EliteZombieEntity.initSpawnConditions();
+        DemolitionZombieEntity.initSpawnConditions();
+    }
+ */
 
     public static void register(IEventBus eventBus) {
         ENTITY_TYPES.register(eventBus);

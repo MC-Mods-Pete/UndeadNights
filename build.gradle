@@ -119,6 +119,16 @@ repositories {
     // flatDir {
     //     dir 'libs'
     // }
+
+    // curse maven
+    mavenLocal()
+
+    maven {
+        url "https://cursemaven.com"
+        content {
+            includeGroup "curse.maven"
+        }
+    }
 }
 
 dependencies {
@@ -149,6 +159,8 @@ dependencies {
     
     // Hack fix for now, force jopt-simple to be exactly 5.0.4 because Mojang ships that version, but some transitive dependencies request 6.0+ 
     implementation('net.sf.jopt-simple:jopt-simple:5.0.4') { version { strictly '5.0.4' } }
+
+    implementation fg.deobf("curse.maven:comforts-276951:${comforts_version}")
 }
 
 mixin {
