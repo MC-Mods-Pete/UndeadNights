@@ -144,7 +144,7 @@ public class BreakBlockGoal extends Goal {
         float destroyTime = world.getBlockState(targetBlock).getBlock().getHardness();
         scaledTargetDestroyTime = destroyTime * 2;
         if (MainConfig.getPrintDebugMessages()) {
-            UndeadNights.LOGGER.info("Block: {} destroyTime: {} Stage: {}", world.getBlockState(targetBlock).getBlock(), world.getBlockState(targetBlock).getBlock().getHardness(), MainConfig.getZombiesBlockBreakTier());
+            UndeadNights.LOGGER.info("Block: {} destroyTime: {} Stage: {}", world.getBlockState(targetBlock).getBlock(), world.getBlockState(targetBlock).getBlock().getHardness(), UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeMobs().getBlockBreakingTier());
         }
 
         if (block instanceof DoorBlock) {

@@ -6,8 +6,8 @@ import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.entity.mob.ZombieEntity;
+import net.petemc.undeadnights.UndeadNights;
 import net.petemc.undeadnights.casts.BlockBreakingZombie;
-import net.petemc.undeadnights.config.MainConfig;
 import net.petemc.undeadnights.entity.DemolitionZombieEntity;
 import net.petemc.undeadnights.entity.EliteZombieEntity;
 import net.petemc.undeadnights.entity.HordeZombieEntity;
@@ -44,7 +44,7 @@ public class ZombieEntityMixin  implements BlockBreakingZombie
 
     @Inject(method = "burnsInDaylight", at = @At("TAIL"), cancellable = true)
     public void burnsInDaylight(CallbackInfoReturnable<Boolean> cir) {
-        cir.setReturnValue(MainConfig.getVanillaZombiesBurnInDaylight());
+        cir.setReturnValue(UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeMobs().isVanillaZombiesBurnInTheSun());
     }
 
     @Unique

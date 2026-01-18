@@ -7,8 +7,6 @@ import net.minecraft.registry.Registry;
 import net.minecraft.util.Identifier;
 import net.petemc.undeadnights.UndeadNights;
 
-import java.util.Objects;
-
 public class ModEntities {
     public static final EntityType<HordeZombieEntity> HORDE_ZOMBIE = Registry.register(Registries.ENTITY_TYPE,
             Identifier.of(UndeadNights.MOD_ID, "horde_zombie"),
@@ -28,15 +26,15 @@ public class ModEntities {
     public static final EntityType<DemolitionZombieProjectileEntity> TNT_PROJECTILE = Registry.register(Registries.ENTITY_TYPE,
             Identifier.of(UndeadNights.MOD_ID, "tnt_projectile"),
             EntityType.Builder.<DemolitionZombieProjectileEntity>create(DemolitionZombieProjectileEntity::new, SpawnGroup.MISC)
-            //.setShouldReceiveVelocityUpdates(true)
             .maxTrackingRange(64)
             .trackingTickInterval(1)
             .dimensions(0.5f, 0.5f)
+            .disableSummon()
             .build(Identifier.of(UndeadNights.MOD_ID, "tnt_projectile").toString()));
 
     public static void initModEntities() {
-        HordeZombieEntity.init();
-        EliteZombieEntity.init();
-        DemolitionZombieEntity.init();
+        HordeZombieEntity.initSpawnCondition();
+        EliteZombieEntity.initSpawnConditions();
+        DemolitionZombieEntity.initSpawnConditions();
     }
 }

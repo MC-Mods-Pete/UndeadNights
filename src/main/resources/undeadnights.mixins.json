@@ -1,12 +1,16 @@
 {
 	"required": true,
+    "minVersion": "0.7",
 	"package": "net.petemc.undeadnights.mixin",
-	"compatibilityLevel": "JAVA_21",
+	"compatibilityLevel": "JAVA_17",
 	"mixins": [
-        "LivingEntityMixin",
-        "PlayerEntityMixin",
-        "ServerEntityManagerMixin",
-        "ServerPlayerEntityMixin",
+        "BaseComfortBlocksMixin",
+		"LivingEntityMixin",
+        "MobEntityMixin",
+        "PlayerEntityBedSleepingMessageMixin",
+		"PlayerEntityMixin",
+		"ServerEntityManagerMixin",
+		"ServerPlayerEntityMixin",
 		"ServerWorldMixin",
 		"ZombieEntityMixin"
 	],
