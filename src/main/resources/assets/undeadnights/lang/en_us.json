@@ -25,6 +25,7 @@
   "message.undeadnights.last_nights": "This is the last night before the next Night of the Undead!",
   "message.undeadnights.horde_night": "The sun is starting to set and you feel uneasy about the coming night...",
   "message.undeadnights.horde_spawned": "A horde has spawned!",
+  "message.undeadnights.boss_horde_spawned": "A boss horde has spawned!",
   "message.undeadnights.horde_night_over": "You feel at ease, this Night of the Undead is over...",
   "message.undeadnights.horde_time_over": "You feel at ease, the hordes of the Undead have stopped...",
   "message.undeadnights.spawn_cap_reached": "Spawning horde mobs not possible, spawncap reached.",
@@ -121,6 +122,10 @@
   "text.autoconfig.undeadnights.option.maxHealthEliteZombies.@Tooltip": "Elite zombie max health | default: 40.0",
   "text.autoconfig.undeadnights.option.maxHealthDemolitionZombies": "Demolition zombie max health",
   "text.autoconfig.undeadnights.option.maxHealthDemolitionZombies.@Tooltip": "Demolition zombie max health | default: 40.0",
+  "text.autoconfig.undeadnights.option.enableAsynchronousHordeSpawning": "Enable asynchronous horde spawning [WIP]",
+  "text.autoconfig.undeadnights.option.enableAsynchronousHordeSpawning.@Tooltip": "If enabled, horde spawning will be done asynchronously to reduce server lag [WIP] | default: disabled",
   "text.autoconfig.undeadnights.option.printDebugMessages": "Log out debug messages",
-  "text.autoconfig.undeadnights.option.printDebugMessages.@Tooltip": "If enabled, debug messages will be logged out | default: disabled"
+  "text.autoconfig.undeadnights.option.printDebugMessages.@Tooltip": "If enabled, debug messages will be logged out | default: disabled",
+  "text.autoconfig.undeadnights.option.debugMakeHordeMobsGlow": "Make horde mobs glow for debugging",
+  "text.autoconfig.undeadnights.option.debugMakeHordeMobsGlow.@Tooltip": "If enabled, horde mobs will have the glowing effect for debugging | default: disabled"
 }

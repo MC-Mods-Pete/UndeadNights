@@ -99,6 +99,8 @@ public class MainConfig
         return maxHealthDemolitionZombies;
     }
 
+    public static boolean getEnableAsynchronousHordeSpawning() { return enableAsynchronousHordeSpawning; }
+
     public static boolean getPrintDebugMessages() {
         return printDebugMessages;
     }
@@ -217,12 +219,16 @@ public class MainConfig
             .comment("Demolition zombie max health | default: 40.0")
             .defineInRange("maxHealthDemolitionZombies", 40.0, 1.0, 2048.0);
 
+    private static final ForgeConfigSpec.BooleanValue ENABLE_ASYNCHRONOUS_HORDE_SPAWNING = BUILDER_SERVER
+            .comment("If true, horde spawning will be done asynchronously to reduce lag spikes [WIP] | default: false")
+            .define("enableAsynchronousHordeSpawning", false);
+
     private static final ForgeConfigSpec.BooleanValue PRINT_DEBUG_MESSAGES = BUILDER_SERVER
             .comment("If true, debug messages will be logged out | default: false")
             .define("printDebugMessages", false);
 
     private static final ForgeConfigSpec.BooleanValue DEBUG_MAKE_HORDE_MOBS_GLOW = BUILDER_SERVER
-            .comment("If true, horde mods that are added with a horde glow (for debug) | default: false")
+            .comment("If true, horde mobs are added with the glow effect (for debugging) | default: false")
             .define("debugMakeHordeMobsGlow", false);
 
    public static final ForgeConfigSpec SPEC_SERVER = BUILDER_SERVER.build();
@@ -259,6 +265,7 @@ public class MainConfig
     private static double maxHealthHordeZombies = 40.0D;
     private static double maxHealthEliteZombies = 40.0D;
     private static double maxHealthDemolitionZombies = 40.0D;
+    private static boolean enableAsynchronousHordeSpawning = false;
     private static boolean printDebugMessages = false;
     private static boolean debugMakeHordeMobsGlow = false;
 
@@ -293,6 +300,7 @@ public class MainConfig
             maxHealthHordeZombies = MAX_HEALTH_HORDE_ZOMBIES.get();
             maxHealthEliteZombies = MAX_HEALTH_ELITE_ZOMBIES.get();
             maxHealthDemolitionZombies = MAX_HEALTH_DEMOLITION_ZOMBIES.get();
+            enableAsynchronousHordeSpawning = ENABLE_ASYNCHRONOUS_HORDE_SPAWNING.get();
             printDebugMessages = PRINT_DEBUG_MESSAGES.get();
             debugMakeHordeMobsGlow = DEBUG_MAKE_HORDE_MOBS_GLOW.get();
         }

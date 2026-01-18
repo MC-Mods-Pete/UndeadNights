@@ -22,6 +22,7 @@ public class StateSaverAndLoader extends SavedData {
     private int possibleHordesIndex = -1;
     private int currentDifficultyLevelIndex = 0;
     private int currentDayScaleCounter = 0;
+    private int lastMaxDayScaleCounter = 0;
     private boolean hordeNight = false;
     private boolean nightIsStarting = false;
     private boolean firstWaveHasSpawned = false;
@@ -33,6 +34,7 @@ public class StateSaverAndLoader extends SavedData {
     private boolean isNaturalSpawningOk = false;
     private boolean firstEliteZombieHasSpawned = false;
     private boolean firstDemolitionZombieHasSpawned = false;
+    private boolean spawnBossHorde = false;
     private long prevNormalizedTimeOfDay = 0;
     private double currentHealthScale = 0.0;
     private double currentSpeedScale = 0.0;
@@ -117,6 +119,12 @@ public class StateSaverAndLoader extends SavedData {
     public int getCurrentDayScaleCounter() { return currentDayScaleCounter; }
     public void setCurrentDayScaleCounter(int currentDayScaleCounter) {
         this.currentDayScaleCounter = currentDayScaleCounter;
+        this.setDirty();
+    }
+
+    public int getLastMaxDayScaleCounter() { return lastMaxDayScaleCounter; }
+    public void setLastMaxDayScaleCounter(int lastMaxDayScaleCounter) {
+        this.lastMaxDayScaleCounter = lastMaxDayScaleCounter;
         this.setDirty();
     }
 
@@ -208,6 +216,12 @@ public class StateSaverAndLoader extends SavedData {
         this.setDirty();
     }
 
+    public boolean isSpawnBossHorde() { return spawnBossHorde; }
+    public void setSpawnBossHorde(boolean spawnBossHorde) {
+        this.spawnBossHorde = spawnBossHorde;
+        this.setDirty();
+    }
+
     public long getPrevNormalizedTimeOfDay() {
         return this.prevNormalizedTimeOfDay;
     }
@@ -252,6 +266,7 @@ public class StateSaverAndLoader extends SavedData {
         state.possibleHordesIndex = tag.getInt("lastHordeIndex");
         state.currentDifficultyLevelIndex = tag.getInt("currentDifficultyLevel");
         state.currentDayScaleCounter = tag.getInt("currentDayScaleCounter");
+        state.lastMaxDayScaleCounter = tag.getInt("lastMaxDayScaleCounter");
         state.hordeNight = tag.getBoolean("hordeNight");
         state.nightIsStarting = tag.getBoolean("nightIsStarting");
         state.firstWaveHasSpawned = tag.getBoolean("firstWaveHasSpawned");
@@ -263,6 +278,7 @@ public class StateSaverAndLoader extends SavedData {
         state.isNaturalSpawningOk = tag.getBoolean("isNaturalSpawningOk");
         state.firstEliteZombieHasSpawned = tag.getBoolean("firstEliteZombieHasSpawned");
         state.firstDemolitionZombieHasSpawned = tag.getBoolean("firstDemolitionZombieHasSpawned");
+        state.spawnBossHorde = tag.getBoolean("spawnBossHorde");
         state.prevNormalizedTimeOfDay = tag.getLong("prevNormalizedTimeOfDay");
         state.currentHealthScale = tag.getDouble("currentHealthScale");
         state.currentSpeedScale = tag.getDouble("currentSpeedScale");
@@ -315,6 +331,7 @@ public class StateSaverAndLoader extends SavedData {
         tag.putInt("lastHordeIndex", possibleHordesIndex);
         tag.putInt("currentDifficultyLevel", currentDifficultyLevelIndex);
         tag.putInt("currentDayScaleCounter", currentDayScaleCounter);
+        tag.putInt("lastMaxDayScaleCounter", lastMaxDayScaleCounter);
         tag.putBoolean("hordeNight", hordeNight);
         tag.putBoolean("nightIsStarting", nightIsStarting);
         tag.putBoolean("firstWaveHasSpawned", firstWaveHasSpawned);
@@ -326,6 +343,7 @@ public class StateSaverAndLoader extends SavedData {
         tag.putBoolean("isNaturalSpawningOk", isNaturalSpawningOk);
         tag.putBoolean("firstEliteZombieHasSpawned", firstEliteZombieHasSpawned);
         tag.putBoolean("firstDemolitionZombieHasSpawned", firstDemolitionZombieHasSpawned);
+        tag.putBoolean("spawnBossHorde", spawnBossHorde);
         tag.putLong("prevNormalizedTimeOfDay", prevNormalizedTimeOfDay);
         tag.putDouble("currentHealthScale", currentHealthScale);
         tag.putDouble("currentSpeedScale", currentSpeedScale);
