@@ -146,14 +146,15 @@ public class SpawnLocationFinder {
                 if (!isAABBFreeForSpawn(level, new AABB(cand.getX() + 0.5 - 0.3, cand.getY() + 0.001, cand.getZ() + 0.5 - 0.3, cand.getX() + 0.5 + 0.3, cand.getY() + 1.8 - 0.001, cand.getZ() + 0.5 + 0.3))) continue;
 
                 try {
+                    // set up probe for pathfinding
+                    probe.setOnGround(true);
                     // place probe at candidate center before asking it to path to the player
                     probe.setPos(cand.getX() + 0.5, cand.getY(), cand.getZ() + 0.5);
-                    // ensure probe is considered on ground
-                    probe.setOnGround(true);
-                    // get navigation
-                    var nav = probe.getNavigation();
+                    // get probe navigation
+                    //GroundPathNavigationExtended nav = (GroundPathNavigationExtended) probe.getNavigation();
+                    GroundPathNavigationLegacy nav = new GroundPathNavigationLegacy(probe, level);
                     // createPath may return null or an empty path if unreachable
-                    Path path = nav.createPath(player, 0);
+                    Path path = nav.createPathLegacy(player, 0);
 
                     if (path != null) {
                         if (debug) UndeadNights.LOGGER.info("findEndUsingMinecraftPF: candidate {} accepted by vanilla navigation (attempt {})", cand, i);
