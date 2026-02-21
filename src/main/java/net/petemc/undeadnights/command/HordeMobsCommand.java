@@ -14,7 +14,7 @@ import net.minecraft.util.Formatting;
 import net.petemc.undeadnights.UndeadNights;
 import net.petemc.undeadnights.config.HordeConfig;
 import net.petemc.undeadnights.config.MainConfig;
-import net.petemc.undeadnights.world.spawner.UndeadSpawner;
+import net.petemc.undeadnights.world.spawner.HordeSpawner;
 
 public class HordeMobsCommand {
     public static boolean hordeZombiesCanBreakBlocks = false;
@@ -115,7 +115,7 @@ public class HordeMobsCommand {
         if (context.getSource().getEntity() instanceof ServerPlayerEntity serverPlayer) {
             serverPlayer.sendMessage(Text.literal(message.toString()));
             }
-        if (UndeadSpawner.invalidHordeMobEntry) {
+        if (HordeSpawner.invalidHordeMobEntry) {
             if (context.getSource().getEntity() instanceof ServerPlayerEntity serverPlayer) {
                 serverPlayer.sendMessage(Text.literal("""
                         A horde mob entry in the horde mob config could not be read!

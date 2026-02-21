@@ -8,7 +8,7 @@ import net.minecraft.world.dimension.DimensionOptions;
 import net.minecraft.world.level.ServerWorldProperties;
 import net.minecraft.world.level.storage.LevelStorage;
 import net.minecraft.world.spawner.SpecialSpawner;
-import net.petemc.undeadnights.world.spawner.UndeadSpawner;
+import net.petemc.undeadnights.world.spawner.HordeSpawner;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Mutable;
@@ -22,15 +22,14 @@ import java.util.List;
 import java.util.concurrent.Executor;
 
 @Mixin(ServerWorld.class)
-public class ServerWorldMixin
-{
+public class ServerWorldMixin {
     @Mutable
     @Shadow @Final private List<SpecialSpawner> spawners;
 
     @Inject(method = "<init>", at = @At("TAIL"))
     public void init(MinecraftServer server, Executor workerExecutor, LevelStorage.Session session, ServerWorldProperties properties, RegistryKey worldKey, DimensionOptions dimensionOptions, boolean debugWorld, long seed, List spawners, boolean shouldTickTime, RandomSequencesState randomSequenceState, CallbackInfo ci) {
         ArrayList<SpecialSpawner> undeadSpawner = new ArrayList<>(this.spawners);
-        undeadSpawner.add(new UndeadSpawner());
+        undeadSpawner.add(new HordeSpawner());
         this.spawners = undeadSpawner.stream().toList();
     }
 }

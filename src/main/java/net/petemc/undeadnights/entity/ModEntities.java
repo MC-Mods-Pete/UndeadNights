@@ -38,11 +38,12 @@ public class ModEntities {
                     .maxTrackingRange(64)
                     .trackingTickInterval(1)
                     .dimensions(0.5f, 0.5f)
+                    .disableSummon()
                     .build(keyTntProjectile));
 
     public static void initModEntities() {
-        HordeZombieEntity.init();
-        EliteZombieEntity.init();
-        DemolitionZombieEntity.init();
+        HordeZombieEntity.initSpawnCondition();
+        EliteZombieEntity.initSpawnConditions();
+        DemolitionZombieEntity.initSpawnConditions();
     }
 }
