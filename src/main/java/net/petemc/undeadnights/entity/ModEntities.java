@@ -1,8 +1,8 @@
 package net.petemc.undeadnights.entity;
 
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import net.neoforged.bus.api.IEventBus;
@@ -37,15 +37,8 @@ public class ModEntities {
                     .setTrackingRange(64)
                     .setUpdateInterval(1)
                     .sized(0.5F, 0.5F)
+                    .noSummon()
                     .build(ResourceKey.create(Registries.ENTITY_TYPE, Identifier.fromNamespaceAndPath(UndeadNights.MOD_ID,"tnt_projectile"))));
-
-    /*
-    public static void initModEntities() {
-        HordeZombieEntity.init();
-        EliteZombieEntity.init();
-        DemolitionZombieEntity.init();
-    }
-     */
 
     public static void register(IEventBus eventBus) {
         ENTITY_TYPES.register(eventBus);
