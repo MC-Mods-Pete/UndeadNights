@@ -1,8 +1,8 @@
 package net.petemc.undeadnights.entity;
 
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraftforge.eventbus.api.bus.BusGroup;
@@ -16,33 +16,29 @@ public class ModEntities {
             DeferredRegister.create(Registries.ENTITY_TYPE, UndeadNights.MOD_ID);
 
     public static final Supplier<EntityType<HordeZombieEntity>> HORDE_ZOMBIE =
-            ENTITY_TYPES.register("horde_zombie", () -> EntityType.Builder.of(HordeZombieEntity::new, MobCategory.MONSTER)
+            ENTITY_TYPES.register("horde_zombie", () ->
+                    EntityType.Builder.of(HordeZombieEntity::new, MobCategory.CREATURE)
                     .sized(0.6f, 1.95f)
                     .build(ResourceKey.create(Registries.ENTITY_TYPE, Identifier.fromNamespaceAndPath(UndeadNights.MOD_ID, "horde_zombie"))));
     public static final Supplier<EntityType<DemolitionZombieEntity>> DEMOLITION_ZOMBIE =
-            ENTITY_TYPES.register("demolition_zombie", () -> EntityType.Builder.of(DemolitionZombieEntity::new, MobCategory.MONSTER)
+            ENTITY_TYPES.register("demolition_zombie", () ->
+                    EntityType.Builder.of(DemolitionZombieEntity::new, MobCategory.CREATURE)
                     .sized(0.6f, 1.95f)
                     .build(ResourceKey.create(Registries.ENTITY_TYPE, Identifier.fromNamespaceAndPath(UndeadNights.MOD_ID,"demolition_zombie"))));
     public static final Supplier<EntityType<EliteZombieEntity>> ELITE_ZOMBIE =
-            ENTITY_TYPES.register("elite_zombie", () -> EntityType.Builder.of(EliteZombieEntity::new, MobCategory.MONSTER)
+            ENTITY_TYPES.register("elite_zombie", () ->
+                    EntityType.Builder.of(EliteZombieEntity::new, MobCategory.CREATURE)
                     .sized(0.6f, 1.95f)
                     .build(ResourceKey.create(Registries.ENTITY_TYPE, Identifier.fromNamespaceAndPath(UndeadNights.MOD_ID,"elite_zombie"))));
     public static final Supplier<EntityType<DemolitionZombieProjectileEntity>> TNT_PROJECTILE =
             ENTITY_TYPES.register("tnt_projectile", () ->
                     EntityType.Builder.<DemolitionZombieProjectileEntity>of(DemolitionZombieProjectileEntity::new, MobCategory.MISC)
-                            .setShouldReceiveVelocityUpdates(true)
-                            .setTrackingRange(64)
-                            .setUpdateInterval(1)
-                            .sized(0.5F, 0.5F)
-                            .build(ResourceKey.create(Registries.ENTITY_TYPE, Identifier.fromNamespaceAndPath(UndeadNights.MOD_ID,"tnt_projectile"))));
-
-    /*
-    public static void initModEntities() {
-        HordeZombieEntity.init();
-        EliteZombieEntity.init();
-        DemolitionZombieEntity.init();
-    }
-     */
+                    .setShouldReceiveVelocityUpdates(true)
+                    .setTrackingRange(64)
+                    .setUpdateInterval(1)
+                    .sized(0.5F, 0.5F)
+                    .noSummon()
+                    .build(ResourceKey.create(Registries.ENTITY_TYPE, Identifier.fromNamespaceAndPath(UndeadNights.MOD_ID,"tnt_projectile"))));
 
     public static void register(BusGroup modBusGroup) {
         ENTITY_TYPES.register(modBusGroup);

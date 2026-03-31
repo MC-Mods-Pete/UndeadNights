@@ -2,14 +2,17 @@
 	"required": true,
 	"minVersion": "0.7",
 	"package": "net.petemc.undeadnights.mixin",
-	"compatibilityLevel": "JAVA_21",
+	"compatibilityLevel": "JAVA_17",
+	"refmap": "undeadnights.mixins-refmap.json",
 	"mixins": [
-      "LivingEntityMixin",
-      "PersistentEntitySectionManagerMixin",
-      "PlayerEntityMixin",
-	  "ServerPlayerEntityMixin",
-      "ServerWorldMixin",
-      "ZombieEntityMixin"
+        "LivingEntityMixin",
+        "MobEntityMixin",
+        "PersistentEntitySectionManagerMixin",
+        "PlayerEntityBedSleepingMessageMixin",
+        "PlayerEntityMixin",
+        "ServerPlayerEntityMixin",
+        "ServerWorldMixin",
+        "ZombieEntityMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1
