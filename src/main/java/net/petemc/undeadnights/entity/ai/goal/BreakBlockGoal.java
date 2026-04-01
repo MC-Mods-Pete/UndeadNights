@@ -1,18 +1,18 @@
 package net.petemc.undeadnights.entity.ai.goal;
 
-import net.minecraft.block.AirBlock;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.DoorBlock;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.ai.goal.Goal;
-import net.minecraft.entity.mob.ZombieEntity;
-import net.minecraft.util.Hand;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.util.Mth;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.goal.Goal;
+import net.minecraft.world.entity.monster.zombie.Zombie;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.AirBlock;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.DoorBlock;
+import net.minecraft.world.level.block.state.BlockState;
 import net.petemc.undeadnights.UndeadNights;
 import net.petemc.undeadnights.casts.BlockBreakingZombie;
 import net.petemc.undeadnights.command.HordeMobsCommand;
@@ -21,35 +21,35 @@ import net.petemc.undeadnights.entity.EliteZombieEntity;
 import net.petemc.undeadnights.entity.HordeZombieEntity;
 
 public class BreakBlockGoal extends Goal {
-    private final ZombieEntity mob;
-    private final float breakProgressPerTick = 0.04f;
+    private final Zombie mob;
+    private final float breakProgressPerTick = 0.05f;
     private BlockPos targetBlock;
     private float scaledTargetDestroyTime;
     private float breakProgress;
     private float ratio;
 
-    public BreakBlockGoal(ZombieEntity mob) {
+    public BreakBlockGoal(Zombie mob) {
         this.mob = mob;
     }
 
     public static float blockPosDistance(Entity entity, BlockPos pos) {
-        return blockPosDistance(entity.getBlockPos(), pos);
+        return blockPosDistance(entity.blockPosition(), pos);
     }
 
     public static float blockPosDistance(BlockPos pos1, BlockPos pos2) {
         float x = (pos1.getX() - pos2.getX());
         float y = (pos1.getY() - pos2.getY());
         float z = (pos1.getZ() - pos2.getZ());
-        return MathHelper.sqrt(x * x + y * y + z * z);
+        return Mth.sqrt(x * x + y * y + z * z);
     }
 
     @Override
-    public boolean shouldRunEveryTick() {
+    public boolean requiresUpdateEveryTick() {
         return true;
     }
 
     @Override
-    public boolean shouldContinue() {
+    public boolean canContinueToUse() {
         return blockPosDistance(mob, targetBlock) <= 3 && this.breakProgress <= this.scaledTargetDestroyTime;
     }
 
@@ -67,37 +67,37 @@ public class BreakBlockGoal extends Goal {
     }
 
     @Override
-    public boolean canStop() {
+    public boolean isInterruptable() {
         return false;
     }
 
     @Override
     public void tick() {
         breakProgress += breakProgressPerTick;
-        mob.swingHand(Hand.MAIN_HAND);
+        mob.swing(InteractionHand.MAIN_HAND);
         if (breakProgress >= scaledTargetDestroyTime) {
-            mob.getEntityWorld().breakBlock(this.targetBlock, true);
+            mob.level().destroyBlock(this.targetBlock, true);
             return;
         }
-        mob.getEntityWorld().setBlockBreakingInfo(mob.getId(), targetBlock, (int) (breakProgress * ratio));
+        mob.level().destroyBlockProgress(mob.getId(), targetBlock, (int) (breakProgress * ratio));
     }
 
     @Override
     public void stop() {
-        mob.getEntityWorld().setBlockBreakingInfo(mob.getId(), targetBlock, 0);
+        mob.level().destroyBlockProgress(mob.getId(), targetBlock, 0);
         breakProgress = 0;
         targetBlock = null;
         scaledTargetDestroyTime = 0;
         if (this.mob instanceof HordeZombieEntity hordeZombie) {
             hordeZombie.setBreakingBlock(false);
         }
-        mob.getNavigation().recalculatePath();
+        mob.getNavigation().recomputePath();
     }
 
 
 
     @Override
-    public boolean canStart() {
+    public boolean canUse() {
         if (!HordeMobsCommand.hordeZombiesCanBreakBlocks) {
             return false;
         }
@@ -107,17 +107,17 @@ public class BreakBlockGoal extends Goal {
             return false;
         }
 
-        if (this.mob.getRandom().nextFloat() < 0.5F) {
+        if (this.mob.getRandom().nextFloat() < 0.4F) {
             return false;
         }
 
-        final World world = mob.getEntityWorld();
-        final Direction direction = mob.getHorizontalFacing();
+        final Level world = mob.level();
+        final Direction direction = mob.getDirection();
 
-        BlockPos blockPos = mob.getBlockPos();
-        blockPos = blockPos.add(direction.getVector()).add(0, 1, 0);
+        BlockPos blockPos = mob.blockPosition();
+        blockPos = blockPos.offset(direction.getUnitVec3i()).offset(0, 1, 0);
 
-        if (!mob.getNavigation().isIdle()) {
+        if (!mob.getNavigation().isDone()) {
             return false;
         }
 
@@ -131,20 +131,20 @@ public class BreakBlockGoal extends Goal {
         BlockState state = world.getBlockState(blockPos);
         Block block = state.getBlock();
 
-        if (block instanceof AirBlock || block.canMobSpawnInside(state)) {
-            blockPos = blockPos.add(0, yCheckModifier, 0);
+        if (block instanceof AirBlock || block.isPossibleToRespawnInThis(state)) {
+            blockPos = blockPos.offset(0, yCheckModifier, 0);
             state = world.getBlockState(blockPos);
             block = state.getBlock();
-            if (block instanceof AirBlock || block.canMobSpawnInside(state)) {
+            if (block instanceof AirBlock || block.isPossibleToRespawnInThis(state)) {
                 return false;
             }
         }
 
         targetBlock = blockPos;
-        float destroyTime = world.getBlockState(targetBlock).getBlock().getHardness();
-        scaledTargetDestroyTime = destroyTime * 2;
+        float destroyTime = world.getBlockState(targetBlock).getBlock().defaultDestroyTime();
+        scaledTargetDestroyTime = destroyTime * 1.5f;
         if (MainConfig.getPrintDebugMessages()) {
-            UndeadNights.LOGGER.info("Block: {} destroyTime: {} Stage: {}", world.getBlockState(targetBlock).getBlock(), world.getBlockState(targetBlock).getBlock().getHardness(), UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeMobs().getBlockBreakingTier());
+            UndeadNights.LOGGER.info("Block: {} destroyTime: {} Stage: {}", world.getBlockState(targetBlock).getBlock(), world.getBlockState(targetBlock).getBlock().defaultDestroyTime(), UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeMobs().getBlockBreakingTier());
         }
 
         if (block instanceof DoorBlock) {

@@ -1,21 +1,21 @@
 package net.petemc.undeadnights.util;
 
-import net.minecraft.block.*;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.SpawnReason;
-import net.minecraft.entity.ai.pathing.Path;
-import net.minecraft.registry.tag.BlockTags;
-import net.minecraft.registry.tag.FluidTags;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.random.Random;
-import net.minecraft.util.shape.VoxelShape;
-import net.minecraft.world.Heightmap;
-import net.minecraft.world.LightType;
-import net.minecraft.world.ServerWorldAccess;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.tags.BlockTags;
+import net.minecraft.tags.FluidTags;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntitySpawnReason;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LightLayer;
+import net.minecraft.world.level.ServerLevelAccessor;
+import net.minecraft.world.level.block.*;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraft.world.level.pathfinder.Path;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import net.petemc.undeadnights.UndeadNights;
 import net.petemc.undeadnights.config.MainConfig;
 import net.petemc.undeadnights.entity.HordeZombieEntity;
@@ -25,13 +25,13 @@ import java.util.concurrent.ThreadLocalRandom;
 
 public class SpawnLocationFinder {
     // check if the block light level at the given position is dark enough for monster spawns
-    public static boolean isDarkEnoughToSpawn(ServerWorldAccess level, BlockPos pos) {
-        return level.getLightLevel(LightType.BLOCK, pos) <= MainConfig.getMaxBlockLightLevelForMonsterSpawns();
+    public static boolean isDarkEnoughToSpawn(ServerLevelAccessor level, BlockPos pos) {
+        return level.getBrightness(LightLayer.BLOCK, pos) <= MainConfig.getMaxBlockLightLevelForMonsterSpawns();
     }
 
     // check if the given location is suitable for spawning horde mobs
-    public static boolean checkSpawnLocation(ServerWorld level, double x, double y, double z) {
-        BlockPos.Mutable mutable = new BlockPos.Mutable(x, y, z);
+    public static boolean checkSpawnLocation(ServerLevel level, double x, double y, double z) {
+        BlockPos.MutableBlockPos mutable = new BlockPos.MutableBlockPos(x, y, z);
 
         BlockState blockState = level.getBlockState(mutable);
         Block block = blockState.getBlock();
@@ -39,7 +39,7 @@ public class SpawnLocationFinder {
         boolean notWater = true;
         boolean darkEnough = true;
         if (!MainConfig.getHordeWavesCanSpawnInWater()) {
-            notWater = !(blockState.getFluidState().isIn(FluidTags.WATER));
+            notWater = !(blockState.getFluidState().is(FluidTags.WATER));
         }
         boolean notLeaves = true;
         if (!MainConfig.getHordeWavesCanSpawnOnTrees()) {
@@ -52,13 +52,13 @@ public class SpawnLocationFinder {
         return doesNotBlockMovement && notLeaves && notWater && darkEnough;
     }
 
-    public static BlockPos getBlockPosWithDistance(BlockPos pos, World level, int distanceMin, int distanceMax) {
-        final Random random = level.random;
+    public static BlockPos getBlockPosWithDistance(BlockPos pos, Level level, int distanceMin, int distanceMax) {
+        final RandomExtention random = new RandomExtention();
         double _d;
         double _x;
         double _z;
-        _d = random.nextBetween(distanceMin, distanceMax);
-        _x = random.nextBetween(0, (int) _d);
+        _d = random.nextIntBetweenInclusive(distanceMin, distanceMax);
+        _x = random.nextIntBetweenInclusive(0, (int) _d);
         if (_x == 0) {
             _z = _d;
         } else {
@@ -71,10 +71,10 @@ public class SpawnLocationFinder {
             _z = _z * -1;
         }
 
-        return new BlockPos(pos.getX() + (int) _x, level.getTopY(Heightmap.Type.MOTION_BLOCKING_NO_LEAVES, pos.getX() + (int) _x, pos.getZ() + (int) _z), pos.getZ() + (int) _z);
+        return new BlockPos(pos.getX() + (int) _x, level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, pos.getX() + (int) _x, pos.getZ() + (int) _z), pos.getZ() + (int) _z);
     }
 
-    public static BlockPos findNearbySurfaceSpawnPosition(ServerWorld level, BlockPos pos, RandomExtention randomSource, boolean playerInCave) {
+    public static BlockPos findNearbySurfaceSpawnPosition(ServerLevel level, BlockPos pos, RandomExtention randomSource, boolean playerInCave) {
         int deltaX = randomSource.nextInt(5);
         int deltaZ = randomSource.nextInt(5);
         if (!randomSource.nextBoolean()) {
@@ -86,9 +86,9 @@ public class SpawnLocationFinder {
         int y;
 
         if (MainConfig.getHordeWavesCanSpawnOnTrees()) {
-            y = level.getTopY(Heightmap.Type.MOTION_BLOCKING, pos.getX() + deltaX, pos.getZ() + deltaZ);
+            y = level.getHeight(Heightmap.Types.MOTION_BLOCKING, pos.getX() + deltaX, pos.getZ() + deltaZ);
         } else {
-            y = level.getTopY(Heightmap.Type.MOTION_BLOCKING_NO_LEAVES, pos.getX() + deltaX, pos.getZ() + deltaZ);
+            y = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, pos.getX() + deltaX, pos.getZ() + deltaZ);
         }
 
         return new BlockPos(pos.getX() + deltaX, y, pos.getZ() + deltaZ);
@@ -101,26 +101,26 @@ public class SpawnLocationFinder {
      * asks its navigation to compute a path to sampled candidate positions. Returns the
      * first candidate the navigation can path to, or null if none found.
      */
-    public static BlockPos findEndPositionUsingMinecraftPathfinding(World level, ServerPlayerEntity player, int distance, boolean allowEndInWater) {
+    public static BlockPos findEndPositionUsingMinecraftPathfinding(Level level, ServerPlayer player, int distance, boolean allowEndInWater) {
         if (level == null || player == null || distance <= 0) return null;
         final boolean debug = MainConfig.getPrintDebugMessages();
         final ThreadLocalRandom rnd = ThreadLocalRandom.current();
         final int attempts = 600; // sampling attempts
         final int maxYDelta = 8; // how much to search up/down for standable Y
 
-        BlockPos start = player.getBlockPos();
+        BlockPos start = player.blockPosition();
 
         // quick start validation
-        if (!isAABBFree(level, new Box(start.getX() + 0.5 - 0.3, start.getY(), start.getZ() + 0.5 - 0.3, start.getX() + 0.5 + 0.3, start.getY() + 1.8, start.getZ() + 0.5 + 0.3))) {
+        if (!isAABBFree(level, new AABB(start.getX() + 0.5 - 0.3, start.getY(), start.getZ() + 0.5 - 0.3, start.getX() + 0.5 + 0.3, start.getY() + 1.8, start.getZ() + 0.5 + 0.3))) {
             if (debug) UndeadNights.LOGGER.info("findEndUsingMinecraftPF: start pos AABB not free: {}", start);
             return null;
         }
 
         // create a temporary mob used for pathfinding computations (do not add to world)
         HordeZombieEntity probe = new HordeZombieEntity(ModEntities.HORDE_ZOMBIE, level);
-        probe.initialize((ServerWorldAccess) level, ((ServerWorldAccess) level).getLocalDifficulty(start), SpawnReason.MOB_SUMMONED, null);
+        probe.finalizeSpawn((ServerLevelAccessor) level, ((ServerLevelAccessor) level).getCurrentDifficultyAt(start), EntitySpawnReason.MOB_SUMMONED, null);
         probe.setTarget(player);
-        level.spawnEntity(probe);
+        level.addFreshEntity(probe);
 
         for (int i = 0; i < attempts; i++) {
             // sample a candidate at approximate chebyshev distance
@@ -139,11 +139,11 @@ public class SpawnLocationFinder {
                 int cy = baseY + dy;
                 BlockPos cand = new BlockPos(cx, cy, cz);
                 BlockState feet = level.getBlockState(cand);
-                if (feet.isOf(Blocks.LAVA) || feet.getFluidState().isIn(FluidTags.LAVA)) continue;
-                if (!allowEndInWater && (feet.isOf(Blocks.WATER) || feet.getFluidState().isIn(FluidTags.WATER))) continue;
-                if (MainConfig.getBlockLightLevelsInfluenceMonsterSpawns() && !SpawnLocationFinder.isDarkEnoughToSpawn((ServerWorldAccess) level, cand)) continue;
+                if (feet.is(Blocks.LAVA) || feet.getFluidState().is(FluidTags.LAVA)) continue;
+                if (!allowEndInWater && (feet.is(Blocks.WATER) || feet.getFluidState().is(FluidTags.WATER))) continue;
+                if (MainConfig.getBlockLightLevelsInfluenceMonsterSpawns() && !SpawnLocationFinder.isDarkEnoughToSpawn((ServerLevelAccessor) level, cand)) continue;
                 if (!hasSolidBlockBelow(level, cand)) continue;
-                if (!isAABBFreeForSpawn(level, new Box(cand.getX() + 0.5 - 0.3, cand.getY() + 0.001, cand.getZ() + 0.5 - 0.3, cand.getX() + 0.5 + 0.3, cand.getY() + 1.8 - 0.001, cand.getZ() + 0.5 + 0.3))) continue;
+                if (!isAABBFreeForSpawn(level, new AABB(cand.getX() + 0.5 - 0.3, cand.getY() + 0.001, cand.getZ() + 0.5 - 0.3, cand.getX() + 0.5 + 0.3, cand.getY() + 1.8 - 0.001, cand.getZ() + 0.5 + 0.3))) continue;
 
                 try {
                     // set up probe for pathfinding
@@ -175,7 +175,7 @@ public class SpawnLocationFinder {
     }
 
     // check if the given AABB is free of blocking collision shapes
-    private static boolean isAABBFree(World level, Box box) {
+    private static boolean isAABBFree(Level level, AABB box) {
         int minX = (int) Math.floor(box.minX);
         int minY = (int) Math.floor(box.minY);
         int minZ = (int) Math.floor(box.minZ);
@@ -203,14 +203,14 @@ public class SpawnLocationFinder {
     }
 
     // check if there is a solid block below the given position that can support a spawn
-    private static boolean hasSolidBlockBelow(World level, BlockPos center) {
-        BlockPos below = center.down();
-        if (below.getY() < level.getBottomY()) return false;
+    private static boolean hasSolidBlockBelow(Level level, BlockPos center) {
+        BlockPos below = center.below();
+        if (below.getY() < level.getMinY()) return false;
         BlockState belowState = level.getBlockState(below);
         // treat slabs and stairs explicitly as supporting blocks, and also any block with a collision shape
         boolean hasCollision = !belowState.getCollisionShape(level, below).isEmpty();
-        boolean isSlab = belowState.isIn(BlockTags.SLABS);
-        boolean isStair = belowState.isIn(BlockTags.STAIRS);
+        boolean isSlab = belowState.is(BlockTags.SLABS);
+        boolean isStair = belowState.is(BlockTags.STAIRS);
         boolean isFence = belowState.getBlock() instanceof FenceBlock;
         boolean isFenceGate = belowState.getBlock() instanceof FenceGateBlock;
         boolean isDoor = belowState.getBlock() instanceof DoorBlock;
@@ -218,7 +218,7 @@ public class SpawnLocationFinder {
     }
 
     // check if the given AABB is free of blocking collision shapes for spawning
-    private static boolean isAABBFreeForSpawn(World level, Box box) {
+    private static boolean isAABBFreeForSpawn(Level level, AABB box) {
         int minX = (int) Math.floor(box.minX);
         int minY = (int) Math.floor(box.minY);
         int minZ = (int) Math.floor(box.minZ);
@@ -244,10 +244,10 @@ public class SpawnLocationFinder {
      * This function intentionally does NOT use heightmaps; it searches directly and
      * returns the first valid position found (randomized). Lava is never allowed.
      */
-    public static BlockPos findSpawnablePosition(World level, BlockPos center, int radius, int deltaY) {
+    public static BlockPos findSpawnablePosition(Level level, BlockPos center, int radius, int deltaY) {
         if (level == null || center == null) return null;
-        final int minY = level.getBottomY();
-        final int maxY = level.getTopYInclusive();
+        final int minY = level.getMinY();
+        final int maxY = level.getMaxY() - 1;
 
         ThreadLocalRandom rnd = ThreadLocalRandom.current();
         final float mobWidth = 0.6f;
@@ -268,7 +268,7 @@ public class SpawnLocationFinder {
 
             BlockPos cand = new BlockPos(x, y, z);
             BlockState feet = level.getBlockState(cand);
-            if (feet.isOf(Blocks.LAVA) || feet.getFluidState().isIn(FluidTags.LAVA)) continue;
+            if (feet.is(Blocks.LAVA) || feet.getFluidState().is(FluidTags.LAVA)) continue;
             if (isValidSpawnPos(level, cand, mobWidth, mobHeight, allowWater)) return cand;
         }
 
@@ -284,7 +284,7 @@ public class SpawnLocationFinder {
                         if (y < minY || y > maxY) continue;
                         BlockPos cand = new BlockPos(x, y, z);
                         BlockState feet = level.getBlockState(cand);
-                        if (feet.isOf(Blocks.LAVA) || feet.getFluidState().isIn(FluidTags.LAVA)) continue;
+                        if (feet.is(Blocks.LAVA) || feet.getFluidState().is(FluidTags.LAVA)) continue;
                         if (isValidSpawnPos(level, cand, mobWidth, mobHeight, allowWater)) return cand;
                     }
                 }
@@ -294,15 +294,15 @@ public class SpawnLocationFinder {
         return null;
     }
 
-    private static boolean isValidSpawnPos(World level, BlockPos pos, float mobWidth, float mobHeight, boolean allowWater) {
+    private static boolean isValidSpawnPos(Level level, BlockPos pos, float mobWidth, float mobHeight, boolean allowWater) {
         if (level == null || pos == null) return false;
-        int minY = level.getBottomY();
-        int maxY = level.getTopYInclusive() + 1;
+        int minY = level.getMinY();
+        int maxY = level.getMaxY();
         if (pos.getY() < minY || pos.getY() >= maxY) return false;
 
         BlockState feetState = level.getBlockState(pos);
-        boolean feetIsWater = feetState.isOf(Blocks.WATER) || feetState.getFluidState().isIn(FluidTags.WATER);
-        boolean feetIsLava = feetState.isOf(Blocks.LAVA) || feetState.getFluidState().isIn(FluidTags.LAVA);
+        boolean feetIsWater = feetState.is(Blocks.WATER) || feetState.getFluidState().is(FluidTags.WATER);
+        boolean feetIsLava = feetState.is(Blocks.LAVA) || feetState.getFluidState().is(FluidTags.LAVA);
         if (feetIsLava) return false;
         if (feetIsWater && !allowWater) return false;
 
@@ -316,7 +316,7 @@ public class SpawnLocationFinder {
         double halfWidth = mobWidth / 2.0;
 
         final double eps = 1e-3;
-        Box box = new Box(cx - halfWidth + eps, bottomY + eps, cz - halfWidth + eps, cx + halfWidth - eps, topY - eps, cz + halfWidth - eps);
+        AABB box = new AABB(cx - halfWidth + eps, bottomY + eps, cz - halfWidth + eps, cx + halfWidth - eps, topY - eps, cz + halfWidth - eps);
 
         if (!isAABBFreeForSpawn(level, box)) return false;
 
@@ -325,7 +325,7 @@ public class SpawnLocationFinder {
             int topBlock = (int) Math.floor(box.maxY);
             for (int by = bottomBlock; by <= topBlock; by++) {
                 BlockState s = level.getBlockState(new BlockPos(pos.getX(), by, pos.getZ()));
-                if (s.isOf(Blocks.WATER) || s.getFluidState().isIn(FluidTags.WATER)) return false;
+                if (s.is(Blocks.WATER) || s.getFluidState().is(FluidTags.WATER)) return false;
             }
         }
 

@@ -1,16 +1,15 @@
 package net.petemc.undeadnights.command;
 
-import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
-import com.mojang.brigadier.context.CommandContext;
-import net.minecraft.command.CommandRegistryAccess;
-import net.minecraft.entity.Entity;
-import net.minecraft.server.command.CommandManager;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import net.minecraft.ChatFormatting;
+import net.minecraft.commands.CommandBuildContext;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
 import net.petemc.undeadnights.UndeadNights;
 import net.petemc.undeadnights.config.HordeConfig;
 import net.petemc.undeadnights.config.MainConfig;
@@ -20,122 +19,119 @@ public class HordeMobsCommand {
     public static boolean hordeZombiesCanBreakBlocks = false;
     public static int hordeZombiesBlockBreakingTier = 1;
 
-    public static void register(CommandDispatcher<ServerCommandSource> dispatcher, CommandRegistryAccess commandRegistryAccess, CommandManager.RegistrationEnvironment registrationEnvironment) {
-        dispatcher.register(CommandManager.literal("undeadnights")
-                .requires(CommandManager.requirePermissionLevel(CommandManager.GAMEMASTERS_CHECK))
-                .then(CommandManager.literal("horde_mobs")
-                .then(CommandManager.literal("remove_all")
-                .executes(HordeMobsCommand::removeMobs))));
-        dispatcher.register(CommandManager.literal("undeadnights")
-                .requires(CommandManager.requirePermissionLevel(CommandManager.GAMEMASTERS_CHECK))
-                .then(CommandManager.literal("horde_mobs")
-                .then(CommandManager.literal("print_config")
-                .executes(HordeMobsCommand::printConfig))));
-        dispatcher.register(CommandManager.literal("undeadnights")
-                .requires(CommandManager.requirePermissionLevel(CommandManager.GAMEMASTERS_CHECK))
-                .then(CommandManager.literal("horde_mobs")
-                .then(CommandManager.literal("block_breaking")
-                .then(CommandManager.literal("enable")
+    public static void register(CommandDispatcher<CommandSourceStack> dispatcher, CommandBuildContext commandRegistryAccess, Commands.CommandSelection registrationEnvironment) {
+        dispatcher.register(Commands.literal("undeadnights")
+                .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
+                .then(Commands.literal("horde_mobs")
+                .then(Commands.literal("remove_all")
+                .executes((command) -> {
+                    return removeMobs(command.getSource());
+        }))));
+        dispatcher.register(Commands.literal("undeadnights")
+                .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
+                .then(Commands.literal("horde_mobs")
+                .then(Commands.literal("print_config")
+                .executes((command) -> {
+                    return printConfig(command.getSource());
+        }))));
+        dispatcher.register(Commands.literal("undeadnights")
+                .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
+                .then(Commands.literal("horde_mobs")
+                .then(Commands.literal("block_breaking")
+                .then(Commands.literal("enable")
                 .executes((command) -> {
                     return blockBreaking(command.getSource(), true, 0);
-                })))));
-        dispatcher.register(CommandManager.literal("undeadnights")
-                .requires(CommandManager.requirePermissionLevel(CommandManager.GAMEMASTERS_CHECK))
-                .then(CommandManager.literal("horde_mobs")
-                .then(CommandManager.literal("block_breaking")
-                .then(CommandManager.literal("disable")
+        })))));
+        dispatcher.register(Commands.literal("undeadnights")
+                .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
+                .then(Commands.literal("horde_mobs")
+                .then(Commands.literal("block_breaking")
+                .then(Commands.literal("disable")
                 .executes((command) -> {
                     return blockBreaking(command.getSource(), false, 0);
-                })))));
-        dispatcher.register(CommandManager.literal("undeadnights")
-                .requires(CommandManager.requirePermissionLevel(CommandManager.GAMEMASTERS_CHECK))
-                .then(CommandManager.literal("horde_mobs")
-                .then(CommandManager.literal("block_breaking")
-                .then(CommandManager.literal("set_tier")
-                .then(CommandManager.argument("tierValue", IntegerArgumentType.integer(1))
+        })))));
+        dispatcher.register(Commands.literal("undeadnights")
+                .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
+                .then(Commands.literal("horde_mobs")
+                .then(Commands.literal("block_breaking")
+                .then(Commands.literal("set_tier")
+                .then(Commands.argument("tierValue", IntegerArgumentType.integer(1))
                 .executes((command) -> {
-                    return blockBreaking(command.getSource(), false, IntegerArgumentType.getInteger(command, "tierValue"));
-                }))))));
-
+                   return blockBreaking(command.getSource(), false, IntegerArgumentType.getInteger(command, "tierValue"));
+        }))))));
     }
 
-    private static int removeMobs(CommandContext<ServerCommandSource> context) {
+    private static int removeMobs(CommandSourceStack source) throws CommandSyntaxException {
         int count = 0;
-        if (context.getSource().getEntity() instanceof ServerPlayerEntity serverPlayer) {
-            serverPlayer.sendMessage(Text.translatable("message.undeadnights.command_remove_horde_mobs"));
-        }
+         if (source.getEntity() instanceof ServerPlayer serverPlayer) {
+                serverPlayer.sendSystemMessage(Component.translatable("message.undeadnights.command_remove_horde_mobs"));
+         }
         for (var hordeMobUUID : UndeadNights.serverState.spawnedHordeMobs.keySet().stream().toList()) {
             count++;
-            Entity entity = context.getSource().getWorld().getEntity(hordeMobUUID);
+            Entity entity = source.getLevel().getEntity(hordeMobUUID);
             if (entity != null) {
                 entity.discard();
             } else {
-                UndeadNights.serverState.hordeMobsToRemove.put(hordeMobUUID,hordeMobUUID.toString());
+                UndeadNights.serverState.hordeMobsToRemove.put(hordeMobUUID, hordeMobUUID.toString());
             }
         }
         if (MainConfig.getPrintDebugMessages()) {
             UndeadNights.LOGGER.info("{} horde mobs removed or marked for removal", count);
         }
-        return Command.SINGLE_SUCCESS;
+        return 0;
     }
 
-    private static int printConfig(CommandContext<ServerCommandSource> context) {
-        if (HordeConfig.getReadingConfigFailed()) {
-            if (context.getSource().getEntity() instanceof ServerPlayerEntity serverPlayer) {
-                serverPlayer.sendMessage(Text.literal("Reading the horde mob config failed!\nSpawning 15 default horde zombies instead.\nPlease check: https://github.com/MC-Mods-Pete/UndeadNights/wiki").formatted(Formatting.YELLOW));
+    private static int printConfig(CommandSourceStack source) throws CommandSyntaxException {
+        if (source.getEntity() instanceof ServerPlayer serverPlayer) {
+            if (HordeConfig.getReadingConfigFailed()) {
+                serverPlayer.sendSystemMessage(Component.literal("Reading the horde mob config failed!\nSpawning 15 default horde zombies instead.\nPlease check: https://github.com/MC-Mods-Pete/UndeadNights/wiki").withStyle(ChatFormatting.YELLOW));
+                return 0;
             }
-            return 0;
-        }
-        StringBuilder message = new StringBuilder("Variant: " + HordeConfig.getConfigVariant() + "\n");
-        if (HordeConfig.getConfigVariant() == 1) {
-            message.append("defaultHordeMob: ").append(HordeConfig.getDefaultHordeMob().mobId()).append("\n");
-            if (!HordeConfig.getHordeMobs().isEmpty()) {
-                for (var hordeMob : HordeConfig.getHordeMobs()) {
-                    message.append(hordeMob.mobId()).append(" chance: ").append(hordeMob.chance()).append("\n");
+            StringBuilder message = new StringBuilder("Variant: " + HordeConfig.getConfigVariant() + "\n");
+            if (HordeConfig.getConfigVariant() == 1) {
+                message.append("defaultHordeMob: ").append(HordeConfig.getDefaultHordeMob().mobId()).append("\n");
+                if (!HordeConfig.getHordeMobs().isEmpty()) {
+                    for (var hordeMob : HordeConfig.getHordeMobs()) {
+                        message.append(hordeMob.mobId()).append(" chance: ").append(hordeMob.chance()).append("\n");
+                    }
                 }
-            }
-        } else {
-            if (!HordeConfig.getHordes().isEmpty()) {
-                for (var horde : HordeConfig.getHordes()) {
-                    message.append("hordeId: ").append(horde.hordeId()).append("\n");
-                    message.append("hordeName: ").append(horde.hordeName()).append("\n");
-                    if (!horde.hordeMobs().isEmpty()) {
-                        for (var hordeMob : horde.hordeMobs()) {
-                            message.append(hordeMob.mobId());
-                            if (hordeMob.countMin() >= hordeMob.countMax()) {
-                                message.append(" count: ").append(hordeMob.countMin()).append("\n");
-                            } else {
-                                message.append(" count: ").append(hordeMob.countMin()).append("-").append(hordeMob.countMax()).append("\n");
+            } else {
+                if (!HordeConfig.getHordes().isEmpty()) {
+                    for (var horde : HordeConfig.getHordes()) {
+                        message.append("hordeId: ").append(horde.hordeId()).append("\n");
+                        message.append("hordeName: ").append(horde.hordeName()).append("\n");
+                        if (!horde.hordeMobs().isEmpty()) {
+                            for (var hordeMob : horde.hordeMobs()) {
+                                message.append(hordeMob.mobId());
+                                if (hordeMob.countMin() >= hordeMob.countMax()) {
+                                    message.append(" count: ").append(hordeMob.countMin()).append("\n");
+                                } else {
+                                    message.append(" count: ").append(hordeMob.countMin()).append("-").append(hordeMob.countMax()).append("\n");
+                                }
                             }
                         }
                     }
                 }
             }
-        }
-        if (context.getSource().getEntity() instanceof ServerPlayerEntity serverPlayer) {
-            serverPlayer.sendMessage(Text.literal(message.toString()));
-            }
-        if (HordeSpawner.invalidHordeMobEntry) {
-            if (context.getSource().getEntity() instanceof ServerPlayerEntity serverPlayer) {
-                serverPlayer.sendMessage(Text.literal("""
-                        A horde mob entry in the horde mob config could not be read!
-                        A default horde zombie will be spawned instead.
-                        Please check: https://github.com/MC-Mods-Pete/UndeadNights/wiki""").formatted(Formatting.YELLOW));
+            serverPlayer.sendSystemMessage(Component.literal(message.toString()));
+            if (HordeSpawner.invalidHordeMobEntry) {
+                serverPlayer.sendSystemMessage(Component.literal("A horde mob entry in the horde mob config could not be read!\nA default horde zombie will be spawned instead.\n" +
+                                "Please check: https://github.com/MC-Mods-Pete/UndeadNights/wiki").withStyle(ChatFormatting.YELLOW));
             }
         }
-        return Command.SINGLE_SUCCESS;
+        return 0;
     }
 
-    private static int blockBreaking(ServerCommandSource source, boolean value, int tier) {
+    private static int blockBreaking(CommandSourceStack source, boolean value, int tier) throws CommandSyntaxException {
         if (tier == 0) {
             hordeZombiesCanBreakBlocks = value;
-            if (source.getEntity() instanceof ServerPlayerEntity serverPlayer) {
-                serverPlayer.sendMessage(Text.literal("Block breaking for Horde and Elite Zombies " + (value ? "enabled" : "disabled")));
+            if (source.getEntity() instanceof ServerPlayer serverPlayer) {
+                serverPlayer.sendSystemMessage(Component.literal("Block breaking for Horde and Elite Zombies " + (value ? "enabled" : "disabled")));
             }
         } else {
             hordeZombiesBlockBreakingTier = tier;
-            if (source.getEntity() instanceof ServerPlayerEntity serverPlayer) {
-                serverPlayer.sendMessage(Text.literal("Setting block breaking tier " + tier));
+            if (source.getEntity() instanceof ServerPlayer serverPlayer) {
+                serverPlayer.sendSystemMessage(Component.literal("Setting block breaking tier " + tier));
             }
         }
         return 0;

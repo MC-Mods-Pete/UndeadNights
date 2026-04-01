@@ -6,9 +6,9 @@
 	"mixins": [
 		"LivingEntityMixin",
         "MobEntityMixin",
+		"PersistentEntitySectionManagerMixin",
         "PlayerEntityBedSleepingMessageMixin",
 		"PlayerEntityMixin",
-		"ServerEntityManagerMixin",
 		"ServerPlayerEntityMixin",
 		"ServerWorldMixin",
 		"ZombieEntityMixin"

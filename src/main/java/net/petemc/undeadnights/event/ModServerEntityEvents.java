@@ -1,10 +1,10 @@
 package net.petemc.undeadnights.event;
 
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.ai.goal.SwimGoal;
-import net.minecraft.entity.mob.ZombieEntity;
-import net.minecraft.server.world.ServerWorld;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.ai.goal.FloatGoal;
+import net.minecraft.world.entity.monster.zombie.Zombie;
 import net.petemc.undeadnights.UndeadNights;
 import net.petemc.undeadnights.config.MainConfig;
 import net.petemc.undeadnights.entity.DemolitionZombieEntity;
@@ -15,39 +15,39 @@ import net.petemc.undeadnights.entity.ai.goal.BreakBlockGoal;
 public class ModServerEntityEvents {
 
     private static Entity pEntity;
-    private static ServerWorld pWorld;
+    private static ServerLevel pServerLevel;
 
     public ModServerEntityEvents() {
-        ServerEntityEvents.ENTITY_LOAD.register((entity, world) -> {
+        ServerEntityEvents.ENTITY_LOAD.register((entity, serverLevel) -> {
             pEntity = entity;
-            pWorld = world;
+            pServerLevel = serverLevel;
             executeLoadEntity();
         });
 
-        ServerEntityEvents.ENTITY_UNLOAD.register((entity, world) -> {
+        ServerEntityEvents.ENTITY_UNLOAD.register((entity, serverLevel) -> {
             pEntity = entity;
-            pWorld = world;
+            pServerLevel = serverLevel;
             executeUnloadEntity();
         });
     }
 
     public static void executeLoadEntity() {
-        if(!pWorld.isClient()) {
+        if(!pServerLevel.isClientSide()) {
             if (UndeadNights.serverState != null) {
-                if (UndeadNights.serverState.spawnedHordeMobs.containsKey(pEntity.getUuid())) {
-                    if (UndeadNights.serverState.hordeMobsToRemove.containsKey(pEntity.getUuid())) {
-                        UndeadNights.serverState.hordeMobsToRemove.remove(pEntity.getUuid());
+                if (UndeadNights.serverState.spawnedHordeMobs.containsKey(pEntity.getUUID())) {
+                    if (UndeadNights.serverState.hordeMobsToRemove.containsKey(pEntity.getUUID())) {
+                        UndeadNights.serverState.hordeMobsToRemove.remove(pEntity.getUUID());
                         pEntity.remove(Entity.RemovalReason.DISCARDED);
-                        UndeadNights.LOGGER.info("LOAD canceled, Entity marked for removal: {}", pEntity.getUuid());
+                        UndeadNights.LOGGER.info("LOAD canceled, Entity marked for removal: {}", pEntity.getUUID());
                     } else {
                         UndeadNights.globalSpawnCounter++;
-                        if (pEntity instanceof ZombieEntity zombie) {
+                        if (pEntity instanceof Zombie zombie) {
                             if (!(zombie instanceof HordeZombieEntity) && !(zombie instanceof DemolitionZombieEntity) && !(zombie instanceof EliteZombieEntity)) {
                                 if (MainConfig.getPrintDebugMessages()) {
                                     UndeadNights.LOGGER.info("Vanilla zombie detected, adding float and block breaking goals.");
                                 }
-                                zombie.goalSelector.add(1, new SwimGoal(zombie));
-                                zombie.goalSelector.add(1, new BreakBlockGoal(zombie));
+                                zombie.goalSelector.addGoal(1, new FloatGoal(zombie));
+                                zombie.goalSelector.addGoal(1, new BreakBlockGoal(zombie));
                             }
                             if (zombie instanceof EliteZombieEntity) {
                                 UndeadNights.serverState.setFirstEliteZombieHasSpawned(true);
@@ -58,7 +58,7 @@ public class ModServerEntityEvents {
                         }
                     }
                     if (MainConfig.getPrintDebugMessages()) {
-                        UndeadNights.LOGGER.info("LOAD GlobalSpawnCount: : {} {} {}", UndeadNights.globalSpawnCounter, pEntity.getName().getString(), pEntity.getUuid());
+                        UndeadNights.LOGGER.info("LOAD GlobalSpawnCount: : {} {} {}", UndeadNights.globalSpawnCounter, pEntity.getName().getString(), pEntity.getUUID());
                     }
                     //event.getEntity().kill();
                 }
@@ -68,13 +68,13 @@ public class ModServerEntityEvents {
 
     public static void executeUnloadEntity() {
         if (UndeadNights.serverState != null) {
-            if (UndeadNights.serverState.spawnedHordeMobs.containsKey(pEntity.getUuid())) {
+            if (UndeadNights.serverState.spawnedHordeMobs.containsKey(pEntity.getUUID())) {
                 if (pEntity.getRemovalReason() != null) {
                     if ((pEntity.getRemovalReason() == Entity.RemovalReason.KILLED) || (pEntity.getRemovalReason() == Entity.RemovalReason.DISCARDED)) {
                         UndeadNights.globalSpawnCounter--;
-                        UndeadNights.serverState.spawnedHordeMobs.remove(pEntity.getUuid());
+                        UndeadNights.serverState.spawnedHordeMobs.remove(pEntity.getUUID());
                         if (MainConfig.getPrintDebugMessages()) {
-                            UndeadNights.LOGGER.info("UNLOAD GlobalSpawnCount: {} {} {}", UndeadNights.globalSpawnCounter, pEntity.getRemovalReason().name(), pEntity.getUuid());
+                            UndeadNights.LOGGER.info("UNLOAD GlobalSpawnCount: {} {} {}", UndeadNights.globalSpawnCounter, pEntity.getRemovalReason().name(), pEntity.getUUID());
                         }
                     }
                 }

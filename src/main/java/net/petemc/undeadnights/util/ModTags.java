@@ -1,9 +1,9 @@
 package net.petemc.undeadnights.util;
 
-import net.minecraft.entity.EntityType;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.tag.TagKey;
-import net.minecraft.util.Identifier;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.entity.EntityType;
 import net.petemc.undeadnights.UndeadNights;
 
 public class ModTags {
@@ -11,7 +11,7 @@ public class ModTags {
         public static final TagKey<EntityType<?>> HORDE_MOBS = tag("horde_mobs");
 
         private static TagKey<EntityType<?>> tag(String name) {
-            return TagKey.of(Registries.ENTITY_TYPE.getKey(), Identifier.of(UndeadNights.MOD_ID, name));
+            return TagKey.create(Registries.ENTITY_TYPE, Identifier.fromNamespaceAndPath(UndeadNights.MOD_ID, name));
         }
     }
 }

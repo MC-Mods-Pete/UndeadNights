@@ -1,15 +1,15 @@
 package net.petemc.undeadnights.mixin;
 
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.registry.tag.BlockTags;
-import net.minecraft.storage.ReadView;
-import net.minecraft.storage.WriteView;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Box;
-import net.minecraft.world.Heightmap;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.tags.BlockTags;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.phys.AABB;
 import net.petemc.undeadnights.casts.UndeadNightsExtendedPlayer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -19,7 +19,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
-@Mixin(PlayerEntity.class)
+@Mixin(Player.class)
 public class PlayerEntityMixin implements UndeadNightsExtendedPlayer {
     @Unique
     private boolean hasHordeLureEffect = false;
@@ -63,24 +63,24 @@ public class PlayerEntityMixin implements UndeadNightsExtendedPlayer {
         return isInCaveStageOne;
     }
 
-    @Inject(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/player/PlayerEntity;updatePose()V", shift = At.Shift.AFTER))
+    @Inject(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;updatePlayerPose()V", shift = At.Shift.AFTER))
     public void tick(CallbackInfo ci) {
-        PlayerEntity player = (PlayerEntity) (Object) this;
+        Player player = (Player) (Object) this;
 
-        if (!player.getEntityWorld().isClient()) {
+        if (!player.level().isClientSide()) {
             if (coolDown > 0) {
                 coolDown--;
             } else {
                 coolDown = 5 * 20;
 
-                this.isInCaveStageOne = caveCheckStageOne(player.getEntityWorld(), player.getBlockPos());
+                this.isInCaveStageOne = caveCheckStageOne(player.level(), player.blockPosition());
 
                 if (isInCaveStageOne) {
                     if (delay > 0) {
                         delay--;
                     } else {
                         delay = 3;
-                        isInCaveStageTwo = caveCheckStageTwo(player.getEntityWorld(), player.getBlockPos());
+                        isInCaveStageTwo = caveCheckStageTwo(player.level(), player.blockPosition());
                         if (isInCaveStageTwo) {
                             undeadnights_setIsInCave(true);
                         }
@@ -105,23 +105,23 @@ public class PlayerEntityMixin implements UndeadNightsExtendedPlayer {
 
     // Stage one: quick check for obvious surface locations
     @Unique
-    private static boolean caveCheckStageOne(World level, BlockPos pos) {
+    private static boolean caveCheckStageOne(Level level, BlockPos pos) {
         int layersAbove = 0;
         int x = pos.getX();
         int z = pos.getZ();
         int y;
 
-        y = level.getTopY(Heightmap.Type.MOTION_BLOCKING_NO_LEAVES, x, z);
+        y = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z);
         if (y == pos.getY()) {
             return false; // on surface
         }
 
-        y = level.getTopY(Heightmap.Type.MOTION_BLOCKING, x, z);
+        y = level.getHeight(Heightmap.Types.MOTION_BLOCKING, x, z);
         if (y == pos.getY()) {
             return false; // on surface
         }
 
-        BlockPos.Mutable checkPos = new BlockPos.Mutable(x, pos.getY() + 1, z);
+        BlockPos.MutableBlockPos checkPos = new BlockPos.MutableBlockPos(x, pos.getY() + 1, z);
         while (checkPos.getY() < y) {
             BlockState state = level.getBlockState(checkPos);
 
@@ -130,22 +130,22 @@ public class PlayerEntityMixin implements UndeadNightsExtendedPlayer {
                 checkPos.move(0, 1, 0);
                 continue;
             }
-            if (state.isOf(Blocks.WATER)) {
+            if (state.is(Blocks.WATER)) {
                 layersAbove = 0;
                 checkPos.move(0, 1, 0);
                 continue;
             }
-            if ((state.isOf(Blocks.DEEPSLATE)) && (checkPos.getY() > 8)) {
+            if ((state.is(Blocks.DEEPSLATE)) && (checkPos.getY() > 8)) {
                 layersAbove = 0;
                 checkPos.move(0, 1, 0);
                 continue;
             }
-            if (state.isOf(Blocks.COBBLESTONE)) {
+            if (state.is(Blocks.COBBLESTONE)) {
                 layersAbove = 0;
                 checkPos.move(0, 1, 0);
                 continue;
             }
-            if (state.isIn(BlockTags.LEAVES)) {
+            if (state.is(BlockTags.LEAVES)) {
                 layersAbove = 0;
                 checkPos.move(0, 1, 0);
                 continue;
@@ -161,12 +161,12 @@ public class PlayerEntityMixin implements UndeadNightsExtendedPlayer {
 
     // Stage two: more thorough check for surface proximity
     @Unique
-    private static boolean caveCheckStageTwo(World level, BlockPos pos) {
-        Box box = new Box(pos).expand(10, 0, 10);
+    private static boolean caveCheckStageTwo(Level level, BlockPos pos) {
+        AABB box = new AABB(pos).inflate(10, 0, 10);
         AtomicBoolean isCave = new AtomicBoolean(true);
-        BlockPos.Mutable.stream(box)
+        BlockPos.MutableBlockPos.betweenClosedStream(box)
                 .forEach(c -> {
-                    int y1 = level.getTopY(Heightmap.Type.MOTION_BLOCKING, c.getX(), c.getZ());
+                    int y1 = level.getHeight(Heightmap.Types.MOTION_BLOCKING, c.getX(), c.getZ());
                     if ((c.getY() + 5) >= y1) {
                         isCave.set(false);
                     }
@@ -174,13 +174,13 @@ public class PlayerEntityMixin implements UndeadNightsExtendedPlayer {
         return isCave.get();
     }
 
-    @Inject(method = "readCustomData", at = @At("TAIL"))
-    private void injectToReadCustomData(ReadView view, CallbackInfo ci) {
-        this.isInCave = view.getBoolean("undeadnights_is_player_in_cave", false);
+    @Inject(method = "readAdditionalSaveData", at = @At("TAIL"))
+    private void injectToReadNbt(ValueInput input, CallbackInfo ci) {
+        this.isInCave = input.getBooleanOr("undeadnights_is_player_in_cave", false);
     }
 
-    @Inject(method = "writeCustomData", at = @At("TAIL"))
-    private void injectToWriteCustomData(WriteView view, CallbackInfo ci) {
-        view.putBoolean("undeadnights_is_player_in_cave", this.isInCave);
+    @Inject(method = "addAdditionalSaveData", at = @At("TAIL"))
+    private void injectToWriteNbt(ValueOutput output, CallbackInfo ci) {
+        output.putBoolean("undeadnights_is_player_in_cave", this.isInCave);
     }
 }

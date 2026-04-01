@@ -2,29 +2,29 @@ package net.petemc.undeadnights.command;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
-import com.mojang.brigadier.context.CommandContext;
-import net.minecraft.command.CommandRegistryAccess;
-import net.minecraft.server.command.CommandManager;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import net.minecraft.commands.CommandBuildContext;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
 import net.petemc.undeadnights.UndeadNights;
 import net.petemc.undeadnights.config.HordeConfig;
 import net.petemc.undeadnights.config.MainConfig;
 import net.petemc.undeadnights.world.spawner.HordeSpawner;
 
 public class SetDefaultHordeCommand {
-    public static void register(CommandDispatcher<ServerCommandSource> dispatcher, CommandRegistryAccess commandRegistryAccess, CommandManager.RegistrationEnvironment registrationEnvironment) {
-        dispatcher.register(CommandManager.literal("undeadnights")
-                .requires(CommandManager.requirePermissionLevel(CommandManager.GAMEMASTERS_CHECK))
-                .then(CommandManager.literal("default_horde")
-                .then(CommandManager.argument("hordeId", IntegerArgumentType.integer(0))
+    public static void register(CommandDispatcher<CommandSourceStack> dispatcher, CommandBuildContext commandRegistryAccess, Commands.CommandSelection registrationEnvironment) {
+        dispatcher.register(Commands.literal("undeadnights")
+                .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
+                .then(Commands.literal("default_horde")
+                .then(Commands.argument("hordeId", IntegerArgumentType.integer(0))
                 .executes((command) -> {
-                    return defaultHorde(command, IntegerArgumentType.getInteger(command, "hordeId"));
+                    return defaultHorde(command.getSource(), IntegerArgumentType.getInteger(command, "hordeId"));
                 }))));
     }
 
-    private static int defaultHorde(CommandContext<ServerCommandSource> context, int defaultHordeId) {
+    private static int defaultHorde(CommandSourceStack source, int defaultHordeId) throws CommandSyntaxException {
         String message = null;
         if (HordeConfig.getConfigVariant() == 2) {
             if ((defaultHordeId > HordeConfig.getHordes().size()) || (defaultHordeId < 0)) {
@@ -39,8 +39,8 @@ public class SetDefaultHordeCommand {
             message = "Please note: Horde config variant 1 does not support multiple horde configs, value is always 1";
         }
 
-        if (context.getSource().getEntity() instanceof ServerPlayerEntity serverPlayer) {
-            serverPlayer.sendMessage(Text.literal(message));
+        if (source.getEntity() instanceof ServerPlayer serverPlayer) {
+            serverPlayer.sendSystemMessage(Component.literal(message));
         }
 
         if (MainConfig.getPrintDebugMessages()) {

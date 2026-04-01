@@ -1,116 +1,49 @@
 package net.petemc.undeadnights.mixin;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.entity.effect.StatusEffects;
-import net.minecraft.entity.mob.ZombieEntity;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.math.random.Random;
-import net.minecraft.world.WorldAccess;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.monster.zombie.Zombie;
 import net.petemc.undeadnights.UndeadNights;
-import net.petemc.undeadnights.casts.BlockBreakingZombie;
+import net.petemc.undeadnights.casts.UndeadNightsExtendedPlayer;
 import net.petemc.undeadnights.effect.ModEffects;
-import net.petemc.undeadnights.entity.EliteZombieEntity;
-import net.petemc.undeadnights.entity.HordeZombieEntity;
-import net.petemc.undeadnights.util.ModTags;
+import net.petemc.undeadnights.util.RandomExtention;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import java.util.Comparator;
-import java.util.List;
-
 @Mixin(LivingEntity.class)
 public class LivingEntityMixin
 {
-    @Inject(method = "getBaseWaterMovementSpeedMultiplier", at = @At("HEAD"), cancellable = true)
-    protected void getBaseWaterMovementSpeedMultiplier(CallbackInfoReturnable<Float> cir) {
-        if (((Entity) (Object) this) instanceof ZombieEntity) {
+    @Inject(method = "getWaterSlowDown", at = @At("HEAD"), cancellable = true)
+    protected void getWaterSlowDown(CallbackInfoReturnable<Float> cir) {
+        if (((Entity) (Object) this) instanceof Zombie) {
             if (UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeMobs().isHordeZombiesAreFasterOnWater()) {
                 cir.setReturnValue(0.94f);
             }
         }
     }
 
-    @Inject(method = "onDeath", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/damage/DamageSource;getAttacker()Lnet/minecraft/entity/Entity;", shift = At.Shift.AFTER))
-    public void onDeath_lureEffect(DamageSource pDamageSource, CallbackInfo ci) {
+    @Inject(method = "die", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/damagesource/DamageSource;getEntity()Lnet/minecraft/world/entity/Entity;", shift = At.Shift.AFTER))
+    public void die_lureEffect(DamageSource pDamageSource, CallbackInfo ci) {
         if ((pDamageSource != null) && (UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsLureEffect().isEnableLureHordeEffect())) {
-            if (pDamageSource.getAttacker() instanceof ServerPlayerEntity player) {
-                boolean isZombie = (((Entity)(Object) this) instanceof ZombieEntity);
+            if (pDamageSource.getEntity() instanceof ServerPlayer player) {
+                boolean isZombie = (((Entity)(Object) this) instanceof Zombie);
                 boolean flag = (UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsLureEffect().isNonHordeZombiesCanCauseLureHordeEffect() && isZombie);
-                if ((UndeadNights.serverState.spawnedHordeMobs.containsKey(((Entity)(Object) this).getUuid())) || flag) {
-                    Random randomSource = player.getEntityWorld().random;
+                if ((UndeadNights.serverState.spawnedHordeMobs.containsKey(((Entity)(Object) this).getUUID())) || flag) {
+                    RandomExtention randomSource = new RandomExtention();//player.level().random;
                     double rand = randomSource.nextDouble();
-                    if (rand < UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsLureEffect().getChanceForLureHordeEffect()) {
-                        if (!player.hasStatusEffect(ModEffects.LURE_HORDE)) {
-                            player.addStatusEffect(new StatusEffectInstance(ModEffects.LURE_HORDE, UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsLureEffect().getDurationForLureHordeEffect() * 20, 0));
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    @Inject(method = "tick", at = @At("TAIL"), cancellable = true)
-    public void tick(CallbackInfo ci) {
-        Entity entity = (Entity) (Object) this;
-        WorldAccess world = entity.getEntityWorld();
-        if (entity == null) {
-            ci.cancel();
-        }
-
-
-        if (entity.getType().isIn(ModTags.EntityTypes.HORDE_MOBS)) {
-            if (entity instanceof HordeZombieEntity hordeZombie) {
-                if (hordeZombie.isBreakingBlock()) {
-                    return;
-                }
-            }
-            if (entity instanceof EliteZombieEntity eliteZombieEntity) {
-                if (eliteZombieEntity.isBreakingBlock()) {
-                    return;
-                }
-            }
-
-            if (entity instanceof BlockBreakingZombie blockBreakingZombie) {
-                if (blockBreakingZombie.isBreakingBlock()) {
-                    return;
-                }
-            }
-
-            if (UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeMobs().isHordeMobsCanClimbEachOther()) {
-                final Vec3d entityPosition = entity.getEntityPos();
-                final Box entitySearchArea = new Box(entityPosition, entityPosition).expand(0.45 / 2d);
-                List<Entity> sortedEntityList = world.getEntitiesByClass(Entity.class, entitySearchArea, entityTagCheck ->
-                                entityTagCheck.getType().isIn(ModTags.EntityTypes.HORDE_MOBS))
-                        .stream().sorted(Comparator.comparingDouble(entityDistSort -> entityDistSort.squaredDistanceTo(entityPosition))).toList();
-
-                for (Entity hordeMobIterator : sortedEntityList) {
-                    if (!(entity.getX() == hordeMobIterator.getX())) {
-                        double randomValue = Math.random();
-                        if (randomValue > 0.16D) {
-                            randomValue = 0.16D;
-                        }
-                        Vec3d entityVec3 = new Vec3d(
-                                (entity.getVelocity().getX() + (randomValue / 20.0D) * MathHelper.nextInt(Random.create(), -1, 1)),
-                                randomValue,
-                                (entity.getVelocity().getZ() + (randomValue / 20.0D) * MathHelper.nextInt(Random.create(), -1, 1)));
-
-                        entity.setVelocity(entityVec3);
-                        if (entity instanceof LivingEntity livingEntity) {
-                            if (livingEntity.isBaby()) {
-                                entity.setVelocity(entityVec3.add(0, randomValue, 0));
+                    if (rand <= UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsLureEffect().getChanceForLureHordeEffect()) {
+                        if (!player.hasEffect(ModEffects.LURE_HORDE)) {
+                            if (player instanceof UndeadNightsExtendedPlayer hordeLurePlayer) {
+                                hordeLurePlayer.undeadnights_setHordeLureEffect(false);
                             }
-                            livingEntity.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOW_FALLING, 5, 0, false, false));
+                            player.addEffect(new MobEffectInstance(ModEffects.LURE_HORDE, UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsLureEffect().getDurationForLureHordeEffect() * 20, 0));
                         }
-                        entity.fallDistance = 0;
                     }
                 }
             }

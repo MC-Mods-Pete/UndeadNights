@@ -1,14 +1,15 @@
 package net.petemc.undeadnights.entity.ai.goal;
 
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.TntEntity;
-import net.minecraft.entity.ai.goal.Goal;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.math.random.Random;
+import net.minecraft.core.BlockPos;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.goal.Goal;
+import net.minecraft.world.entity.item.PrimedTnt;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.phys.Vec3;
 import net.petemc.undeadnights.entity.DemolitionZombieEntity;
 import org.jetbrains.annotations.Nullable;
 
@@ -23,12 +24,12 @@ public class TntIgniteAndThrowGoal extends Goal {
 	}
 
 	@Override
-	public boolean canStart() {
+	public boolean canUse() {
 		LivingEntity target = this.demolitionZombie.getTarget();
-		if (!(target instanceof PlayerEntity)) {
+		if (!(target instanceof Player)) {
 			return false;
 		}
-		return this.demolitionZombie.squaredDistanceTo(target) < 18.0;
+		return this.demolitionZombie.distanceToSqr(target) < 18.0;
 	}
 
 	@Override
@@ -42,23 +43,23 @@ public class TntIgniteAndThrowGoal extends Goal {
 	}
 
 	@Override
-	public boolean shouldRunEveryTick() {
+	public boolean requiresUpdateEveryTick() {
 		return true;
 	}
 
 	@Override
 	public void tick() {
-		BlockPos pos = this.demolitionZombie.getBlockPos();
+		BlockPos pos = this.demolitionZombie.blockPosition();
 		if (tntCoolDown <= 0) {
 			if (this.target != null) {
-				if ((this.demolitionZombie.squaredDistanceTo(this.target) < 18.0)
-				&& (this.demolitionZombie.squaredDistanceTo(this.target) > 5.0)
-						&& this.demolitionZombie.getVisibilityCache().canSee(this.target)
-						&& this.demolitionZombie.getMainHandStack().getCount() > 0) {
-					TntEntity tntEntity = new TntEntity(this.demolitionZombie.getEntityWorld(), (double) pos.getX() + 0.5, pos.getY() + 0.5, (double) pos.getZ() + 0.5, this.demolitionZombie);
+				if ((this.demolitionZombie.distanceToSqr(this.target) < 18.0)
+				&& (this.demolitionZombie.distanceToSqr(this.target) > 5.0)
+						&& this.demolitionZombie.getSensing().hasLineOfSight(this.target)
+						&& this.demolitionZombie.getMainHandItem().getCount() > 0) {
+					PrimedTnt tntEntity = new PrimedTnt(this.demolitionZombie.level(), (double) pos.getX() + 0.5, pos.getY() + 0.5, (double) pos.getZ() + 0.5, this.demolitionZombie);
 
-					Random random = Random.create();
-					double d0 = target.getY() + (double)target.getStandingEyeHeight() - 1.1;
+					RandomSource random = RandomSource.create();
+					double d0 = target.getY() + (double)target.getEyeHeight() - 1.1;
 					double d1 = target.getX() - this.demolitionZombie.getX();
 					double d3 = target.getZ() - this.demolitionZombie.getZ();
 					double pX = d1;
@@ -66,18 +67,18 @@ public class TntIgniteAndThrowGoal extends Goal {
 					double pZ = d3;
 					double pVelocity = 0.8F;
 					double pInaccuracy = 12.0F;
-					Vec3d vec3 = (new Vec3d(pX, pY, pZ)).normalize().add(random.nextTriangular(0.0D, 0.0172275D * (double)pInaccuracy), random.nextTriangular(0.0D, 0.0172275D * (double)pInaccuracy), random.nextTriangular(0.0D, 0.0172275D * (double)pInaccuracy)).multiply((double)pVelocity);
-					tntEntity.setVelocity(vec3);
-					double d0a = vec3.horizontalLength();
-					tntEntity.setYaw((float)(Math.atan2(vec3.x, vec3.z) * (double)(180F / (float)Math.PI)));
-					tntEntity.setPitch((float)(Math.atan2(vec3.y, d0a) * (double)(180F / (float)Math.PI)));
-					tntEntity.lastYaw = tntEntity.getYaw();
-					tntEntity.lastPitch = tntEntity.getPitch();
+					Vec3 vec3 = (new Vec3(pX, pY, pZ)).normalize().add(random.triangle(0.0D, 0.0172275D * (double)pInaccuracy), random.triangle(0.0D, 0.0172275D * (double)pInaccuracy), random.triangle(0.0D, 0.0172275D * (double)pInaccuracy)).scale((double)pVelocity);
+					tntEntity.setDeltaMovement(vec3);
+					double d0a = vec3.horizontalDistance();
+					tntEntity.setYRot((float)(Mth.atan2(vec3.x, vec3.z) * (double)(180F / (float)Math.PI)));
+					tntEntity.setXRot((float)(Mth.atan2(vec3.y, d0a) * (double)(180F / (float)Math.PI)));
+					tntEntity.yRotO = tntEntity.getYRot();
+					tntEntity.xRotO = tntEntity.getXRot();
 
-					this.demolitionZombie.getEntityWorld().spawnEntity(tntEntity);
-					this.demolitionZombie.getEntityWorld().playSound(null, tntEntity.getX(), tntEntity.getY(), tntEntity.getZ(), SoundEvents.ENTITY_TNT_PRIMED, SoundCategory.BLOCKS, 1.0F, 1.0F);
+					this.demolitionZombie.level().addFreshEntity(tntEntity);
+					this.demolitionZombie.level().playSound(null, tntEntity.getX(), tntEntity.getY(), tntEntity.getZ(), SoundEvents.TNT_PRIMED, SoundSource.BLOCKS, 1.0F, 1.0F);
 					if (this.demolitionZombie.getNumberTnt() != 0) {
-						this.demolitionZombie.getMainHandStack().decrement(1);
+						this.demolitionZombie.getMainHandItem().shrink(1);
 					}
 					tntCoolDown = 5 * 20;
 				}

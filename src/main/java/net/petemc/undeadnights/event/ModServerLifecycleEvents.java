@@ -21,7 +21,7 @@ public class ModServerLifecycleEvents {
     }
 
     public static void executeServerStarted() {
-        UndeadNights.serverState = pServer.getOverworld().getPersistentStateManager().getOrCreate(StateSaverAndLoader.createStateType());
+        UndeadNights.serverState = pServer.overworld().getDataStorage().computeIfAbsent(StateSaverAndLoader.createStateType());
 
         // TODO remove, only for testing
         //UndeadNights.serverState.setFirstDifficultyLevelPrinted(false);

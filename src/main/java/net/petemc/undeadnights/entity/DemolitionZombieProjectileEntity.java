@@ -1,52 +1,47 @@
 package net.petemc.undeadnights.entity;
 
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.FlyingItemEntity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.projectile.PersistentProjectileEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.sound.SoundEvent;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.world.World;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.projectile.ItemSupplier;
+import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class DemolitionZombieProjectileEntity extends PersistentProjectileEntity implements FlyingItemEntity {
-    public DemolitionZombieProjectileEntity(EntityType<? extends DemolitionZombieProjectileEntity> type, World world) {
+public class DemolitionZombieProjectileEntity extends AbstractArrow implements ItemSupplier {
+    public DemolitionZombieProjectileEntity(EntityType<? extends DemolitionZombieProjectileEntity> type, Level world) {
         super(type, world);
     }
 
-    public DemolitionZombieProjectileEntity(LivingEntity entity, World world) {
-        super(ModEntities.TNT_PROJECTILE, entity, world, new ItemStack(Items.TNT), null);
+    public DemolitionZombieProjectileEntity(LivingEntity entity, Level level) {
+        super(ModEntities.TNT_PROJECTILE, entity, level, new ItemStack(Items.TNT), null);
     }
 
-    public DemolitionZombieProjectileEntity(EntityType<? extends DemolitionZombieProjectileEntity> type, double x, double y, double z, World world, ItemStack pickupItemStack, @Nullable ItemStack firedFromWeapon) {
-        super(ModEntities.TNT_PROJECTILE, x, y, z, world, pickupItemStack, null);
+    public DemolitionZombieProjectileEntity(EntityType<? extends DemolitionZombieProjectileEntity> type, double x, double y, double z, Level level, ItemStack pickupItemStack, @Nullable ItemStack firedFromWeapon) {
+        super(ModEntities.TNT_PROJECTILE, x, y, z, level, pickupItemStack, null);
     }
 
     protected @NotNull SoundEvent getDefaultHitGroundSoundEvent() {
-        return SoundEvents.BLOCK_SLIME_BLOCK_PLACE;
+        return SoundEvents.SLIME_BLOCK_PLACE;
     }
 
-    protected void onBlockHit(@NotNull BlockHitResult pResult) {
-        super.onBlockHit(pResult);
-        this.setSound(SoundEvents.BLOCK_SLIME_BLOCK_PLACE);
+    protected void onHitBlock(@NotNull BlockHitResult pResult) {
+        super.onHitBlock(pResult);
+        this.setSoundEvent(SoundEvents.SLIME_BLOCK_PLACE);
     }
 
     @Override
-    protected @NotNull ItemStack asItemStack() {
+    protected @NotNull ItemStack getDefaultPickupItem() {
         return new ItemStack(Items.TNT);
     }
 
     @Override
-    protected ItemStack getDefaultItemStack() {
-        return null;
-    }
-
-    @Override
-    public @NotNull ItemStack getStack() {
+    public @NotNull ItemStack getItem() {
         return new ItemStack(Items.TNT);
     }
 }

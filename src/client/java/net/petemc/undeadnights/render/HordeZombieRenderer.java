@@ -1,32 +1,28 @@
 package net.petemc.undeadnights.render;
 
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
-import net.minecraft.client.render.entity.EntityRendererFactory;
-import net.minecraft.client.render.entity.ZombieBaseEntityRenderer;
-import net.minecraft.client.render.entity.model.EntityModelLayer;
-import net.minecraft.client.render.entity.model.EntityModelLayers;
-import net.minecraft.client.render.entity.model.EquipmentModelData;
-import net.minecraft.client.render.entity.model.ZombieEntityModel;
-import net.minecraft.client.render.entity.state.ZombieEntityRenderState;
-import net.minecraft.entity.EquipmentSlot;
+import net.minecraft.client.model.geom.ModelLayerLocation;
+import net.minecraft.client.model.geom.ModelLayers;
+import net.minecraft.client.model.monster.zombie.ZombieModel;
+import net.minecraft.client.renderer.entity.AbstractZombieRenderer;
+import net.minecraft.client.renderer.entity.ArmorModelSet;
+import net.minecraft.client.renderer.entity.EntityRendererProvider;
+import net.minecraft.client.renderer.entity.state.ZombieRenderState;
 import net.petemc.undeadnights.entity.HordeZombieEntity;
+import org.jetbrains.annotations.NotNull;
 
-@Environment(EnvType.CLIENT)
 public class HordeZombieRenderer
-            extends ZombieBaseEntityRenderer<HordeZombieEntity, ZombieEntityRenderState, ZombieEntityModel<ZombieEntityRenderState>> {
+        extends AbstractZombieRenderer<HordeZombieEntity, ZombieRenderState, ZombieModel<ZombieRenderState>> {
 
-    public HordeZombieRenderer(EntityRendererFactory.Context ctx) {
-        this(ctx, EntityModelLayers.ZOMBIE, EntityModelLayers.ZOMBIE_BABY, EntityModelLayers.ZOMBIE_EQUIPMENT, EntityModelLayers.ZOMBIE_BABY_EQUIPMENT
-            );
-        }
+    public HordeZombieRenderer(EntityRendererProvider.Context ctx) {
+        this(ctx, ModelLayers.ZOMBIE, ModelLayers.ZOMBIE_BABY, ModelLayers.ZOMBIE_ARMOR, ModelLayers.ZOMBIE_BABY_ARMOR);
+    }
 
-    public HordeZombieRenderer(EntityRendererFactory.Context ctx, EntityModelLayer layer, EntityModelLayer legsArmorLayer, EquipmentModelData<EntityModelLayer> equipmentModelData, EquipmentModelData<EntityModelLayer> equipmentModelData2) {
-        super(ctx, new ZombieEntityModel<>(ctx.getPart(layer)), new ZombieEntityModel<>(ctx.getPart(legsArmorLayer)), EquipmentModelData.mapToEntityModel(equipmentModelData, ctx.getEntityModels(), ZombieEntityModel::new), EquipmentModelData.mapToEntityModel(equipmentModelData2, ctx.getEntityModels(), ZombieEntityModel::new));
+    public HordeZombieRenderer(EntityRendererProvider.Context ctx, ModelLayerLocation layer, ModelLayerLocation legsArmorLayer, ArmorModelSet<ModelLayerLocation> equipmentModelData, ArmorModelSet<ModelLayerLocation> equipmentModelData2) {
+        super(ctx, new ZombieModel<>(ctx.bakeLayer(layer)), new ZombieModel<>(ctx.bakeLayer(legsArmorLayer)), ArmorModelSet.bake(equipmentModelData, ctx.getModelSet(), ZombieModel::new), ArmorModelSet.bake(equipmentModelData2, ctx.getModelSet(), ZombieModel::new));
     }
 
     @Override
-    public ZombieEntityRenderState createRenderState() {
-        return new ZombieEntityRenderState();
+    public @NotNull ZombieRenderState createRenderState() {
+        return new ZombieRenderState();
     }
 }

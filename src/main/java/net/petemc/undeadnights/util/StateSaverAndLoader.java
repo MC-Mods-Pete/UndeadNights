@@ -2,9 +2,10 @@ package net.petemc.undeadnights.util;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.util.Uuids;
-import net.minecraft.world.PersistentState;
-import net.minecraft.world.PersistentStateType;
+import net.minecraft.core.UUIDUtil;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.level.saveddata.SavedData;
+import net.minecraft.world.level.saveddata.SavedDataType;
 import net.petemc.undeadnights.UndeadNights;
 import net.petemc.undeadnights.config.MainConfig;
 
@@ -12,12 +13,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-public class StateSaverAndLoader extends PersistentState {
-
-    private void setDirty() {
-        markDirty();
-    }
-
+public class StateSaverAndLoader extends SavedData {
     // All integer data elements in one class
     public static class IntegerCollection {
         private Integer daysCounter;
@@ -224,16 +220,16 @@ public class StateSaverAndLoader extends PersistentState {
                     BOOLEAN_COLLECTION_CODEC.fieldOf("booleanCollection").forGetter(state -> state.booleanCollection),
                     DOUBLE_COLLECTION_CODEC.fieldOf("doubleCollection").forGetter(state -> state.doubleCollection),
                     Codec.LONG.fieldOf("prevNormalizedTimeOfDay").forGetter(state -> state.prevNormalizedTimeOfDay),
-                    Codec.unboundedMap(Uuids.CODEC, Codec.STRING).fieldOf("spawnedHordeMobs").forGetter(state -> state.spawnedHordeMobs),
-                    Codec.unboundedMap(Uuids.CODEC, Codec.STRING).fieldOf("hordeMobsToRemove").forGetter(state -> state.hordeMobsToRemove),
-                    Codec.unboundedMap(Uuids.CODEC, Codec.STRING).fieldOf("entitiesWithPendingHorde").forGetter(state -> state.entitiesWithPendingHorde),
-                    Codec.unboundedMap(Uuids.CODEC, Codec.STRING).fieldOf("entitiesWithPendingWave").forGetter(state -> state.entitiesWithPendingWave),
-                    Codec.unboundedMap(Uuids.CODEC, Codec.STRING).fieldOf("entitiesWithReceivedHorde").forGetter(state -> state.entitiesWithReceivedHorde)
+                    Codec.unboundedMap(UUIDUtil.AUTHLIB_CODEC, Codec.STRING).fieldOf("spawnedHordeMobs").forGetter(state -> state.spawnedHordeMobs),
+                    Codec.unboundedMap(UUIDUtil.AUTHLIB_CODEC, Codec.STRING).fieldOf("hordeMobsToRemove").forGetter(state -> state.hordeMobsToRemove),
+                    Codec.unboundedMap(UUIDUtil.AUTHLIB_CODEC, Codec.STRING).fieldOf("entitiesWithPendingHorde").forGetter(state -> state.entitiesWithPendingHorde),
+                    Codec.unboundedMap(UUIDUtil.AUTHLIB_CODEC, Codec.STRING).fieldOf("entitiesWithPendingWave").forGetter(state -> state.entitiesWithPendingWave),
+                    Codec.unboundedMap(UUIDUtil.AUTHLIB_CODEC, Codec.STRING).fieldOf("entitiesWithReceivedHorde").forGetter(state -> state.entitiesWithReceivedHorde)
             ).apply(instance, StateSaverAndLoader::new)
     );
 
-    public static PersistentStateType<StateSaverAndLoader> createStateType() {
-        return new PersistentStateType<>(UndeadNights.MOD_ID + "_data", StateSaverAndLoader::new, CODEC, null);
+    public static SavedDataType<StateSaverAndLoader> createStateType() {
+        return new SavedDataType<>(Identifier.parse(UndeadNights.MOD_ID + "_data"), StateSaverAndLoader::new, CODEC, null);
     }
 
     public StateSaverAndLoader() {

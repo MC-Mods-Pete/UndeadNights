@@ -1,32 +1,29 @@
 package net.petemc.undeadnights.util;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.SpawnReason;
-import net.minecraft.entity.ai.goal.ActiveTargetGoal;
-import net.minecraft.entity.ai.goal.SwimGoal;
-import net.minecraft.entity.attribute.EntityAttributeModifier;
-import net.minecraft.entity.attribute.EntityAttributes;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.entity.effect.StatusEffects;
-import net.minecraft.entity.mob.MobEntity;
-import net.minecraft.entity.mob.Monster;
-import net.minecraft.entity.mob.ZombieEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.StringNbtReader;
-import net.minecraft.registry.Registries;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.Heightmap;
-import net.minecraft.world.LocalDifficulty;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.TagParser;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.DifficultyInstance;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.*;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.ai.goal.FloatGoal;
+import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
+import net.minecraft.world.entity.monster.Monster;
+import net.minecraft.world.entity.monster.zombie.Zombie;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.levelgen.Heightmap;
 import net.petemc.undeadnights.UndeadNights;
 import net.petemc.undeadnights.casts.UndeadNightsExtendedPlayer;
 import net.petemc.undeadnights.config.HordeConfig;
@@ -40,6 +37,7 @@ import net.petemc.undeadnights.world.spawner.HordeSpawner;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ForkJoinPool;
 
@@ -52,7 +50,7 @@ public class SpawnProcess {
     private static double d = 0;
 
     // spawn a single horde mob at the given location (Asynchronous wrapper)
-    public static CompletableFuture<HordeSpawner.SpawnHordeResult> asynchronousHordeSpawner(ServerWorld level, ServerPlayerEntity player, RandomExtention randomSource) {
+    public static CompletableFuture<HordeSpawner.SpawnHordeResult> asynchronousHordeSpawner(ServerLevel level, ServerPlayer player, RandomExtention randomSource) {
         return CompletableFuture.supplyAsync(() -> spawnHordeImplementation(
                 level,
                 player,
@@ -60,7 +58,7 @@ public class SpawnProcess {
         ), ForkJoinPool.commonPool());
     }
 
-    public static HordeSpawner.SpawnHordeResult synchronousHordeSpawner(ServerWorld level, ServerPlayerEntity player, RandomExtention randomSource) {
+    public static HordeSpawner.SpawnHordeResult synchronousHordeSpawner(ServerLevel level, ServerPlayer player, RandomExtention randomSource) {
         return spawnHordeImplementation(
                 level,
                 player,
@@ -69,7 +67,7 @@ public class SpawnProcess {
     }
 
     // spawn a horde for the given player at a suitable location
-    public static HordeSpawner.SpawnHordeResult spawnHordeImplementation(ServerWorld level, ServerPlayerEntity player, RandomExtention randomSource) {
+    public static HordeSpawner.SpawnHordeResult spawnHordeImplementation(ServerLevel level, ServerPlayer player, RandomExtention randomSource) {
         int randomValue;
         int spawnCounter = 0;
         BlockPos possibleSpawnLocation;
@@ -101,7 +99,7 @@ public class SpawnProcess {
             }
 
             // use the above calculated x and z to find a possible spawn location
-            possibleSpawnLocation = player.getBlockPos().add((int) x, 0, (int) z);
+            possibleSpawnLocation = player.blockPosition().offset((int) x, 0, (int) z);
 
             // cave spawning check
             if (MainConfig.getHordeWavesCanSpawnInCaves() && playerInCave) {
@@ -121,7 +119,7 @@ public class SpawnProcess {
                     }
                 }
                 if (MainConfig.getPrintDebugMessages()) {
-                    player.sendMessage(Text.literal("[DEBUG] Cave horde spawn location calculated.").formatted(Formatting.DARK_AQUA));
+                    player.sendSystemMessage(Component.literal("[DEBUG] Cave horde spawn location calculated.").withStyle(ChatFormatting.DARK_AQUA));
                 }
                 if (MainConfig.getPrintDebugMessages()) {
                     UndeadNights.LOGGER.info("Cave horde spawn location calculation for player {} is done, result: {}", player.getName().getString(), possibleSpawnLocation);
@@ -129,7 +127,7 @@ public class SpawnProcess {
                 foundHordeSpawnLocation = true;
             } else {
                 // use the heightmap to find the surface level at the possible spawn location
-                possibleSpawnLocation = new BlockPos(possibleSpawnLocation.getX(), level.getTopY(Heightmap.Type.MOTION_BLOCKING_NO_LEAVES, possibleSpawnLocation.getX(), possibleSpawnLocation.getZ()) - 1, possibleSpawnLocation.getZ());
+                possibleSpawnLocation = new BlockPos(possibleSpawnLocation.getX(), level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, possibleSpawnLocation.getX(), possibleSpawnLocation.getZ()) - 1, possibleSpawnLocation.getZ());
 
                 if (MainConfig.getPrintDebugMessages()) {
                     UndeadNights.LOGGER.info("Surface horde spawning check for player {} at position {}", player.getName().getString(), possibleSpawnLocation);
@@ -290,12 +288,12 @@ public class SpawnProcess {
             if (currentHordeCounter != UndeadNights.globalSpawnCounter) {
                 if (spawnCounter != 0) {
                     if (MainConfig.getHordeSpawnedMessageAndSound()) {
-                        player.getEntityWorld().playSound(null, player.getX(), player.getY(), player.getZ(), UndeadNightsSounds.HORDE_SCREAM, SoundCategory.HOSTILE, 4.0F, 1);
+                        player.level().playSound(null, player.getX(), player.getY(), player.getZ(), UndeadNightsSounds.HORDE_SCREAM, SoundSource.HOSTILE, 4.0F, 1);
                         if (UndeadNights.serverState.isSpawnBossHorde()) {
                             //HordeSpawner.bossHordeSpawned = true;
-                            player.sendMessage(Text.translatable("message.undeadnights.boss_horde_spawned").formatted(Formatting.DARK_RED));
+                            player.sendSystemMessage(Component.translatable("message.undeadnights.boss_horde_spawned").withStyle(ChatFormatting.DARK_RED));
                         } else {
-                            player.sendMessage(Text.translatable("message.undeadnights.horde_spawned").formatted(Formatting.RED));
+                            player.sendSystemMessage(Component.translatable("message.undeadnights.horde_spawned").withStyle(ChatFormatting.RED));
                         }
                     }
                     if (MainConfig.getPrintDebugMessages()) {
@@ -323,18 +321,22 @@ public class SpawnProcess {
     }
 
     // spawn a single horde mob at the given location
-    public static int spawnHordeMob(ServerWorld level, RandomExtention randomSource, BlockPos pos, PlayerEntity player, HordeConfig.MobSpawnData mobSpawnData) {
-        EntityType<?> entityType = Registries.ENTITY_TYPE.get(Identifier.of(mobSpawnData.mobId()));
-        if (!mobSpawnData.mobId().contains(entityType.getUntranslatedName())) {
+    public static int spawnHordeMob(ServerLevel level, RandomExtention randomSource, BlockPos pos, Player player, HordeConfig.MobSpawnData mobSpawnData) {
+        Optional<Holder.Reference<EntityType<?>>> optMobType = BuiltInRegistries.ENTITY_TYPE.get(Identifier.parse(mobSpawnData.mobId()));
+        if (optMobType.isEmpty()) {
             invalidHordeMobEntry = true;
             UndeadNights.LOGGER.warn("Spawning entry {} from the config file failed! Spawning default horde zombie instead.", mobSpawnData.mobId());
-            //mobType = ForgeRegistries.ENTITY_TYPES.getValue(new ResourceLocation("undeadnights:horde_zombie"));
+            optMobType = BuiltInRegistries.ENTITY_TYPE.get(Identifier.parse("undeadnights:horde_zombie"));
+            if (optMobType.isEmpty()) {
+                UndeadNights.LOGGER.error("Spawning default horde zombie {} failed!", mobSpawnData.mobId());
+                return 0;
+            }
         }
 
-        NbtCompound nbtCompound = new NbtCompound();
+        CompoundTag nbtCompound = new CompoundTag();
         if (!Objects.equals(mobSpawnData.nbt(), "")) {
             try {
-                nbtCompound = StringNbtReader.readCompound(mobSpawnData.nbt());
+                nbtCompound = TagParser.parseCompoundFully(mobSpawnData.nbt());
             } catch (CommandSyntaxException e) {
                 UndeadNights.LOGGER.error("Parsing NBT-tags for {} failed!", mobSpawnData.mobId());
             }
@@ -368,8 +370,8 @@ public class SpawnProcess {
         if (MainConfig.getPrintDebugMessages()) {
             UndeadNights.LOGGER.info("Spawning horde mob {} at position {}, {}, {} with TrackingRange: {}", mobSpawnData.mobId(), finalPos.getX(), finalPos.getY(), finalPos.getZ(), trackingRange);
         }
-        Entity entity = EntityType.loadEntityWithPassengers(nbtCompound, level, SpawnReason.COMMAND, entityX -> {
-            entityX.refreshPositionAndAngles(finalPos.getX(),finalPos.getY(),finalPos.getZ(), entityX.getYaw(), entityX.getPitch());
+        Entity entity = EntityType.loadEntityRecursive(nbtCompound, level, EntitySpawnReason.COMMAND,entityX -> {
+            entityX.snapTo(finalPos.getX(),finalPos.getY(),finalPos.getZ(), entityX.getYRot(), entityX.getXRot());
             return entityX;
         });
 
@@ -399,45 +401,45 @@ public class SpawnProcess {
                 UndeadNights.LOGGER.warn("extraSpawnInfo for {} could be read, using default TNT stack size!", mobSpawnData.mobId());
             }
         }
-        LocalDifficulty localDifficulty = level.getLocalDifficulty(player.getBlockPos());
+        DifficultyInstance localDifficulty = level.getCurrentDifficultyAt(player.blockPosition());
         try {
-            if (entity instanceof MobEntity mob) {
-                mob.initialize(level, localDifficulty, SpawnReason.NATURAL, null);
+            if (entity instanceof Mob mob) {
+                mob.finalizeSpawn(level, localDifficulty, EntitySpawnReason.NATURAL, null);
                 mob.setTarget(player);
 
                 // make vanilla zombies in hordes float on water and give ability to break blocks
                 if (mobSpawnData.mobId().equals("minecraft:zombie")) {
-                    mob.goalSelector.add(1, new SwimGoal(mob));
-                    mob.goalSelector.add(1, new BreakBlockGoal((ZombieEntity) mob));
+                    mob.goalSelector.addGoal(1, new FloatGoal(mob));
+                    mob.goalSelector.addGoal(1, new BreakBlockGoal((Zombie) mob));
                 }
 
-                Objects.requireNonNull(mob.getAttributeInstance(EntityAttributes.FOLLOW_RANGE)).setBaseValue(trackingRange);
+                Objects.requireNonNull(mob.getAttribute(Attributes.FOLLOW_RANGE)).setBaseValue(trackingRange);
 
                 if ((!mobSpawnData.mobId().equals("undeadnights:horde_zombie")) &&
                         (!mobSpawnData.mobId().equals("undeadnights:elite_zombie")) &&
                         (!mobSpawnData.mobId().equals("undeadnights:demolition_zombie"))) {
-                    mob.targetSelector.add(1, new ActiveTargetGoal<>(mob, PlayerEntity.class, false, false));
-                    //Objects.requireNonNull(mob.getAttributeInstance(EntityAttributes.FOLLOW_RANGE)).setBaseValue(128.0f);
+
+                    mob.targetSelector.addGoal(1, new NearestAttackableTargetGoal<>(mob, Player.class, false, false));
+
 
                     int playerCount = 1;
-                    if (!mob.getEntityWorld().isClient()) {
-                        playerCount = mob.getEntityWorld().getPlayers().size();
+                    if (!mob.level().isClientSide()) {
+                        playerCount = mob.level().players().size();
                     }
 
                     if (UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeMobs().isUpdateAttributesOfThirdPartyMobs() ||
                             mobSpawnData.mobId().equals("minecraft:zombie")) {
+                        Objects.requireNonNull(mob.getAttribute(Attributes.MAX_HEALTH))
+                                .addPermanentModifier(new AttributeModifier(Identifier.fromNamespaceAndPath(UndeadNights.MOD_ID, "mob_health_bonus"), UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeMobs().getHealthAttributeScaleFactor() - 1.0, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));
 
-                        Objects.requireNonNull(mob.getAttributeInstance(EntityAttributes.MAX_HEALTH))
-                                .addPersistentModifier(new EntityAttributeModifier(Identifier.of(UndeadNights.MOD_ID,"mob_health_bonus"), UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeMobs().getHealthAttributeScaleFactor() - 1.0, EntityAttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));
+                        Objects.requireNonNull(mob.getAttribute(Attributes.MOVEMENT_SPEED))
+                                .addPermanentModifier(new AttributeModifier(Identifier.fromNamespaceAndPath(UndeadNights.MOD_ID, "mob_speed_bonus"), UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeMobs().getSpeedAttributeScaleFactor() - 1.0, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));
 
-                        Objects.requireNonNull(mob.getAttributeInstance(EntityAttributes.MOVEMENT_SPEED))
-                                .addPersistentModifier(new EntityAttributeModifier(Identifier.of(UndeadNights.MOD_ID,"mob_speed_bonus"), UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeMobs().getSpeedAttributeScaleFactor() - 1.0, EntityAttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));
+                        Objects.requireNonNull(mob.getAttribute(Attributes.ATTACK_DAMAGE))
+                                .addPermanentModifier(new AttributeModifier(Identifier.fromNamespaceAndPath(UndeadNights.MOD_ID, "mob_attack_damage_bonus"), UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeMobs().getDamageAttributeScaleFactor() - 1.0, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));
 
-                        Objects.requireNonNull(mob.getAttributeInstance(EntityAttributes.ATTACK_DAMAGE))
-                                .addPersistentModifier(new EntityAttributeModifier(Identifier.of(UndeadNights.MOD_ID,"mob_attack_damage_bonus"), UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeMobs().getDamageAttributeScaleFactor() - 1.0, EntityAttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));
-
-                        Objects.requireNonNull(mob.getAttributeInstance(EntityAttributes.ARMOR))
-                                .addPersistentModifier(new EntityAttributeModifier(Identifier.of(UndeadNights.MOD_ID,"mob_armor_bonus"), UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeMobs().getArmorAttributeScaleFactor() - 1.0, EntityAttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));
+                        Objects.requireNonNull(mob.getAttribute(Attributes.ARMOR))
+                                .addPermanentModifier(new AttributeModifier(Identifier.fromNamespaceAndPath(UndeadNights.MOD_ID, "mob_armor_bonus"), UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeMobs().getArmorAttributeScaleFactor() - 1.0, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));
                     }
 
                     double healthScaleFactor = 0.0;
@@ -475,49 +477,47 @@ public class SpawnProcess {
                     boolean flag = (healthScaleFactor > 0.0) || (speedScaleFactor > 0.0) || (damageScaleFactor > 0.0) || (armorScaleFactor > 0.0);
 
                     if (flag) {
-                        Objects.requireNonNull(mob.getAttributeInstance(EntityAttributes.MAX_HEALTH))
-                                .addPersistentModifier(new EntityAttributeModifier(Identifier.of(UndeadNights.MOD_ID,"mob_difficulty_health_bonus"), healthScaleFactor, EntityAttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));
+                        Objects.requireNonNull(mob.getAttribute(Attributes.MAX_HEALTH))
+                                .addPermanentModifier(new AttributeModifier(Identifier.fromNamespaceAndPath(UndeadNights.MOD_ID, "mob_difficulty_health_bonus"), healthScaleFactor, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));
 
-                        Objects.requireNonNull(mob.getAttributeInstance(EntityAttributes.MOVEMENT_SPEED))
-                                .addPersistentModifier(new EntityAttributeModifier(Identifier.of(UndeadNights.MOD_ID,"mob_difficulty_speed_bonus"), speedScaleFactor, EntityAttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));
+                        Objects.requireNonNull(mob.getAttribute(Attributes.MOVEMENT_SPEED))
+                                .addPermanentModifier(new AttributeModifier(Identifier.fromNamespaceAndPath(UndeadNights.MOD_ID, "mob_difficulty_speed_bonus"), speedScaleFactor, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));
 
-                        Objects.requireNonNull(mob.getAttributeInstance(EntityAttributes.ATTACK_DAMAGE))
-                                .addPersistentModifier(new EntityAttributeModifier(Identifier.of(UndeadNights.MOD_ID,"mob_difficulty_attack_damage_bonus"), damageScaleFactor, EntityAttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));
+                        Objects.requireNonNull(mob.getAttribute(Attributes.ATTACK_DAMAGE))
+                                .addPermanentModifier(new AttributeModifier(Identifier.fromNamespaceAndPath(UndeadNights.MOD_ID, "mob_difficulty_attack_damage_bonus"), damageScaleFactor, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));
 
-                        Objects.requireNonNull(mob.getAttributeInstance(EntityAttributes.ARMOR))
-                                .addPersistentModifier(new EntityAttributeModifier(Identifier.of(UndeadNights.MOD_ID,"mob_difficulty_armor_bonus"), armorScaleFactor, EntityAttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));
+                        Objects.requireNonNull(mob.getAttribute(Attributes.ARMOR))
+                                .addPermanentModifier(new AttributeModifier(Identifier.fromNamespaceAndPath(UndeadNights.MOD_ID, "mob_difficulty_armor_bonus"), armorScaleFactor, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));
 
                         mob.setHealth(mob.getMaxHealth());
                     }
                 }
             }
             assert entity != null;
-            UndeadNights.serverState.spawnedHordeMobs.put(entity.getUuid(), player.getUuid().toString());
+            UndeadNights.serverState.spawnedHordeMobs.put(entity.getUUID(), entity.getUUID().toString());
             if (entity instanceof LivingEntity livingEntity) {
                 if (MainConfig.getHordeWavesCanSpawnInCaves()) {
-                    livingEntity.addStatusEffect(new StatusEffectInstance(StatusEffects.FIRE_RESISTANCE, 2 * 20, 1));
-                    livingEntity.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOW_FALLING, 2 * 20, 1));
+                    livingEntity.addEffect(new MobEffectInstance(MobEffects.FIRE_RESISTANCE, 2 * 20, 1));
+                    livingEntity.addEffect(new MobEffectInstance(MobEffects.SLOW_FALLING, 2 * 20, 1));
                 }
                 if (MainConfig.getDebugMakeHordeMobsGlow()) {
-                    livingEntity.addStatusEffect(new StatusEffectInstance(StatusEffects.GLOWING, 200 * 20, 1));
+                    livingEntity.addEffect(new MobEffectInstance(MobEffects.GLOWING, 200 * 20, 1));
                 }
             }
-            level.spawnNewEntityAndPassengers(entity);
+            level.tryAddFreshEntityWithPassengers(entity);
         } catch (Exception e) {
             invalidHordeMobEntry = true;
             UndeadNights.LOGGER.warn("Spawning entry {} from the config file failed! Spawning default horde zombie instead.", mobSpawnData.mobId());
             HordeZombieEntity hZombie = new HordeZombieEntity(ModEntities.HORDE_ZOMBIE, level);
-            hZombie.setPos(pos.getX(), level.getTopY(Heightmap.Type.MOTION_BLOCKING_NO_LEAVES, pos.getX(), pos.getZ()), pos.getZ());
+            hZombie.setPos(pos.getX(), level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, pos.getX(), pos.getZ()), pos.getZ());
             if (MainConfig.getPersistentMobs()) {
-                hZombie.setPersistent();
+                hZombie.setPersistenceRequired();
             }
-            hZombie.initialize(level, localDifficulty, SpawnReason.NATURAL, null);
+            hZombie.finalizeSpawn(level, localDifficulty, EntitySpawnReason.NATURAL, null);
             hZombie.setTarget(player);
-            UndeadNights.serverState.spawnedHordeMobs.put(hZombie.getUuid(), player.getUuid().toString());
-            level.spawnEntity(hZombie);
+            UndeadNights.serverState.spawnedHordeMobs.put(hZombie.getUUID(), hZombie.getUUID().toString());
+            level.addFreshEntity(hZombie);
         }
         return 0;
     }
-
-
 }

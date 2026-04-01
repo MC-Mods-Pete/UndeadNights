@@ -2,13 +2,12 @@ package net.petemc.undeadnights.command;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
-import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import net.minecraft.command.CommandRegistryAccess;
-import net.minecraft.server.command.CommandManager;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
+import net.minecraft.commands.CommandBuildContext;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
 import net.petemc.undeadnights.UndeadNights;
 import net.petemc.undeadnights.config.difficulty.DifficultyLevel;
 import net.petemc.undeadnights.config.difficulty.DifficultySettingDynamicScaling;
@@ -16,42 +15,35 @@ import net.petemc.undeadnights.config.difficulty.DifficultySettingDynamicScaling
 import java.util.List;
 
 public class DifficultyLevelCommand {
-    public static void register(CommandDispatcher<ServerCommandSource> dispatcher, CommandRegistryAccess commandRegistryAccess, CommandManager.RegistrationEnvironment registrationEnvironment) {
-        dispatcher.register(CommandManager.literal("undeadnights")
-                .requires(CommandManager.requirePermissionLevel(CommandManager.GAMEMASTERS_CHECK))
-            .then(CommandManager.literal("difficulty")
-                .then(CommandManager.literal("query")
-                    .executes(DifficultyLevelCommand::queryDifficulty))
-                .then(CommandManager.literal("set")
-                    .then(CommandManager.argument("levelIndex", IntegerArgumentType.integer(1))
-                        .executes((command ->
-                            setDifficulty(command.getSource(), IntegerArgumentType.getInteger(command, "levelIndex"))))))
-                .then(CommandManager.literal("auto_progression")
-                    .then(CommandManager.literal("enable")
-                        .executes((command ->
-                            setAutoProgression(command.getSource(), true))))
-                    .then(CommandManager.literal("disable")
-                        .executes((command ->
-                            setAutoProgression(command.getSource(), false)))))
-                .then(CommandManager.literal("dynamic_scaling")
-                        .then(CommandManager.literal("enable")
-                                .executes(ctx ->
-                            setDynamicScaling(ctx.getSource(), true)))
-                        .then(CommandManager.literal("disable")
-                                .executes(ctx ->
-                            setDynamicScaling(ctx.getSource(), false)))
-                        .then(CommandManager.literal("reset")
-                                .executes(ctx ->
-                            resetDynamicScalingValues(ctx.getSource())))
+    public static void register(CommandDispatcher<CommandSourceStack> dispatcher, CommandBuildContext commandRegistryAccess, Commands.CommandSelection registrationEnvironment) {
+        dispatcher.register(Commands.literal("undeadnights")
+                .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
+            .then(Commands.literal("difficulty")
+                .then(Commands.literal("query")
+                    .executes(ctx -> queryDifficulty(ctx.getSource())))
+                .then(Commands.literal("set")
+                    .then(Commands.argument("levelIndex", IntegerArgumentType.integer(1))
+                        .executes(ctx -> setDifficulty(ctx.getSource(), IntegerArgumentType.getInteger(ctx, "levelIndex")))))
+                .then(Commands.literal("auto_progression")
+                    .then(Commands.literal("enable")
+                        .executes(ctx -> setAutoProgression(ctx.getSource(), true)))
+                    .then(Commands.literal("disable")
+                        .executes(ctx -> setAutoProgression(ctx.getSource(), false))))
+                .then(Commands.literal("dynamic_scaling")
+                    .then(Commands.literal("enable")
+                        .executes(ctx -> setDynamicScaling(ctx.getSource(), true)))
+                    .then(Commands.literal("disable")
+                        .executes(ctx -> setDynamicScaling(ctx.getSource(), false)))
+                    .then(Commands.literal("reset")
+                        .executes(ctx -> resetDynamicScalingValues(ctx.getSource())))
                 )
             ));
     }
 
-    private static int queryDifficulty(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        ServerCommandSource source = context.getSource();
-        DifficultyLevel currentDifficultyLevel = UndeadNights.difficultyConfig.getCurrentDifficultyLevel();
-        if (context.getSource().getEntity() instanceof ServerPlayerEntity serverPlayer) {
-            serverPlayer.sendMessage(Text.literal("Current difficulty level: " + currentDifficultyLevel.getDifficultyName() + " (max: " + UndeadNights.difficultyConfig.getDifficultyLevels().size() + ")\n"
+    private static int queryDifficulty(CommandSourceStack source) throws CommandSyntaxException {
+        if (source.getEntity() instanceof ServerPlayer serverPlayer) {
+            DifficultyLevel currentDifficultyLevel = UndeadNights.difficultyConfig.getCurrentDifficultyLevel();
+            serverPlayer.sendSystemMessage(Component.literal("Current difficulty level: " + currentDifficultyLevel.getDifficultyName() + " (max: " + UndeadNights.difficultyConfig.getDifficultyLevels().size() + ")\n"
                     + "Automatic difficulty progression: " + (UndeadNights.automaticDifficultyProgressionActive ? "enabled" : "disabled") + "\n"
                     + "Dynamic scaling: " + (UndeadNights.difficultyConfig.getDynamicScaling().isDynamicScalingEnabled() ? "enabled" : "disabled") + "\n"
                     + "Dynamic scaling day counter: " + UndeadNights.serverState.getCurrentDayScaleCounter() + " / " + String.format("%.0f", UndeadNights.difficultyConfig.getDynamicScaling().getDaysBetweenScaleIncreases()) + "\n"
@@ -64,11 +56,11 @@ public class DifficultyLevelCommand {
         return 1;
     }
 
-    private static int setDifficulty(ServerCommandSource source, int levelIndex) throws CommandSyntaxException {
-        if (source.getEntity() instanceof ServerPlayerEntity serverPlayer) {
+    private static int setDifficulty(CommandSourceStack source, int levelIndex) throws CommandSyntaxException {
+        if (source.getEntity() instanceof ServerPlayer serverPlayer) {
             List<DifficultyLevel> difficultyLevels = UndeadNights.difficultyConfig.getDifficultyLevels();
             if (levelIndex <= 0 || levelIndex > difficultyLevels.size()) {
-                serverPlayer.sendMessage(Text.literal("Invalid difficulty level index!"));
+                serverPlayer.sendSystemMessage(Component.literal("Invalid difficulty level index!"));
                 return 0;
             }
             levelIndex--; // Adjust for 0-based index
@@ -77,37 +69,36 @@ public class DifficultyLevelCommand {
             UndeadNights.serverState.setPossibleHordesIndex(-1);
             HordeMobsCommand.hordeZombiesCanBreakBlocks = UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeMobs().isBlockBreaking();
             HordeMobsCommand.hordeZombiesBlockBreakingTier = UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeMobs().getBlockBreakingTier();
-            serverPlayer.sendMessage(Text.literal("Difficulty level set to: " + difficultyLevels.get(levelIndex).getDifficultyName()));
+            serverPlayer.sendSystemMessage(Component.literal("Difficulty level set to: " + difficultyLevels.get(levelIndex).getDifficultyName()));
         }
         return 1;
     }
 
-    private static int setAutoProgression(ServerCommandSource source, boolean value) {
-        UndeadNights.automaticDifficultyProgressionActive = value;
-        if (source.getEntity() instanceof ServerPlayerEntity serverPlayer) {
-            serverPlayer.sendMessage(Text.literal("Automatic difficulty progression has been " + (value ? "enabled" : "disabled") + "."));
+    private static int setAutoProgression(CommandSourceStack source, boolean value) {
+        if (source.getEntity() instanceof ServerPlayer serverPlayer) {
+            UndeadNights.automaticDifficultyProgressionActive = value;
+            serverPlayer.sendSystemMessage(Component.literal("Automatic difficulty progression has been " + (value ? "enabled" : "disabled") + "."));
         }
         return 1;
     }
 
-
-    private static int setDynamicScaling(ServerCommandSource source, boolean value) {
-        DifficultySettingDynamicScaling dynamicScaling = UndeadNights.difficultyConfig.getDynamicScaling();
-        dynamicScaling.setDynamicScalingEnabled(value);
-        if (source.getEntity() instanceof ServerPlayerEntity serverPlayer) {
-           serverPlayer.sendMessage(Text.literal("Dynamic difficulty scaling has been " + (value ? "enabled" : "disabled") + "."));
+    private static int setDynamicScaling(CommandSourceStack source, boolean value) {
+        if (source.getEntity() instanceof ServerPlayer serverPlayer) {
+            DifficultySettingDynamicScaling dynamicScaling = UndeadNights.difficultyConfig.getDynamicScaling();
+            dynamicScaling.setDynamicScalingEnabled(value);
+            serverPlayer.sendSystemMessage(Component.literal("Dynamic difficulty scaling has been " + (value ? "enabled" : "disabled") + "."));
         }
         return 1;
     }
 
-    private static int resetDynamicScalingValues(ServerCommandSource source) {
+    private static int resetDynamicScalingValues(CommandSourceStack source) {
         UndeadNights.serverState.setCurrentHealthScale(0.0f);
         UndeadNights.serverState.setCurrentSpeedScale(0.0f);
         UndeadNights.serverState.setCurrentDamageScale(0.0f);
         UndeadNights.serverState.setCurrentArmorScale(0.0f);
         UndeadNights.serverState.setCurrentDayScaleCounter(0);
-        if (source.getEntity() instanceof ServerPlayerEntity serverPlayer) {
-            serverPlayer.sendMessage(Text.literal("Dynamic difficulty scaling values and day counter have been reset."));
+        if (source.getEntity() instanceof ServerPlayer serverPlayer) {
+            serverPlayer.sendSystemMessage(Component.literal("Dynamic difficulty scaling values and day counter have been reset."));
         }
         return 1;
     }
