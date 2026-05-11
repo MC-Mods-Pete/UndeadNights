@@ -28,7 +28,7 @@ public class ServerWorldMixin
     @Shadow @Final private List<CustomSpawner> customSpawners;
 
     @Inject(method = "<init>", at = @At("TAIL"))
-    public void init(MinecraftServer server, Executor dispatcher, LevelStorageSource.LevelStorageAccess storageSource, ServerLevelData levelData, ResourceKey dimension, LevelStem levelStem, boolean isDebug, long biomeZoomSeed, List customSpawners, boolean tickTime, RandomSequences randomSequences, CallbackInfo ci)
+    public void init(MinecraftServer server, Executor executor, LevelStorageSource.LevelStorageAccess levelStorage, ServerLevelData levelData, ResourceKey dimension, LevelStem levelStem, boolean isDebug, long biomeZoomSeed, List customSpawners, boolean tickTime, CallbackInfo ci)
     {
         ArrayList<CustomSpawner> undeadSpawner = new ArrayList<>(this.customSpawners);
         undeadSpawner.add(new HordeSpawner());

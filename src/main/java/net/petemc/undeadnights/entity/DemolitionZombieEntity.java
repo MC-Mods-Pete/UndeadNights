@@ -141,7 +141,7 @@ public class DemolitionZombieEntity extends Zombie  {
                     .addPermanentModifier(new AttributeModifier(Identifier.fromNamespaceAndPath(UndeadNights.MOD_ID, "demolition_zombie_difficulty_armor_bonus"), armorScaleFactor, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));
         }
 
-        this.handleAttributes(f);
+        this.handleAttributes(f, spawnReason);
         this.setHealth(this.getMaxHealth());
         this.setBaby(false);
         return spawnGroupData;
@@ -170,27 +170,6 @@ public class DemolitionZombieEntity extends Zombie  {
         this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, IronGolem.class, true));
         this.targetSelector.addGoal(4, new NearestAttackableTargetGoal<>(this, LivingEntity.class, true,
                 new DemolitionZombieCustomTargetSelector(this)));  }
-
-    /*
-
-                            TargetingConditions.forCombat()
-                .selector((entity1, level) -> {
-                    return HordeConfig.getTargetEntities().contains(entity1.getType().toString());
-                }).test(this.level(), entity)));
-
-
-    TargetingConditions.forCombat()
-            .range(15.0D) // Only check within 15 blocks
-    .selector(entity -> {
-        // Return true if the entity is a suitable target
-        if (entity instanceof Wolf wolf) {
-            return !wolf.isTame(); // Reject if tamed
-        }
-        return true; // Target everything else
-    })
-            .test(attacker, targetEntity);
-
-     */
 
     @Override
     protected void dropCustomDeathLoot(@NotNull ServerLevel level, @NotNull DamageSource damageSource, boolean recentlyHit) {
