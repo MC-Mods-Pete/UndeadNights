@@ -1,5 +1,6 @@
 package net.petemc.undeadnights.event;
 
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -147,7 +148,7 @@ public class ForgeEvents {
             return;
         }
 
-        if (entity.getType().is(ModTags.EntityTypes.HORDE_MOBS)) {
+        if (BuiltInRegistries.ENTITY_TYPE.wrapAsHolder(entity.getType()).is(ModTags.EntityTypes.HORDE_MOBS)) {
             if (entity instanceof HordeZombieEntity hordeZombie) {
                 if (hordeZombie.isBreakingBlock()) {
                     return;
@@ -169,7 +170,7 @@ public class ForgeEvents {
                 final Vec3 entityPosition = entity.position();
                 final AABB entitySearchArea = new AABB(entityPosition, entityPosition).inflate(0.45 / 2d);
                 List<Entity> sortedEntityList = world.getEntitiesOfClass(Entity.class, entitySearchArea , entityTagCheck ->
-                                entityTagCheck.getType().is(ModTags.EntityTypes.HORDE_MOBS))
+                                BuiltInRegistries.ENTITY_TYPE.wrapAsHolder(entityTagCheck.getType()).is(ModTags.EntityTypes.HORDE_MOBS))
                         .stream().sorted(Comparator.comparingDouble(entityDistSort -> entityDistSort.distanceToSqr(entityPosition))).toList();
 
                 for (Entity hordeMobIterator : sortedEntityList) {

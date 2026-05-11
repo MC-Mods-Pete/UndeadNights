@@ -144,7 +144,7 @@ public class EliteZombieEntity extends Zombie {
         }
 
 
-        this.handleAttributes(f);
+        this.handleAttributes(f, spawnReason);
         this.setHealth(this.getMaxHealth());
         this.setBaby(false);
         return spawnGroupData;

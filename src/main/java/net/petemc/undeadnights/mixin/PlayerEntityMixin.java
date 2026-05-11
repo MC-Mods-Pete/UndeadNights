@@ -63,7 +63,7 @@ public class PlayerEntityMixin implements UndeadNightsExtendedPlayer {
         return isInCaveStageOne;
     }
 
-    @Inject(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;updatePlayerPose()V", shift = At.Shift.AFTER))
+    @Inject(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;updatePlayerPose()V", shift = At.Shift.AFTER), remap = false)
     public void tick(CallbackInfo ci) {
         Player player = (Player) (Object) this;
 
@@ -174,13 +174,13 @@ public class PlayerEntityMixin implements UndeadNightsExtendedPlayer {
         return isCave.get();
     }
 
-    @Inject(method = "readAdditionalSaveData", at = @At("TAIL"))
-    private void injectToReadNbt(ValueInput input, CallbackInfo ci) {
+    @Inject(method = "readAdditionalSaveData", at = @At("TAIL"), remap = false)
+    private void readAdditionalSaveData(ValueInput input, CallbackInfo ci) {
         this.isInCave = input.getBooleanOr("undeadnights_is_player_in_cave", false);
     }
 
-    @Inject(method = "addAdditionalSaveData", at = @At("TAIL"))
-    private void injectToWriteNbt(ValueOutput output, CallbackInfo ci) {
+    @Inject(method = "addAdditionalSaveData", at = @At("TAIL"), remap = false)
+    private void addAdditionalSaveData(ValueOutput output, CallbackInfo ci) {
         output.putBoolean("undeadnights_is_player_in_cave", this.isInCave);
     }
 }

@@ -54,7 +54,7 @@ public class SpawnLocationFinder {
     }
 
     public static BlockPos getBlockPosWithDistance(BlockPos pos, Level level, int distanceMin, int distanceMax) {
-        final RandomSource random = level.random;
+        final RandomExtention random = new RandomExtention();
         double _d;
         double _x;
         double _z;

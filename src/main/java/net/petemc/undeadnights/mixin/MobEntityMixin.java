@@ -15,7 +15,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(Mob.class)
 public class MobEntityMixin {
 
-    @Inject(method = "removeWhenFarAway", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "removeWhenFarAway", at = @At("HEAD"), cancellable = true, remap = false)
     public void removeWhenFarAway(double pDistanceToClosestPlayer, CallbackInfoReturnable<Boolean> cir) {
         if (MainConfig.getPreventDespawnWhenInsideMaxTrackingRange()) {
             if (UndeadNights.serverState.spawnedHordeMobs.containsKey(((Entity) (Object) this).getUUID())) {

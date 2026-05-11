@@ -92,7 +92,7 @@ public class HordeSpawner implements CustomSpawner {
 
 
     @Override
-    public void tick(@NotNull ServerLevel level, boolean spawnMonsters) {
+    public void tick(@NotNull ServerLevel level, boolean spawnEnemies) {
         // check if Horde Nights is enabled
         if (level.isClientSide()) {
             return;
@@ -104,7 +104,7 @@ public class HordeSpawner implements CustomSpawner {
         }
 
         // is mob spawning enabled?
-        if (!spawnMonsters && !MainConfig.getIgnoreDoMobSpawningGamerule()) {
+        if (!spawnEnemies && !MainConfig.getIgnoreDoMobSpawningGamerule()) {
             return;
         }
 
@@ -119,7 +119,7 @@ public class HordeSpawner implements CustomSpawner {
         }
 
         // calculate normalized time of day and set "Is It Night" flag
-        long normalizedTimeOfDay = level.getDayTime() - ((level.getDayTime() / 24000L) * 24000);
+        long normalizedTimeOfDay = level.getOverworldClockTime() - ((level.getOverworldClockTime() / 24000L) * 24000);
         if (UndeadNights.serverState.getPrevNormalizedTimeOfDay() == normalizedTimeOfDay) {
             return;
         }
@@ -262,7 +262,7 @@ public class HordeSpawner implements CustomSpawner {
                     }
                 }
                 if (MainConfig.getPrintDebugMessages()) {
-                    UndeadNights.LOGGER.info("Night is coming, NormalizedTimeOfDay: {}, TimeOfDay: {}, DaysCounter: {}, GameTime: {}, GameTimeDays: {}", normalizedTimeOfDay, level.getDayTime(), UndeadNights.serverState.getDaysCounter(), level.getGameTime(), (level.getGameTime() / 24000));
+                    UndeadNights.LOGGER.info("Night is coming, NormalizedTimeOfDay: {}, TimeOfDay: {}, DaysCounter: {}, GameTime: {}, GameTimeDays: {}", normalizedTimeOfDay, level.getOverworldClockTime(), UndeadNights.serverState.getDaysCounter(), level.getGameTime(), (level.getGameTime() / 24000));
                 }
             }
 
@@ -397,7 +397,7 @@ public class HordeSpawner implements CustomSpawner {
                     UndeadNights.serverState.setHordesCounter(0);
                 }
                 if (MainConfig.getPrintDebugMessages()) {
-                    UndeadNights.LOGGER.info("The Night of the Undead is over, TimeOfDay: {} DaysCounter: {} GlobalSpawnCounter: {}", level.getDayTime(), UndeadNights.serverState.getDaysCounter(), UndeadNights.globalSpawnCounter);
+                    UndeadNights.LOGGER.info("The Night of the Undead is over, TimeOfDay: {} DaysCounter: {} GlobalSpawnCounter: {}", level.getOverworldClockTime(), UndeadNights.serverState.getDaysCounter(), UndeadNights.globalSpawnCounter);
                 }
 
 
@@ -412,7 +412,7 @@ public class HordeSpawner implements CustomSpawner {
             if ((normalizedTimeOfDay >= 11500) && !level.getPlayers(LivingEntity::isAlive).isEmpty() && UndeadNights.automaticDifficultyProgressionActive) {
                 boolean flag = false;
                 if (UndeadNights.serverState.isPerformDifficultySwitchCheck()) {
-                    flag = UndeadNights.difficultyConfig.checkForDifficultyLevelSwitch((int) (level.getDayTime() / 24000L)+1, randomSource);
+                    flag = UndeadNights.difficultyConfig.checkForDifficultyLevelSwitch((int) (level.getOverworldClockTime() / 24000L)+1, randomSource);
                     UndeadNights.serverState.setPerformDifficultySwitchCheck(false);
                 }
                 if ((flag || !UndeadNights.serverState.isFirstDifficultyLevelPrinted()) &&

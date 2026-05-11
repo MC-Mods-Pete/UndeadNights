@@ -24,7 +24,7 @@ public class ZombieEntityMixin implements BlockBreakingZombie
 {
     private static final EntityDataAccessor<Byte> DATA_FLAGS_ID = SynchedEntityData.defineId(Zombie.class, EntityDataSerializers.BYTE);
 
-    @Inject(method = "hurtServer", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/monster/zombie/Zombie;setTarget(Lnet/minecraft/world/entity/LivingEntity;)V", shift = At.Shift.AFTER), cancellable = true)
+    @Inject(method = "hurtServer", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/monster/zombie/Zombie;setTarget(Lnet/minecraft/world/entity/LivingEntity;)V", shift = At.Shift.AFTER), cancellable = true, remap = false)
     public void hurtServer_disableReinforcements(ServerLevel pLevel, DamageSource pDamageSource, float pAmount, CallbackInfoReturnable<Boolean> cir) {
         if ((Object) this instanceof HordeZombieEntity) {
             cir.setReturnValue(true);
@@ -37,12 +37,12 @@ public class ZombieEntityMixin implements BlockBreakingZombie
         }
     }
 
-    @Inject(method = "defineSynchedData", at = @At("TAIL"))
+    @Inject(method = "defineSynchedData", at = @At("TAIL"), remap = false)
     public void defineSyncedData(SynchedEntityData.Builder builder, CallbackInfo ci) {
         builder.define(DATA_FLAGS_ID, (byte)0);
     }
 
-    @Inject(method = "isSunSensitive", at = @At("TAIL"), cancellable = true)
+    @Inject(method = "isSunSensitive", at = @At("TAIL"), cancellable = true, remap = false)
     public void isSunSensitive(CallbackInfoReturnable<Boolean> cir) {
         cir.setReturnValue(UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeMobs().isVanillaZombiesBurnInTheSun());
     }
@@ -64,4 +64,3 @@ public class ZombieEntityMixin implements BlockBreakingZombie
         ((Entity) (Object) this).getEntityData().set(DATA_FLAGS_ID, b0);
     }
 }
-

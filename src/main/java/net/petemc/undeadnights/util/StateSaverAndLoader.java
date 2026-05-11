@@ -3,6 +3,7 @@ package net.petemc.undeadnights.util;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.UUIDUtil;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraft.world.level.saveddata.SavedDataType;
 import net.petemc.undeadnights.UndeadNights;
@@ -228,7 +229,7 @@ public class StateSaverAndLoader extends SavedData {
     );
 
     public static SavedDataType<StateSaverAndLoader> createStateType() {
-        return new SavedDataType<>(UndeadNights.MOD_ID + "_data", StateSaverAndLoader::new, CODEC, null);
+        return new SavedDataType<>(Identifier.parse(UndeadNights.MOD_ID + "_data"), StateSaverAndLoader::new, CODEC, null);
     }
 
     public StateSaverAndLoader() {

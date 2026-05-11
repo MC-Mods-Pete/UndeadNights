@@ -3,7 +3,6 @@ package net.petemc.undeadnights.mixin;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.RandomSequences;
 import net.minecraft.world.level.CustomSpawner;
 import net.minecraft.world.level.dimension.LevelStem;
 import net.minecraft.world.level.storage.LevelStorageSource;
@@ -25,10 +24,10 @@ import java.util.concurrent.Executor;
 public class ServerWorldMixin
 {
     @Mutable
-    @Shadow @Final private List<CustomSpawner> customSpawners;
+    @Shadow(remap = false) @Final private List<CustomSpawner> customSpawners;
 
-    @Inject(method = "<init>", at = @At("TAIL"))
-    public void init(MinecraftServer pServer, Executor pDispatcher, LevelStorageSource.LevelStorageAccess pStorageSource, ServerLevelData pLevelData, ResourceKey pDimension, LevelStem pLevelStem, boolean pIsDebug, long pBiomeZoomSeed, List pCustomSpawners, boolean pTickTime, RandomSequences pRandomSequences, CallbackInfo ci)
+    @Inject(method = "<init>", at = @At("TAIL"), remap = false)
+    public void init(MinecraftServer server, Executor executor, LevelStorageSource.LevelStorageAccess levelStorage, ServerLevelData levelData, ResourceKey dimension, LevelStem levelStem, boolean isDebug, long biomeZoomSeed, List customSpawners, boolean tickTime, CallbackInfo ci)
     {
         ArrayList<CustomSpawner> undeadSpawner = new ArrayList<>(this.customSpawners);
         undeadSpawner.add(new HordeSpawner());

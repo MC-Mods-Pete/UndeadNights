@@ -141,7 +141,7 @@ public class DemolitionZombieEntity extends Zombie  {
                     .addPermanentModifier(new AttributeModifier(Identifier.fromNamespaceAndPath(UndeadNights.MOD_ID, "demolition_zombie_difficulty_armor_bonus"), armorScaleFactor, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));
         }
 
-        this.handleAttributes(f);
+        this.handleAttributes(f, spawnReason);
         this.setHealth(this.getMaxHealth());
         this.setBaby(false);
         return spawnGroupData;

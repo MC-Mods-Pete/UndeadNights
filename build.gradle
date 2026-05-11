@@ -1,10 +1,9 @@
 plugins {
+    id 'java'
     id 'eclipse'
     id 'idea'
     id 'maven-publish'
-    id 'net.minecraftforge.gradle' version '[6.0.46,6.2)'
-    id 'org.parchmentmc.librarian.forgegradle' version '1.+'
-    id 'org.spongepowered.mixin' version '0.7.+'
+    id 'net.minecraftforge.gradle' version '[7.0.17,8)'
 }
 
 version = mod_version
@@ -14,34 +13,12 @@ base {
     archivesName = mod_archives_name
 }
 
-// Mojang ships Java 21 to end users in 1.20.5+, so your mod should target Java 21.
-java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+// Minecraft 26.1 requires Java 25 or newer.
+java.toolchain.languageVersion = JavaLanguageVersion.of(25)
 
 println "Java: ${System.getProperty 'java.version'}, JVM: ${System.getProperty 'java.vm.version'} (${System.getProperty 'java.vendor'}), Arch: ${System.getProperty 'os.arch'}"
 minecraft {
-    // The mappings can be changed at any time and must be in the following format.
-    // Channel:   Version:
-    // official   MCVersion             Official field/method names from Mojang mapping files
-    // parchment  YYYY.MM.DD-MCVersion  Open community-sourced parameter names and javadocs layered on top of official
-    //
-    // Parchment is an unofficial project maintained by ParchmentMC, separate from MinecraftForge
-    // Additional setup is needed to use their mappings: https://parchmentmc.org/docs/getting-started
-    //
-    // Simply re-run your setup task after changing the mappings to update your workspace.
-    mappings channel: mapping_channel, version: mapping_version
 
-    // Forge 1.20.6 and newer use official mappings at runtime, so we shouldn't reobf from official to SRG
-    reobf = false
-
-    // When true, this property will have all Eclipse/IntelliJ IDEA run configurations run the "prepareX" task for the given run configuration before launching the game.
-    // In most cases, it is not necessary to enable.
-    // enableEclipsePrepareRuns = true
-    // enableIdeaPrepareRuns = true
-
-    // This property allows configuring Gradle's ProcessResources task(s) to run on IDE output locations before launching the game.
-    // It is REQUIRED to be set to true for this template to function.
-    // See https://docs.gradle.org/current/dsl/org.gradle.language.jvm.tasks.ProcessResources.html
-    copyIdeResources = true
 
     // When true, this property will add the folder name of all declared run configurations to generated IDE run configurations.
     // The folder name can be set on a run configuration using the "folderName" property.
@@ -60,29 +37,34 @@ minecraft {
     runs {
         // applies to all the run configs below
         configureEach {
-            workingDirectory project.file('run')
+            workingDir = project.file('run')
 
             // Optional additional logging. The markers can be added/remove as needed, separated by commas.
             // "SCAN": For mods scan.
             // "REGISTRIES": For firing of registry events.
             // "REGISTRYDUMP": For getting the contents of all registries.
-//            property 'forge.logging.markers', 'REGISTRIES'
+//            systemProperty 'forge.logging.markers', 'REGISTRIES'
 
-            property 'forge.logging.console.level', 'debug'
+            systemProperty 'forge.logging.console.level', 'debug'
+            systemProperty 'mixin.disable.refmap', 'true'
 
             // Recommended for development - enables more descriptive errors at the cost of slower startup and registration.
-            property 'eventbus.api.strictRuntimeChecks', 'true'
+            systemProperty 'eventbus.api.strictRuntimeChecks', 'true'
 
-//            arg "-mixin.config=${mod_id}.mixins.json"
+            // Mixin requires either specifying the config via command line, or in the Manifest
+            args "--mixin.config=${mod_id}.mixins.json"
         }
 
         client {
             // Comma-separated list of namespaces to load gametests from. Empty = all namespaces.
-            property 'forge.enabledGameTestNamespaces', mod_id
+            systemProperty 'forge.enabledGameTestNamespaces', mod_id
+            // Disable Forge's EarlyDisplay window - it calls glfwSetWindowPos() which on Wayland
+            // stores GLFW_FEATURE_UNAVAILABLE in the error queue, crashing the main GLFW init.
+            systemProperty 'fml.earlyWindowControl', 'false'
         }
 
         server {
-            property 'forge.enabledGameTestNamespaces', mod_id
+            systemProperty 'forge.enabledGameTestNamespaces', mod_id
             args '--nogui'
         }
 
@@ -90,12 +72,12 @@ minecraft {
         // By default, the server will crash when no gametests are provided.
         // The gametest system is also enabled by default for other run configs under the /test command.
         gameTestServer {
-            property 'forge.enabledGameTestNamespaces', mod_id
+            systemProperty 'forge.enabledGameTestNamespaces', mod_id
         }
 
         data {
-            // example of overriding the workingDirectory set in configureEach above
-            workingDirectory project.file('run-data')
+            // example of overriding the workingDir set in configureEach above
+            workingDir = project.file('run-data')
 
             // Specify the modid for data generation, where to output the resulting resource, and where to look for existing resources.
             args '--mod', mod_id, '--all', '--output', file('src/generated/resources/'), '--existing', file('src/main/resources/')
@@ -108,32 +90,10 @@ sourceSets.main.resources { srcDir 'src/generated/resources' }
 
 repositories {
     // Put repositories for dependencies here
+    minecraft.mavenizer(it)
+    maven fg.forgeMaven
+    maven fg.minecraftLibsMaven
     mavenCentral()
-    maven {
-        name = 'Forge'
-        url = 'https://maven.minecraftforge.net'
-    }
-    maven {
-        name = 'Minecraft libraries'
-        url = 'https://libraries.minecraft.net'
-    }
-    exclusiveContent {
-        forRepository {
-            maven {
-                name = 'Sponge'
-                url = 'https://repo.spongepowered.org/repository/maven-public'
-            }
-        }
-        filter {
-            includeGroupAndSubgroups('org.spongepowered')
-        }
-    }
-
-    // If you have mod jar dependencies in ./libs, you can declare them as a repository like so.
-    // See https://docs.gradle.org/current/userguide/declaring_repositories.html#sub:flat_dir_resolver
-    // flatDir {
-    //     dir 'libs'
-    // }
 }
 
 dependencies {
@@ -142,17 +102,17 @@ dependencies {
     // The "userdev" classifier will be requested and setup by ForgeGradle.
     // If the group id is "net.minecraft" and the artifact id is one of ["client", "server", "joined"],
     // then special handling is done to allow a setup of a vanilla dependency without the use of an external repository.
-    minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
+    implementation minecraft.dependency("net.minecraftforge:forge:${minecraft_version}-${forge_version}")
 
     // Forge 1.21.6+ uses EventBus 7, which shifts most of its runtime validation to compile-time via an annotation processor
     // to improve performance in production environments. This line is required to enable said compile-time validation
     // in your development environment, helping you catch issues early.
     // This relies on more obscure Java compiler APIs that may surface bugs. Update your JDK, report bugs to the OpenJDK
     // project and/or comment out this line if you encounter issues.
-    annotationProcessor 'net.minecraftforge:eventbus-validator:7.0-beta.12'
+    annotationProcessor 'net.minecraftforge:eventbus-validator:7.0.1'
 
     // Apply Mixin AP
-    annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
+    annotationProcessor 'org.spongepowered:mixin:0.8.7:processor'
 
     // Example mod dependency with JEI
     // The JEI API is declared for compile time use, while the full JEI artifact is used at runtime
@@ -171,12 +131,6 @@ dependencies {
     
     // Hack fix for now, force jopt-simple to be exactly 5.0.4 because Mojang ships that version, but some transitive dependencies request 6.0+ 
     //implementation('net.sf.jopt-simple:jopt-simple:5.0.4') { version { strictly '5.0.4' } }
-}
-
-mixin {
-    // MixinGradle Settings
-    add sourceSets.main, 'undeadnights.mixins-refmap.json'
-    config 'undeadnights.mixins.json'
 }
 
 // This block of code expands all declared replace properties in the specified resource targets.
@@ -230,6 +184,7 @@ publishing {
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8' // Use the UTF-8 charset for Java compilation
+    options.compilerArgs.add('-parameters')
 }
 
 // IntelliJ no longer downloads javadocs and sources by default, this tells Gradle to force IntelliJ to do it.

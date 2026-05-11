@@ -7,12 +7,9 @@ import net.minecraft.client.renderer.entity.AbstractZombieRenderer;
 import net.minecraft.client.renderer.entity.ArmorModelSet;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.state.ZombieRenderState;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
 import net.petemc.undeadnights.entity.EliteZombieEntity;
 import org.jetbrains.annotations.NotNull;
 
-@OnlyIn(Dist.CLIENT)
 public class EliteZombieRenderer
         extends AbstractZombieRenderer<EliteZombieEntity, ZombieRenderState, ZombieModel<ZombieRenderState>> {
 
