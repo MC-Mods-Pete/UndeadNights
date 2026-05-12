@@ -169,7 +169,8 @@ public class DemolitionZombieEntity extends Zombie  {
         this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, AbstractVillager.class, true));
         this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, IronGolem.class, true));
         this.targetSelector.addGoal(4, new NearestAttackableTargetGoal<>(this, LivingEntity.class, true,
-                new DemolitionZombieCustomTargetSelector(this)));  }
+                new DemolitionZombieCustomTargetSelector(this)));
+    }
 
     @Override
     protected void dropCustomDeathLoot(@NotNull ServerLevel level, @NotNull DamageSource damageSource, boolean recentlyHit) {
@@ -237,10 +238,6 @@ public class DemolitionZombieEntity extends Zombie  {
         return false;
     }
 
-    @Override
-    protected boolean isSunSensitive() {
-        return UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeMobs().isHordeZombiesBurnInTheSun();
-    }
 
     @Override
     public boolean canBreakDoors()

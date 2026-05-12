@@ -1,0 +1,8 @@
+{
+  "replace": false,
+  "values": [
+    "undeadnights:horde_zombie",
+    "undeadnights:elite_zombie",
+    "undeadnights:demolition_zombie"
+  ]
+}

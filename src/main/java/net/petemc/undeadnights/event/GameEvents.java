@@ -134,17 +134,6 @@ public class GameEvents {
         Entity entity = event.getEntity();
 
         if (BuiltInRegistries.ENTITY_TYPE.wrapAsHolder(entity.getType()).is(ModTags.EntityTypes.HORDE_MOBS)) {
-            if (entity instanceof HordeZombieEntity hordeZombie) {
-                if (hordeZombie.isBreakingBlock()) {
-                    return;
-                }
-            }
-            if (entity instanceof EliteZombieEntity eliteZombieEntity) {
-                if (eliteZombieEntity.isBreakingBlock()) {
-                    return;
-                }
-            }
-
             if (entity instanceof BlockBreakingZombie blockBreakingZombie) {
                 if (blockBreakingZombie.isBreakingBlock()) {
                     return;

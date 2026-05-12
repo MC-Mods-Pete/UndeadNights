@@ -1,8 +1,6 @@
 package net.petemc.undeadnights.entity;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.syncher.EntityDataAccessor;
-import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
@@ -41,7 +39,6 @@ import java.time.LocalDate;
 import java.util.Objects;
 
 public class EliteZombieEntity extends Zombie {
-    private static final EntityDataAccessor<Byte> DATA_FLAGS_ID = SynchedEntityData.defineId(EliteZombieEntity.class, EntityDataSerializers.BYTE);
 
     public EliteZombieEntity(EntityType<? extends Zombie> entityType, Level level) {
         super(entityType, level);
@@ -201,11 +198,6 @@ public class EliteZombieEntity extends Zombie {
     }
 
     @Override
-    protected boolean isSunSensitive() {
-        return UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeMobs().isHordeZombiesBurnInTheSun();
-    }
-
-    @Override
     public boolean canBreakDoors()
     {
         return false;
@@ -222,22 +214,6 @@ public class EliteZombieEntity extends Zombie {
 
     protected void defineSynchedData(SynchedEntityData.@NotNull Builder builder) {
         super.defineSynchedData(builder);
-        builder.define(DATA_FLAGS_ID, (byte)0);
-    }
-
-    public boolean isBreakingBlock() {
-        return (this.entityData.get(DATA_FLAGS_ID) & 1) != 0;
-    }
-
-    public void setBreakingBlock(boolean pClimbing) {
-        byte b0 = this.entityData.get(DATA_FLAGS_ID);
-        if (pClimbing) {
-            b0 = (byte)(b0 | 1);
-        } else {
-            b0 = (byte)(b0 & -2);
-        }
-
-        this.entityData.set(DATA_FLAGS_ID, b0);
     }
 
     @Override
