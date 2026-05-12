@@ -25,6 +25,7 @@
   "message.undeadnights.last_nights": "This is the last night before the next Night of the Undead!",
   "message.undeadnights.horde_night": "The sun is starting to set and you feel uneasy about the coming night...",
   "message.undeadnights.horde_spawned": "A horde has spawned!",
+  "message.undeadnights.boss_horde_spawned": "A boss horde has spawned!",
   "message.undeadnights.horde_night_over": "You feel at ease, this Night of the Undead is over...",
   "message.undeadnights.horde_time_over": "You feel at ease, the hordes of the Undead have stopped...",
   "message.undeadnights.spawn_cap_reached": "Spawning horde mobs not possible, spawncap reached.",

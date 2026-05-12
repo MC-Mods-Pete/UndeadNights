@@ -120,6 +120,7 @@ public class SpawnLocationFinder {
         // create a temporary mob used for pathfinding computations (do not add to world)
         HordeZombieEntity probe = new HordeZombieEntity(ModEntities.HORDE_ZOMBIE.get(), level);
         probe.finalizeSpawn((ServerLevelAccessor) level, level.getCurrentDifficultyAt(start), MobSpawnType.MOB_SUMMONED, null);
+        probe.setTarget(player);
         level.addFreshEntity(probe);
 
         for (int i = 0; i < attempts; i++) {
@@ -146,12 +147,15 @@ public class SpawnLocationFinder {
                 if (!isAABBFreeForSpawn(level, new AABB(cand.getX() + 0.5 - 0.3, cand.getY() + 0.001, cand.getZ() + 0.5 - 0.3, cand.getX() + 0.5 + 0.3, cand.getY() + 1.8 - 0.001, cand.getZ() + 0.5 + 0.3))) continue;
 
                 try {
-                    // createPath may return null or an empty path if unreachable
-                    var nav = probe.getNavigation();
+                    // set up probe for pathfinding
+                    probe.setOnGround(true);
                     // place probe at candidate center before asking it to path to the player
                     probe.setPos(cand.getX() + 0.5, cand.getY(), cand.getZ() + 0.5);
-                    // single navigation check to player (candidate -> player)
-                    Path path = nav.createPath(player, 0);
+                    // get probe navigation
+                    //GroundPathNavigationExtended nav = (GroundPathNavigationExtended) probe.getNavigation();
+                    GroundPathNavigationLegacy nav = new GroundPathNavigationLegacy(probe, level);
+                    // createPath may return null or an empty path if unreachable
+                    Path path = nav.createPathLegacy(player, 0);
 
                     if (path != null) {
                         if (debug) UndeadNights.LOGGER.info("findEndUsingMinecraftPF: candidate {} accepted by vanilla navigation (attempt {})", cand, i);

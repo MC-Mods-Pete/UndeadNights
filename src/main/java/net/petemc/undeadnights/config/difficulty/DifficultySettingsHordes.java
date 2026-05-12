@@ -8,6 +8,8 @@ public class DifficultySettingsHordes {
     private Double hordeSizeScaleFactor = null;
     private String hordeSelectionMode = null;//"sequential";
     private List<Integer> listOfPossibleHordes = null;//new ArrayList<>(List.of(1));
+    private Boolean bossHordeEnabled = false;
+    private Integer bossHordeId = 1;
 
     public Boolean isEnableRandomHordes() { return enableRandomHordes; }
     public void setEnableRandomHordes(Boolean enableRandomHordes) { this.enableRandomHordes = enableRandomHordes; }
@@ -24,15 +26,23 @@ public class DifficultySettingsHordes {
     public String getHordeSelectionMode() { return hordeSelectionMode; }
     public void setHordeSelectionMode(String hordeSelectionMode) { this.hordeSelectionMode = hordeSelectionMode; }
 
+    public Boolean getBossHordeEnabled() { return bossHordeEnabled; }
+    public void setBossHordeEnabled(Boolean bossHordeEnabled) { this.bossHordeEnabled = bossHordeEnabled; }
+
+    public Integer getBossHordeId() { return bossHordeId; }
+    public void setBossHordeId(Integer bossHordeId) { this.bossHordeId = bossHordeId; }
+
     public DifficultySettingsHordes() {
         // Empty constructor
     }
 
-    public DifficultySettingsHordes(Boolean enableRandomHordes, Integer chanceForRandomHorde, List<Integer> listOfPossibleHordes, Double hordeSizeScaleFactor, String hordeSelectionMode) {
+    public DifficultySettingsHordes(Boolean enableRandomHordes, Integer chanceForRandomHorde, List<Integer> listOfPossibleHordes, Double hordeSizeScaleFactor, String hordeSelectionMode, Boolean bossHordeEnabled, Integer bossHordeId) {
         this.enableRandomHordes = enableRandomHordes;
         this.chanceForRandomHorde = chanceForRandomHorde;
         this.hordeSizeScaleFactor = hordeSizeScaleFactor;
         this.hordeSelectionMode = hordeSelectionMode;
         this.listOfPossibleHordes = listOfPossibleHordes;
+        this.bossHordeEnabled = bossHordeEnabled;
+        this.bossHordeId = bossHordeId;
     }
 }
