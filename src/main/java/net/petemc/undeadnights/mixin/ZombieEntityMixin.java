@@ -7,7 +7,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.monster.zombie.Zombie;
-import net.petemc.undeadnights.UndeadNights;
 import net.petemc.undeadnights.casts.BlockBreakingZombie;
 import net.petemc.undeadnights.entity.DemolitionZombieEntity;
 import net.petemc.undeadnights.entity.EliteZombieEntity;
@@ -42,10 +41,8 @@ public class ZombieEntityMixin implements BlockBreakingZombie
         }
     }
 
-    @Inject(method = "isSunSensitive", at = @At("TAIL"), cancellable = true)
-    public void isSunSensitive(CallbackInfoReturnable<Boolean> cir) {
-        cir.setReturnValue(UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeMobs().isVanillaZombiesBurnInTheSun());
-    }
+    // isSunSensitive() is dead code in MC 26.1 - sun burning logic was replaced by
+    // EntityTypeTags.BURN_IN_DAYLIGHT + Mob.burnUndead(). Burn control is now in MobEntityMixin.
 
     @Unique
     public boolean isBreakingBlock() {

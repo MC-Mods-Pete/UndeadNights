@@ -240,10 +240,6 @@ public class DemolitionZombieEntity extends Zombie  {
         return false;
     }
 
-    @Override
-    protected boolean isSunSensitive() {
-        return UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeMobs().isHordeZombiesBurnInTheSun();
-    }
 
     @Override
     public boolean canBreakDoors()
