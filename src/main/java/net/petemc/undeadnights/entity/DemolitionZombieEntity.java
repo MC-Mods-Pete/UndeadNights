@@ -66,8 +66,8 @@ public class DemolitionZombieEntity extends Zombie  {
             LocalDate localdate = LocalDate.now();
             int i = localdate.getDayOfMonth();
             int j = localdate.getMonth().getValue();
-            if (j == 10 && i == 31 && randomsource.nextFloat() < 0.25F) {
-                this.setItemSlot(EquipmentSlot.HEAD, new ItemStack(randomsource.nextFloat() < 0.1F ? Blocks.JACK_O_LANTERN : Blocks.CARVED_PUMPKIN));
+            if (j == 10 && i == 31 && random.nextFloat() < 0.25F) {
+                this.setItemSlot(EquipmentSlot.HEAD, new ItemStack(random.nextFloat() < 0.1F ? Blocks.JACK_O_LANTERN : Blocks.CARVED_PUMPKIN));
                 this.setDropChance(EquipmentSlot.HEAD, 0.0F);
             }
         }
@@ -169,28 +169,8 @@ public class DemolitionZombieEntity extends Zombie  {
         this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, AbstractVillager.class, true));
         this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, IronGolem.class, true));
         this.targetSelector.addGoal(4, new NearestAttackableTargetGoal<>(this, LivingEntity.class, true,
-                new DemolitionZombieCustomTargetSelector(this)));  }
-
-    /*
-
-                            TargetingConditions.forCombat()
-                .selector((entity1, level) -> {
-                    return HordeConfig.getTargetEntities().contains(entity1.getType().toString());
-                }).test(this.level(), entity)));
-
-
-    TargetingConditions.forCombat()
-            .range(15.0D) // Only check within 15 blocks
-    .selector(entity -> {
-        // Return true if the entity is a suitable target
-        if (entity instanceof Wolf wolf) {
-            return !wolf.isTame(); // Reject if tamed
-        }
-        return true; // Target everything else
-    })
-            .test(attacker, targetEntity);
-
-     */
+                new DemolitionZombieCustomTargetSelector(this)));
+    }
 
     @Override
     protected void dropCustomDeathLoot(@NotNull ServerLevel level, @NotNull DamageSource damageSource, boolean recentlyHit) {
@@ -258,10 +238,6 @@ public class DemolitionZombieEntity extends Zombie  {
         return false;
     }
 
-    @Override
-    protected boolean isSunSensitive() {
-        return UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeMobs().isHordeZombiesBurnInTheSun();
-    }
 
     @Override
     public boolean canBreakDoors()
