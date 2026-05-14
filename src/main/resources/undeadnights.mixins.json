@@ -9,7 +9,6 @@
       "PersistentEntitySectionManagerMixin",
       "PlayerEntityBedSleepingMessageMixin",
       "PlayerEntityMixin",
-      "ServerWorldMixin",
       "ZombieEntityMixin"
 	],
 	"injectors": {
