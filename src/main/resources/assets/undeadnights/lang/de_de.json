@@ -122,8 +122,6 @@
   "text.autoconfig.undeadnights.option.maxHealthEliteZombies.@Tooltip": "Maximale Gesundheit Elite-Zombie | Standard: 40.0",
   "text.autoconfig.undeadnights.option.maxHealthDemolitionZombies": "Maximale Gesundheit Zerstörer-Zombie",
   "text.autoconfig.undeadnights.option.maxHealthDemolitionZombies.@Tooltip": "Maximale Gesundheit Zerstörer-Zombie | Standard: 40.0",
-  "text.autoconfig.undeadnights.option.enableAsynchronousHordeSpawning": "Asynchrones Horde-Spawning aktivieren",
-  "text.autoconfig.undeadnights.option.enableAsynchronousHordeSpawning.@Tooltip": "Wenn aktiviert, wird das Horde-Spawning asynchron durchgeführt, um Server-Lags zu reduzieren | Standard: deaktiviert",
   "text.autoconfig.undeadnights.option.printDebugMessages": "Debug-Nachrichten ausgeben",
   "text.autoconfig.undeadnights.option.printDebugMessages.@Tooltip": "Wenn aktiviert, werden Debug-Nachrichten ausgegeben | Standard: deaktiviert",
   "text.autoconfig.undeadnights.option.debugMakeHordeMobsGlow": "Horde-Mobs bekommen den Glow-Effekt für Debugging",

@@ -40,6 +40,8 @@ public class UndeadNights {
 	public static int globalSpawnCounter = 0;
     public static boolean automaticDifficultyProgressionActive = false;
 
+	public static final HordeSpawner hordeSpawner = new HordeSpawner();
+
 	public UndeadNights(IEventBus modEventBus, ModContainer modContainer) {
 		UndeadNightsSounds.register(modEventBus);
 		ModEntities.register(modEventBus);

@@ -19,6 +19,14 @@ import net.minecraft.world.phys.Vec3;
 public class GroundPathNavigationLegacy extends  PathNavigation {
     private boolean avoidSun;
 
+    /**
+     * 8× the vanilla node budget so winding cave routes (which can be 3–5× the
+     * straight-line distance) are fully explored by the A* search.
+     * This class is only used for the one-shot cave spawn-location check, not for
+     * live zombie navigation, so the extra cost per call is acceptable.
+     */
+    private static final int NODE_BUDGET_MULTIPLIER = 8;
+
     public GroundPathNavigationLegacy(Mob mob, Level level) {
         super(mob, level);
     }
@@ -26,7 +34,7 @@ public class GroundPathNavigationLegacy extends  PathNavigation {
     protected PathFinder createPathFinder(int maxVisitedNodes) {
         this.nodeEvaluator = new WalkNodeEvaluator();
         this.nodeEvaluator.setCanPassDoors(true);
-        return new PathFinder(this.nodeEvaluator, maxVisitedNodes);
+        return new PathFinder(this.nodeEvaluator, maxVisitedNodes * NODE_BUDGET_MULTIPLIER);
     }
 
     protected boolean canUpdatePath() {

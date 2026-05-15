@@ -1,6 +1,7 @@
 package net.petemc.undeadnights.event;
 
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -13,6 +14,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.alchemy.PotionBrewing;
 import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -23,6 +25,7 @@ import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 import net.neoforged.neoforge.event.entity.EntityLeaveLevelEvent;
 import net.neoforged.neoforge.event.entity.player.CanPlayerSleepEvent;
 import net.neoforged.neoforge.event.tick.EntityTickEvent;
+import net.neoforged.neoforge.event.tick.LevelTickEvent;
 import net.neoforged.neoforge.server.command.ConfigCommand;
 import net.petemc.undeadnights.UndeadNights;
 import net.petemc.undeadnights.casts.BlockBreakingZombie;
@@ -169,6 +172,14 @@ public class GameEvents {
                     }
                 }
             }
+        }
+    }
+
+    @SubscribeEvent
+    public static void onLevelTick(LevelTickEvent.Post event) {
+        if (!event.getLevel().isClientSide() && event.getLevel() instanceof ServerLevel serverLevel) {
+            boolean spawnMonsters = serverLevel.getGameRules().get(GameRules.SPAWN_MONSTERS);
+            UndeadNights.hordeSpawner.tick(serverLevel, spawnMonsters);
         }
     }
 }
