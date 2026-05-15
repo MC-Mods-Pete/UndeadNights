@@ -50,8 +50,6 @@
   "text.autoconfig.undeadnights.option.persistentMobs.@Tooltip": "Если включено, мобы орды будут постоянными и не будут исчезать с течением времени | по умолчанию: отключено",
   "text.autoconfig.undeadnights.option.hordeZombiesBurnInDaylight": "Должны ли зомби орды гореть при дневном свете",
   "text.autoconfig.undeadnights.option.hordeZombiesBurnInDaylight.@Tooltip": "Если включено, зомби орды (только те, которые добавлены этим модом) будут гореть при дневном свете | по умолчанию: отключено",
-  "text.autoconfig.undeadnights.option.spawnStrayHordeZombies": "Появление бродячих орд зомби (в обычные ночи)",
-  "text.autoconfig.undeadnights.option.spawnStrayHordeZombies.@Tooltip": "Если включено, одиночные бродячие орды зомби могут появляться и в обычные ночи | по умолчанию: включено",
   "text.autoconfig.undeadnights.option.printDebugMessages": "Регистрировать отладочные сообщения",
   "text.autoconfig.undeadnights.option.printDebugMessages.@Tooltip": "Если включено, отладочные сообщения будут записываться в журнал | по умолчанию: отключено"
 }

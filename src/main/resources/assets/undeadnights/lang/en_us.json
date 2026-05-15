@@ -122,8 +122,6 @@
   "text.autoconfig.undeadnights.option.maxHealthEliteZombies.@Tooltip": "Elite zombie max health | default: 40.0",
   "text.autoconfig.undeadnights.option.maxHealthDemolitionZombies": "Demolition zombie max health",
   "text.autoconfig.undeadnights.option.maxHealthDemolitionZombies.@Tooltip": "Demolition zombie max health | default: 40.0",
-  "text.autoconfig.undeadnights.option.enableAsynchronousHordeSpawning": "Enable asynchronous horde spawning [WIP]",
-  "text.autoconfig.undeadnights.option.enableAsynchronousHordeSpawning.@Tooltip": "If enabled, horde spawning will be done asynchronously to reduce server lag [WIP] | default: disabled",
   "text.autoconfig.undeadnights.option.printDebugMessages": "Log out debug messages",
   "text.autoconfig.undeadnights.option.printDebugMessages.@Tooltip": "If enabled, debug messages will be logged out | default: disabled",
   "text.autoconfig.undeadnights.option.debugMakeHordeMobsGlow": "Make horde mobs glow for debugging",

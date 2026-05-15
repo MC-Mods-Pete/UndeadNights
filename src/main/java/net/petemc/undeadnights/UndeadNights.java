@@ -47,6 +47,8 @@ public class UndeadNights {
 	public static int globalSpawnCounter = 0;
     public static boolean automaticDifficultyProgressionActive = false;
 
+	public static final HordeSpawner hordeSpawner = new HordeSpawner();
+
 	public UndeadNights(FMLJavaModLoadingContext context) {
 		var modBusGroup = context.getModBusGroup();
 
