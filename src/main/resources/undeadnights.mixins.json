@@ -10,7 +10,6 @@
         "PlayerEntityBedSleepingMessageMixin",
 		"PlayerEntityMixin",
 		"ServerPlayerEntityMixin",
-		"ServerWorldMixin",
 		"ZombieEntityMixin"
 	],
 	"injectors": {

@@ -84,8 +84,6 @@ public class MainConfig implements ConfigData
 
     public static double getMaxHealthDemolitionZombies() { return INSTANCE.maxHealthDemolitionZombies; }
 
-    public static boolean getEnableAsynchronousHordeSpawning() { return INSTANCE.enableAsynchronousHordeSpawning; }
-
     public static boolean getPrintDebugMessages() { return INSTANCE.printDebugMessages; }
 
     public static boolean getDebugMakeHordeMobsGlow() { return INSTANCE.debugMakeHordeMobsGlow; }
@@ -196,10 +194,6 @@ public class MainConfig implements ConfigData
     @ConfigEntry.Gui.Tooltip()
     @Comment("Demolition zombie max health | default: 40.0")
     private double maxHealthDemolitionZombies = 40.0D;
-
-    @ConfigEntry.Gui.Tooltip()
-    @Comment("If true, horde spawning will be done asynchronously to reduce lag spikes [WIP] | default: false")
-    private boolean enableAsynchronousHordeSpawning = false;
 
     @ConfigEntry.Gui.Tooltip()
     @Comment("If true, debug messages will be logged out | default: false")

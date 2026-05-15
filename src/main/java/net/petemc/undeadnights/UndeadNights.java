@@ -15,11 +15,13 @@ import net.petemc.undeadnights.entity.ModEntities;
 import net.petemc.undeadnights.event.ModEntitySleepEvents;
 import net.petemc.undeadnights.event.ModServerEntityEvents;
 import net.petemc.undeadnights.event.ModServerLifecycleEvents;
+import net.petemc.undeadnights.event.ModServerTickEvents;
 import net.petemc.undeadnights.item.ModCreativeModeTabs;
 import net.petemc.undeadnights.item.ModItems;
 import net.petemc.undeadnights.potion.ModPotions;
 import net.petemc.undeadnights.sound.UndeadNightsSounds;
 import net.petemc.undeadnights.util.StateSaverAndLoader;
+import net.petemc.undeadnights.world.spawner.HordeSpawner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,6 +38,8 @@ public class UndeadNights implements ModInitializer {
     public static DifficultyConfig difficultyConfig = null;
     public static boolean automaticDifficultyProgressionActive = false;
 
+	public static final HordeSpawner hordeSpawner = new HordeSpawner();
+
 	@Override
 	public void onInitialize() {
 		LOGGER.info("Initializing the {} Mod", MOD_NAME);
@@ -49,6 +53,7 @@ public class UndeadNights implements ModInitializer {
 		ModServerEntityEvents.registerEvents();
 		ModServerLifecycleEvents.registerEvents();
 		ModEntitySleepEvents.registerEvents();
+		ModServerTickEvents.registerEvents();
 		ModCommands.registerCommands();
 		UndeadNightsSounds.registerSounds();
 		ModEffects.registerEffects();
