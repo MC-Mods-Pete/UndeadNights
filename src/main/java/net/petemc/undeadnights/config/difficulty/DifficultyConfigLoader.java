@@ -136,6 +136,8 @@ public class DifficultyConfigLoader {
                         settingsHordes.setHordeSizeScaleFactor(settingsHordes.getHordeSizeScaleFactor() == null ? lowerSettingsHordes.getHordeSizeScaleFactor() : settingsHordes.getHordeSizeScaleFactor());
                         settingsHordes.setHordeSelectionMode(settingsHordes.getHordeSelectionMode() == null ? lowerSettingsHordes.getHordeSelectionMode() : settingsHordes.getHordeSelectionMode());
                         settingsHordes.setListOfPossibleHordes(settingsHordes.getListOfPossibleHordes() == null ? lowerSettingsHordes.getListOfPossibleHordes() : settingsHordes.getListOfPossibleHordes());
+                        settingsHordes.setBossHordeEnabled(settingsHordes.getBossHordeEnabled() == null ? lowerSettingsHordes.getBossHordeEnabled() : settingsHordes.getBossHordeEnabled());
+                        settingsHordes.setBossHordeId(settingsHordes.getBossHordeId() == null ? lowerSettingsHordes.getBossHordeId() : settingsHordes.getBossHordeId());
                     }
                     if (targetDifficultyLevel.getDifficultySettingsLureEffect() == null) {
                         targetDifficultyLevel.setDifficultySettingsLureEffect(sourceDifficultyLevel.getDifficultySettingsLureEffect());

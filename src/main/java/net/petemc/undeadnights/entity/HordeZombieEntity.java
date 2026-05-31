@@ -69,7 +69,22 @@ public class HordeZombieEntity extends Zombie {
                 this.armorDropChances[EquipmentSlot.HEAD.getIndex()] = 0.0F;
             }
         }
-        Objects.requireNonNull(this.getAttribute(Attributes.MAX_HEALTH)).addPermanentModifier(new AttributeModifier("Horde zombie health bonus", MainConfig.getMaxHealthHordeZombies() - 20.0F, AttributeModifier.Operation.ADDITION));
+        Objects.requireNonNull(this.getAttribute(Attributes.MAX_HEALTH))
+                .addPermanentModifier(new AttributeModifier("Horde zombie health boost", MainConfig.getMaxHealthHordeZombies() - 20.0F, AttributeModifier.Operation.ADDITION));
+
+        if (UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeMobs().isUpdateHordeMobAttributes()) {
+            Objects.requireNonNull(this.getAttribute(Attributes.MAX_HEALTH))
+                    .addPermanentModifier(new AttributeModifier("Horde zombie health bonus", UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeMobs().getHealthAttributeScaleFactor() - 1.0, AttributeModifier.Operation.MULTIPLY_TOTAL));
+
+            Objects.requireNonNull(this.getAttribute(Attributes.MOVEMENT_SPEED))
+                    .addPermanentModifier(new AttributeModifier("Horde zombie speed bonus", UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeMobs().getSpeedAttributeScaleFactor() - 1.0, AttributeModifier.Operation.MULTIPLY_TOTAL));
+
+            Objects.requireNonNull(this.getAttribute(Attributes.ATTACK_DAMAGE))
+                    .addPermanentModifier(new AttributeModifier("Horde zombie attack damage bonus", UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeMobs().getDamageAttributeScaleFactor() - 1.0, AttributeModifier.Operation.MULTIPLY_TOTAL));
+
+            Objects.requireNonNull(this.getAttribute(Attributes.ARMOR))
+                    .addPermanentModifier(new AttributeModifier("Horde zombie armor bonus", UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeMobs().getArmorAttributeScaleFactor() - 1.0, AttributeModifier.Operation.MULTIPLY_TOTAL));
+        }
 
         int playerCount = 1;
         if (!this.level().isClientSide) {
@@ -108,27 +123,20 @@ public class HordeZombieEntity extends Zombie {
             }
         }
 
-        if (UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeMobs().isUpdateHordeMobAttributes()) {
-            healthScaleFactor = healthScaleFactor + UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeMobs().getHealthAttributeScaleFactor() - 1.0;
-            speedScaleFactor = speedScaleFactor + UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeMobs().getSpeedAttributeScaleFactor() - 1.0;
-            damageScaleFactor = damageScaleFactor + UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeMobs().getDamageAttributeScaleFactor() - 1.0;
-            armorScaleFactor = armorScaleFactor + UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeMobs().getArmorAttributeScaleFactor() - 1.0;
-        }
-
         boolean flag = (healthScaleFactor > 0.0) || (speedScaleFactor > 0.0) || (damageScaleFactor > 0.0) || (armorScaleFactor > 0.0);
 
         if (flag) {
             Objects.requireNonNull(this.getAttribute(Attributes.MAX_HEALTH))
-                    .addPermanentModifier(new AttributeModifier("Horde zombie difficulty health bonus", healthScaleFactor, AttributeModifier.Operation.MULTIPLY_BASE));
+                    .addPermanentModifier(new AttributeModifier("Horde zombie difficulty health bonus", healthScaleFactor, AttributeModifier.Operation.MULTIPLY_TOTAL));
 
             Objects.requireNonNull(this.getAttribute(Attributes.MOVEMENT_SPEED))
-                    .addPermanentModifier(new AttributeModifier("Horde zombie difficulty speed bonus", speedScaleFactor, AttributeModifier.Operation.MULTIPLY_BASE));
+                    .addPermanentModifier(new AttributeModifier("Horde zombie difficulty speed bonus", speedScaleFactor, AttributeModifier.Operation.MULTIPLY_TOTAL));
 
             Objects.requireNonNull(this.getAttribute(Attributes.ATTACK_DAMAGE))
-                    .addPermanentModifier(new AttributeModifier("Horde zombie difficulty attack damage bonus", damageScaleFactor, AttributeModifier.Operation.MULTIPLY_BASE));
+                    .addPermanentModifier(new AttributeModifier("Horde zombie difficulty attack damage bonus", damageScaleFactor, AttributeModifier.Operation.MULTIPLY_TOTAL));
 
             Objects.requireNonNull(this.getAttribute(Attributes.ARMOR))
-                    .addPermanentModifier(new AttributeModifier("Horde zombie difficulty armor bonus", armorScaleFactor, AttributeModifier.Operation.MULTIPLY_BASE));
+                    .addPermanentModifier(new AttributeModifier("Horde zombie difficulty armor bonus", armorScaleFactor, AttributeModifier.Operation.MULTIPLY_TOTAL));
         }
 
         this.handleAttributes(f);
