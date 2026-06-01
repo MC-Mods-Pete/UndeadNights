@@ -36,110 +36,136 @@ import net.petemc.undeadnights.world.spawner.HordeSpawner;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ForkJoinPool;
 
 public class SpawnProcess {
     public static boolean invalidHordeMobEntry = false;
-    public static int hordeIdFromHordesConfig = 1;
 
-    private static double x = 0;
-    private static double z = 0;
-    private static double d = 0;
-
-    // spawn a single horde mob at the given location (Asynchronous wrapper)
-    public static CompletableFuture<HordeSpawner.SpawnHordeResult> asynchronousHordeSpawner(ServerLevel level, ServerPlayer player, RandomExtention randomSource) {
-        return CompletableFuture.supplyAsync(() -> spawnHordeImplementation(
-                level,
-                player,
-                randomSource
-        ), ForkJoinPool.commonPool());
-    }
+    // NOTE: x, z, d were previously static fields – this caused race conditions when multiple
+    // players had hordes spawning concurrently. They are now local variables in
+    // spawnHordeImplementation() so each call has its own independent state.
 
     public static HordeSpawner.SpawnHordeResult synchronousHordeSpawner(ServerLevel level, ServerPlayer player, RandomExtention randomSource) {
-        return spawnHordeImplementation(
-                level,
-                player,
-                randomSource
-        );
+        return spawnHordeImplementation(level, player, randomSource, null);
+    }
+
+    /**
+     * Called by the tick-based {@link CaveSpawnSearchTask} flow
+     * once a valid cave position has already been found across multiple ticks.
+     * Skips the position-search loop and spawns the horde at {@code cavePos} directly.
+     */
+    public static HordeSpawner.SpawnHordeResult spawnHordeWithKnownCavePos(
+            ServerLevel level, ServerPlayer player, RandomExtention randomSource, BlockPos cavePos) {
+        return spawnHordeImplementation(level, player, randomSource, cavePos);
     }
 
     // spawn a horde for the given player at a suitable location
-    public static HordeSpawner.SpawnHordeResult spawnHordeImplementation(ServerLevel level, ServerPlayer player, RandomExtention randomSource) {
+    // If caveOverridePos is non-null the position-search loop is skipped and that
+    // position is used directly (used by the tick-based CaveSpawnSearchTask flow).
+    public static HordeSpawner.SpawnHordeResult spawnHordeImplementation(
+            ServerLevel level, ServerPlayer player, RandomExtention randomSource,
+            @org.jetbrains.annotations.Nullable BlockPos caveOverridePos) {
         int randomValue;
         int spawnCounter = 0;
         BlockPos possibleSpawnLocation;
         boolean foundHordeSpawnLocation = false;
         int currentHordeCounter = UndeadNights.globalSpawnCounter;
-        int maxChecks = 30;
+        // When a cave position is pre-computed we only need one pass through the loop;
+        // for surface / regular spawns we keep the original 30-attempt budget.
+        int maxChecks = (caveOverridePos != null) ? 1 : 30;
+
+        // Local variables instead of the formerly static fields.
+        // Static fields caused race conditions when multiple players had concurrent horde spawns.
+        double x = 0;
+        double z = 0;
+        double d = 0;
 
         for (int i= 0; i < maxChecks; i++) {
-            // for the given min/max distance, calculate the x and z coordinates deltas
-            if (d == 0) {
-                d = randomSource.nextInt(MainConfig.getDistanceMin(), MainConfig.getDistanceMax() + 1);
-                x = randomSource.nextIntBetweenInclusive(0, (int) d);
-                if (x == 0) {
-                    z = d;
-                } else {
-                    z = Math.sqrt((d * d) - (x * x));
-                    if (randomSource.nextBoolean()) {
-                        x = x * -1;
-                    }
-                }
-                if (randomSource.nextBoolean()) {
-                    z = z * -1;
-                }
-            }
 
-            boolean playerInCave = false;
-            if (player instanceof UndeadNightsExtendedPlayer undeadNightsExtendedPlayer) {
-                playerInCave = undeadNightsExtendedPlayer.undeadnights_isInCave();
-            }
-
-            // use the above calculated x and z to find a possible spawn location
-            possibleSpawnLocation = player.blockPosition().offset((int) x, 0, (int) z);
-
-            // cave spawning check
-            if (MainConfig.getHordeWavesCanSpawnInCaves() && playerInCave) {
-                //possibleSpawnLocation = Helpers.findEndPositionForPathAStar(level, player.blockPosition(), MainConfig.getCaveSpawnDistance(), false, 0.6f, 1.8f, 20000, 1, 4, 10);
-                possibleSpawnLocation = SpawnLocationFinder.findEndPositionUsingMinecraftPathfinding(level, player, MainConfig.getCaveSpawnDistance(), MainConfig.getHordeWavesCanSpawnInWater());
-                if (possibleSpawnLocation == null) {
-                    if (MainConfig.getPrintDebugMessages()) {
-                        UndeadNights.LOGGER.info("Cave horde spawn location calculation for player {} failed, trying again.", player.getName().getString());
-                    }
-                    d = 0;
-                    continue;
-                }
+            // ── Pre-computed cave position (from CaveSpawnSearchTask) ─────────────
+            if (caveOverridePos != null) {
+                possibleSpawnLocation = caveOverridePos;
+                // Light check (findBestCaveY already filters by light, but double-check here
+                // in case the block-light check is enabled and the spot changed).
                 if (MainConfig.getBlockLightLevelsInfluenceMonsterSpawns()) {
                     if (!SpawnLocationFinder.isDarkEnoughToSpawn(level, possibleSpawnLocation)) {
-                        d = 0;
-                        continue;
+                        if (MainConfig.getPrintDebugMessages()) {
+                            UndeadNights.LOGGER.info("Cave horde pos {} is not dark enough for player {}.", possibleSpawnLocation, player.getName().getString());
+                        }
+                        return HordeSpawner.SpawnHordeResult.FAILED;
                     }
                 }
                 if (MainConfig.getPrintDebugMessages()) {
                     player.sendSystemMessage(Component.literal("[DEBUG] Cave horde spawn location calculated.").withStyle(ChatFormatting.DARK_AQUA));
-                }
-                if (MainConfig.getPrintDebugMessages()) {
-                    UndeadNights.LOGGER.info("Cave horde spawn location calculation for player {} is done, result: {}", player.getName().getString(), possibleSpawnLocation);
+                    UndeadNights.LOGGER.info("Cave horde spawn for player {} at pre-found pos {}.", player.getName().getString(), possibleSpawnLocation);
                 }
                 foundHordeSpawnLocation = true;
+
             } else {
-                // use the heightmap to find the surface level at the possible spawn location
-                possibleSpawnLocation = new BlockPos(possibleSpawnLocation.getX(), level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, possibleSpawnLocation.getX(), possibleSpawnLocation.getZ()) - 1, possibleSpawnLocation.getZ());
-
-                if (MainConfig.getPrintDebugMessages()) {
-                    UndeadNights.LOGGER.info("Surface horde spawning check for player {} at position {}", player.getName().getString(), possibleSpawnLocation);
+                // ── Original position-finding logic (surface / fallback) ──────────
+                // for the given min/max distance, calculate the x and z coordinates deltas
+                if (d == 0) {
+                    d = randomSource.nextIntBetweenInclusive(MainConfig.getDistanceMin(), MainConfig.getDistanceMax());
+                    x = randomSource.nextIntBetweenInclusive(0, (int) d);
+                    if (x == 0) {
+                        z = d;
+                    } else {
+                        z = Math.sqrt((d * d) - (x * x));
+                        if (randomSource.nextBoolean()) {
+                            x = x * -1;
+                        }
+                    }
+                    if (randomSource.nextBoolean()) {
+                        z = z * -1;
+                    }
                 }
-                foundHordeSpawnLocation = SpawnLocationFinder.checkSpawnLocation(level, possibleSpawnLocation.getX(), possibleSpawnLocation.getY() - 1, possibleSpawnLocation.getZ());
-            }
 
-            if (!foundHordeSpawnLocation) {
-                if (MainConfig.getPrintDebugMessages()) {
-                    UndeadNights.LOGGER.info("Horde spawn location check for player {} at position {} failed, trying again.", player.getName().getString(), possibleSpawnLocation);
+                boolean playerInCave = false;
+                if (player instanceof UndeadNightsExtendedPlayer undeadNightsExtendedPlayer) {
+                    playerInCave = undeadNightsExtendedPlayer.undeadnights_isInCave();
                 }
-                d = 0;
-                continue;
-            }
+
+                // use the above calculated x and z to find a possible spawn location
+                possibleSpawnLocation = player.blockPosition().offset((int) x, 0, (int) z);
+
+                // cave spawning check (fallback for cases where CaveSpawnSearchTask was not used)
+                if (MainConfig.getHordeWavesCanSpawnInCaves() && playerInCave) {
+                    possibleSpawnLocation = SpawnLocationFinder.findEndPositionUsingMinecraftPathfinding(level, player, MainConfig.getCaveSpawnDistance(), MainConfig.getHordeWavesCanSpawnInWater());
+                    if (possibleSpawnLocation == null) {
+                        if (MainConfig.getPrintDebugMessages()) {
+                            UndeadNights.LOGGER.info("Cave horde spawn location calculation for player {} failed, trying again.", player.getName().getString());
+                        }
+                        d = 0;
+                        continue;
+                    }
+                    if (MainConfig.getBlockLightLevelsInfluenceMonsterSpawns()) {
+                        if (!SpawnLocationFinder.isDarkEnoughToSpawn(level, possibleSpawnLocation)) {
+                            d = 0;
+                            continue;
+                        }
+                    }
+                    if (MainConfig.getPrintDebugMessages()) {
+                        player.sendSystemMessage(Component.literal("[DEBUG] Cave horde spawn location calculated.").withStyle(ChatFormatting.DARK_AQUA));
+                        UndeadNights.LOGGER.info("Cave horde spawn location calculation for player {} is done, result: {}", player.getName().getString(), possibleSpawnLocation);
+                    }
+                    foundHordeSpawnLocation = true;
+                } else {
+                    // use the heightmap to find the surface level at the possible spawn location
+                    possibleSpawnLocation = new BlockPos(possibleSpawnLocation.getX(), level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, possibleSpawnLocation.getX(), possibleSpawnLocation.getZ()) - 1, possibleSpawnLocation.getZ());
+
+                    if (MainConfig.getPrintDebugMessages()) {
+                        UndeadNights.LOGGER.info("Surface horde spawning check for player {} at position {}", player.getName().getString(), possibleSpawnLocation);
+                    }
+                    foundHordeSpawnLocation = SpawnLocationFinder.checkSpawnLocation(level, possibleSpawnLocation.getX(), possibleSpawnLocation.getY() - 1, possibleSpawnLocation.getZ());
+                }
+
+                if (!foundHordeSpawnLocation) {
+                    if (MainConfig.getPrintDebugMessages()) {
+                        UndeadNights.LOGGER.info("Horde spawn location check for player {} at position {} failed, trying again.", player.getName().getString(), possibleSpawnLocation);
+                    }
+                    d = 0;
+                    continue;
+                }
+            } // end position-finding block
 
             if (MainConfig.getPrintDebugMessages()) {
                 UndeadNights.LOGGER.info("A possible Horde spawn location for player {} was found.", player.getName().getString());
@@ -197,11 +223,11 @@ public class SpawnProcess {
                 if (MainConfig.getPrintDebugMessages()) {
                     UndeadNights.LOGGER.info("Horde config variant 2 detected.");
                 }
-                if (hordeIdFromHordesConfig == 0) {
+                if (HordeSpawner.hordeIdFromHordesConfig == 0) {
                     UndeadNights.LOGGER.warn("Horde to spawn was set to 0, setting it to 1.");
-                    hordeIdFromHordesConfig = 1;
+                    HordeSpawner.hordeIdFromHordesConfig = 1;
                 }
-                int hordeIdToSpawn = hordeIdFromHordesConfig - 1;
+                int hordeIdToSpawn = HordeSpawner.hordeIdFromHordesConfig - 1;
                 if (UndeadNights.serverState.isSpawnBossHorde()) {
                     if (MainConfig.getPrintDebugMessages()) {
                         UndeadNights.LOGGER.info("Boss horde spawn detected, spawning boss horde id {}.", UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordes().getBossHordeId());
@@ -233,7 +259,7 @@ public class SpawnProcess {
                     if (MainConfig.getPrintDebugMessages()) {
                         UndeadNights.LOGGER.error("Horde index {} from config is out of range, using default horde instead.", hordeIdToSpawn);
                     }
-                    hordeIdToSpawn = hordeIdFromHordesConfig - 1;
+                    hordeIdToSpawn = HordeSpawner.hordeIdFromHordesConfig - 1;
                 }
 
                 if (MainConfig.getPrintDebugMessages()) {
@@ -320,8 +346,12 @@ public class SpawnProcess {
 
     // spawn a single horde mob at the given location
     public static int spawnHordeMob(ServerLevel level, RandomExtention randomSource, BlockPos pos, Player player, HordeConfig.MobSpawnData mobSpawnData) {
+        // Local flag – must not be the static field (which would corrupt subsequent calls).
+        boolean invalidEntry = false;
+
         EntityType<?> mobType = ForgeRegistries.ENTITY_TYPES.getValue(ResourceLocation.parse(mobSpawnData.mobId()));
         if (mobType == null) {
+            invalidEntry = true;
             invalidHordeMobEntry = true;
             UndeadNights.LOGGER.warn("Spawning entry {} from the config file failed! Spawning default horde zombie instead.", mobSpawnData.mobId());
             //mobType = ForgeRegistries.ENTITY_TYPES.getValue(new ResourceLocation("undeadnights:horde_zombie"));
@@ -336,7 +366,7 @@ public class SpawnProcess {
             }
         }
 
-        if (!invalidHordeMobEntry) {
+        if (!invalidEntry) {
             nbtCompound.putString("id", mobSpawnData.mobId());
         } else {
             nbtCompound.putString("id", "undeadnights:horde_zombie");
@@ -417,7 +447,7 @@ public class SpawnProcess {
 
 
                     int playerCount = 1;
-                    if (!mob.level().isClientSide) {
+                    if (!mob.level().isClientSide()) {
                         playerCount = mob.level().players().size();
                     }
 
@@ -451,7 +481,7 @@ public class SpawnProcess {
 
                         healthScaleFactor = healthScaleFactor + UndeadNights.serverState.getCurrentHealthScale();
                         speedScaleFactor = speedScaleFactor + UndeadNights.serverState.getCurrentSpeedScale();
-                        damageScaleFactor = damageScaleFactor + UndeadNights.serverState.getCurrentDayScaleCounter();
+                        damageScaleFactor = damageScaleFactor + UndeadNights.serverState.getCurrentDamageScale();
                         armorScaleFactor = armorScaleFactor + UndeadNights.serverState.getCurrentArmorScale();
 
                         if (healthScaleFactor > UndeadNights.difficultyConfig.getDynamicScaling().getMaxHealthScale()) {
@@ -487,7 +517,10 @@ public class SpawnProcess {
                     }
                 }
             }
-            assert entity != null;
+            if (entity == null) {
+                UndeadNights.LOGGER.error("EntityType.loadEntityRecursive returned null for '{}', skipping this spawn.", mobSpawnData.mobId());
+                return -1;
+            }
             UndeadNights.serverState.spawnedHordeMobs.add(entity.getUUID());
             if (entity instanceof LivingEntity livingEntity) {
                 if (MainConfig.getHordeWavesCanSpawnInCaves()) {
@@ -514,6 +547,4 @@ public class SpawnProcess {
         }
         return 0;
     }
-
-
 }

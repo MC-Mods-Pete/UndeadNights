@@ -1,5 +1,6 @@
 package net.petemc.undeadnights.event;
 
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -7,10 +8,12 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.goal.FloatGoal;
 import net.minecraft.world.entity.monster.Zombie;
+import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.event.RegisterCommandsEvent;
+import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.event.entity.EntityLeaveLevelEvent;
 import net.minecraftforge.event.entity.living.LivingEvent;
@@ -128,17 +131,6 @@ public class ModEvents {
             }
 
             if (entity.getType().is(ModTags.EntityTypes.HORDE_MOBS)) {
-                if (entity instanceof HordeZombieEntity hordeZombie) {
-                    if (hordeZombie.isBreakingBlock()) {
-                        return;
-                    }
-                }
-                if (entity instanceof EliteZombieEntity eliteZombieEntity) {
-                    if (eliteZombieEntity.isBreakingBlock()) {
-                        return;
-                    }
-                }
-
                 if (entity instanceof BlockBreakingZombie blockBreakingZombie) {
                     if (blockBreakingZombie.isBreakingBlock()) {
                         return;
@@ -174,6 +166,14 @@ public class ModEvents {
                         }
                     }
                 }
+            }
+        }
+
+        @SubscribeEvent
+        public static void onLevelTick(TickEvent.LevelTickEvent event) {
+            if (!event.level.isClientSide() && event.phase == TickEvent.Phase.END && event.level instanceof ServerLevel serverLevel) {
+                boolean spawnMonsters = serverLevel.getGameRules().getBoolean(GameRules.RULE_DOMOBSPAWNING);
+                UndeadNights.hordeSpawner.tick(serverLevel, spawnMonsters, false);
             }
         }
     }

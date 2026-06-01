@@ -38,7 +38,6 @@ import java.time.LocalDate;
 import java.util.Objects;
 
 public class HordeZombieEntity extends Zombie {
-    private static final EntityDataAccessor<Byte> DATA_FLAGS_ID = SynchedEntityData.defineId(HordeZombieEntity.class, EntityDataSerializers.BYTE);
 
     public HordeZombieEntity(EntityType<? extends Zombie> entityType, Level level) {
         super(entityType, level);
@@ -193,26 +192,6 @@ public class HordeZombieEntity extends Zombie {
     @Override
     protected float getWaterSlowDown() {
         return UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeMobs().isHordeZombiesAreFasterOnWater() ? 0.94F : 0.8F;
-    }
-
-    protected void defineSynchedData() {
-        super.defineSynchedData();
-        this.entityData.define(DATA_FLAGS_ID, (byte)0);
-    }
-
-    public boolean isBreakingBlock() {
-        return (this.entityData.get(DATA_FLAGS_ID) & 1) != 0;
-    }
-
-    public void setBreakingBlock(boolean isBreaking) {
-        byte b0 = this.entityData.get(DATA_FLAGS_ID);
-        if (isBreaking) {
-            b0 = (byte)(b0 | 1);
-        } else {
-            b0 = (byte)(b0 & -2);
-        }
-
-        this.entityData.set(DATA_FLAGS_ID, b0);
     }
 
     @Override

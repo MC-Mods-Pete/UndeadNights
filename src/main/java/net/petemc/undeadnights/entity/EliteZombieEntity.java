@@ -39,7 +39,6 @@ import java.time.LocalDate;
 import java.util.Objects;
 
 public class EliteZombieEntity extends Zombie {
-    private static final EntityDataAccessor<Byte> DATA_FLAGS_ID = SynchedEntityData.defineId(EliteZombieEntity.class, EntityDataSerializers.BYTE);
 
     public EliteZombieEntity(EntityType<? extends Zombie> entityType, Level level) {
         super(entityType, level);
@@ -150,7 +149,7 @@ public class EliteZombieEntity extends Zombie {
     public static AttributeSupplier.@NotNull Builder createAttributes() {
         return Monster.createMonsterAttributes()
                 .add(Attributes.FOLLOW_RANGE, UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeMobs().getHordeMobsTrackingRange())       // default 35.0D
-                .add(Attributes.MOVEMENT_SPEED, 0.32D)      // default 0.23F
+                .add(Attributes.MOVEMENT_SPEED, 0.27D)      // default 0.23F
                 .add(Attributes.ATTACK_DAMAGE, 6.0D)        // default 3.0
                 .add(Attributes.ARMOR, 5.0D)                // default 2.0
                 .add(Attributes.SPAWN_REINFORCEMENTS_CHANCE, 0.0D);
@@ -215,26 +214,6 @@ public class EliteZombieEntity extends Zombie {
     @Override
     protected float getWaterSlowDown() {
         return UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeMobs().isHordeZombiesAreFasterOnWater() ? 0.94F : 0.8F;
-    }
-
-    protected void defineSynchedData() {
-        super.defineSynchedData();
-        this.entityData.define(DATA_FLAGS_ID, (byte)0);
-    }
-
-    public boolean isBreakingBlock() {
-        return (this.entityData.get(DATA_FLAGS_ID) & 1) != 0;
-    }
-
-    public void setBreakingBlock(boolean pClimbing) {
-        byte b0 = this.entityData.get(DATA_FLAGS_ID);
-        if (pClimbing) {
-            b0 = (byte)(b0 | 1);
-        } else {
-            b0 = (byte)(b0 & -2);
-        }
-
-        this.entityData.set(DATA_FLAGS_ID, b0);
     }
 
     @Override
