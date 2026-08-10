@@ -17,6 +17,7 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.EntitySpawnRequest;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.FloatGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
@@ -400,7 +401,7 @@ public class SpawnProcess {
         if (MainConfig.getPrintDebugMessages()) {
             UndeadNights.LOGGER.info("Spawning horde mob {} at position {}, {}, {} with TrackingRange: {}", mobSpawnData.mobId(), finalPos.getX(), finalPos.getY(), finalPos.getZ(), trackingRange);
         }
-        Entity entity = EntityType.loadEntityRecursive(nbtCompound, level, EntitySpawnReason.COMMAND,entityX -> {
+        Entity entity = EntityType.loadEntityRecursive(nbtCompound, level, new EntitySpawnRequest(EntitySpawnReason.COMMAND, false), entityX -> {
             entityX.snapTo(finalPos.getX(),finalPos.getY(),finalPos.getZ(), entityX.getYRot(), entityX.getXRot());
             return entityX;
         });
