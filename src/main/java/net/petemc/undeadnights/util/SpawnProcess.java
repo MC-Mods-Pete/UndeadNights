@@ -400,7 +400,7 @@ public class SpawnProcess {
         if (MainConfig.getPrintDebugMessages()) {
             UndeadNights.LOGGER.info("Spawning horde mob {} at position {}, {}, {} with TrackingRange: {}", mobSpawnData.mobId(), finalPos.getX(), finalPos.getY(), finalPos.getZ(), trackingRange);
         }
-        Entity entity = EntityType.loadEntityRecursive(nbtCompound, level, EntitySpawnReason.COMMAND,entityX -> {
+        Entity entity = EntityType.loadEntityRecursive(nbtCompound, level, new EntitySpawnRequest(EntitySpawnReason.COMMAND, false), entityX -> {
             entityX.snapTo(finalPos.getX(),finalPos.getY(),finalPos.getZ(), entityX.getYRot(), entityX.getXRot());
             return entityX;
         });

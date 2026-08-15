@@ -150,7 +150,7 @@ public class EliteZombieEntity extends Zombie {
     public static AttributeSupplier.@NotNull Builder createAttributes() {
         return Monster.createMonsterAttributes()
                 .add(Attributes.FOLLOW_RANGE, UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeMobs().getHordeMobsTrackingRange())       // default 35.0D
-                .add(Attributes.MOVEMENT_SPEED, 0.32D)      // default 0.23F
+                .add(Attributes.MOVEMENT_SPEED, 0.27D)      // default 0.23F
                 .add(Attributes.ATTACK_DAMAGE, 6.0D)        // default 3.0
                 .add(Attributes.ARMOR, 5.0D)                // default 2.0
                 .add(Attributes.SPAWN_REINFORCEMENTS_CHANCE, 0.0D);
