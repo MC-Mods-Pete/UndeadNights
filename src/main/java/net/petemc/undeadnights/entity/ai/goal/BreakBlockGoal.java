@@ -17,8 +17,6 @@ import net.petemc.undeadnights.UndeadNights;
 import net.petemc.undeadnights.casts.BlockBreakingZombie;
 import net.petemc.undeadnights.command.HordeMobsCommand;
 import net.petemc.undeadnights.config.MainConfig;
-import net.petemc.undeadnights.entity.EliteZombieEntity;
-import net.petemc.undeadnights.entity.HordeZombieEntity;
 
 public class BreakBlockGoal extends Goal {
     private final Zombie mob;
@@ -55,12 +53,6 @@ public class BreakBlockGoal extends Goal {
 
     @Override
     public void start() {
-        if (this.mob instanceof HordeZombieEntity hordeZombie) {
-            hordeZombie.setBreakingBlock(true);
-        }
-        if (this.mob instanceof EliteZombieEntity eliteZombie) {
-            eliteZombie.setBreakingBlock(true);
-        }
         if (this.mob instanceof BlockBreakingZombie zombie) {
             zombie.setBreakingBlock(true);
         }
@@ -88,8 +80,8 @@ public class BreakBlockGoal extends Goal {
         breakProgress = 0;
         targetBlock = null;
         scaledTargetDestroyTime = 0;
-        if (this.mob instanceof HordeZombieEntity hordeZombie) {
-            hordeZombie.setBreakingBlock(false);
+        if (this.mob instanceof BlockBreakingZombie zombie) {
+            zombie.setBreakingBlock(false);
         }
         mob.getNavigation().recomputePath();
     }

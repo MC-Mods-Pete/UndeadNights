@@ -4,51 +4,25 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectCategory;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.entity.monster.Zombie;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.petemc.undeadnights.UndeadNights;
 import net.petemc.undeadnights.casts.UndeadNightsExtendedPlayer;
+import net.petemc.undeadnights.config.MainConfig;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ForkJoinPool;
 
 public class StrongLureHordeMobsEffect extends MobEffect {
-    private static final HashMap<UUID, CompletableFuture<Boolean>> cachedNearbyHordeMobsPerPlayer = new HashMap<>();
-
-    // Asynchronous method to find nearby horde mobs and set player as target
-    public static CompletableFuture<Boolean> asynchronousSetPlayerAsTargetForNearbyHordeMobs(ServerLevel level, ServerPlayer player) {
-        return CompletableFuture.supplyAsync(() -> setPlayerAsTargetForNearbyHordeMobs(
-                level,
-                player
-        ), ForkJoinPool.commonPool());
-    }
-
-    // Method to find nearby horde mobs and set player as target
-    private static Boolean setPlayerAsTargetForNearbyHordeMobs(ServerLevel level, ServerPlayer pPlayer) {
-        final Vec3 entityPosition = pPlayer.position();
-        final AABB entitySearchArea = new AABB(entityPosition, entityPosition).inflate(15d);
-
-        List<Entity> sortedEntityList = level.getEntitiesOfClass(Entity.class, entitySearchArea, entityUUIDCheck ->
-                        UndeadNights.serverState.spawnedHordeMobs.contains(entityUUIDCheck.getUUID()))
-                .stream().sorted(Comparator.comparingDouble(entityDistSort -> entityDistSort.distanceToSqr(entityPosition))).toList();
-
-        for (Entity hordeMobIterator : sortedEntityList) {
-            if (hordeMobIterator instanceof Mob mob) {
-                mob.setTarget(pPlayer);
-            }
-        }
-        return true;
-    }
+    private static final int LURE_SEARCH_INTERVAL = 100; // 5 seconds at 20 ticks/sec
+    private static final double LURE_SEARCH_AREA = 18D;
+    private static final int MAX_TARGETED_MOBS_PER_SEARCH = 20;
+    private static final double INITIAL_LURE_CHANCE = 1.00D;
+    private static final double DEFAULT_LURE_CHANCE = 0.20D;
 
     public StrongLureHordeMobsEffect(MobEffectCategory statusEffectCategory, int color) {
         super(statusEffectCategory, color);
@@ -56,66 +30,79 @@ public class StrongLureHordeMobsEffect extends MobEffect {
 
     @Override
     public boolean applyEffectTick(@NotNull LivingEntity pLivingEntity, int pAmplifier) {
+        if (!UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsLureEffect().isEnableLureHordeEffect()) {
+            return false;
+        }
+
         if (!pLivingEntity.level().isClientSide()) {
-            boolean removeEffect = false;
-            if (pLivingEntity instanceof Player player) {
-                if (player.hasEffect(ModEffects.LURE_HORDE)) {
-                    player.removeEffect(ModEffects.LURE_HORDE);
-                    removeEffect = true;
-                }
+            if (!(pLivingEntity instanceof ServerPlayer serverPlayer)) {
+                return false;
             }
 
-            double chance = 0.08D;
-            if (pLivingEntity instanceof UndeadNightsExtendedPlayer hordeLurePlayer) {
-                if (removeEffect) {
-                    hordeLurePlayer.undeadnights_setHordeLureEffect(false);
-                }
+            boolean debugMessages = MainConfig.getPrintDebugMessages();
+
+            boolean spawnHorde = false;
+            double chance = DEFAULT_LURE_CHANCE;
+            if (serverPlayer instanceof UndeadNightsExtendedPlayer hordeLurePlayer) {
                 if (!hordeLurePlayer.undeadnights_hasHordeLureEffect()) {
-                    chance = 20.0D;
+                    spawnHorde = true;
+                    chance = INITIAL_LURE_CHANCE;
                 }
                 hordeLurePlayer.undeadnights_setHordeLureEffect(true);
             }
-            if (pLivingEntity instanceof Player pPlayer) {
-                LevelAccessor world = pPlayer.level();
-                if (UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsLureEffect().isStrongLureHordeEffectSpawnsHorde()) {
-                    if (!UndeadNights.serverState.entitiesWithReceivedHorde.contains(pPlayer.getUUID())) {
-                        UndeadNights.serverState.entitiesWithPendingHorde.add(pPlayer.getUUID());
+
+            ServerLevel serverLevel = serverPlayer.serverLevel();
+            UUID uuid = serverPlayer.getUUID();
+
+            if (UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsLureEffect().isLureHordeEffectSpawnsHorde()) {
+                if (!UndeadNights.serverState.entitiesWithReceivedHorde.contains(uuid)
+                        && spawnHorde) {
+
+                    if (!UndeadNights.serverState.entitiesWithReceivedHorde.contains(serverPlayer.getUUID())) {
+                        UndeadNights.serverState.entitiesWithPendingHorde.add(serverPlayer.getUUID());
                     }
                 }
+            }
 
-                double randomValue = Math.random();
-                if (randomValue < (chance / 10)) {
-                    if (!cachedNearbyHordeMobsPerPlayer.containsKey(pPlayer.getUUID())) {
-                        CompletableFuture<Boolean> future = asynchronousSetPlayerAsTargetForNearbyHordeMobs((ServerLevel) world, (ServerPlayer) pPlayer);
-                        cachedNearbyHordeMobsPerPlayer.put(pPlayer.getUUID(), future);
-                    } else {
-                        CompletableFuture<Boolean> existingFuture = cachedNearbyHordeMobsPerPlayer.get(pPlayer.getUUID());
-                        if (existingFuture.isDone()) {
-                            cachedNearbyHordeMobsPerPlayer.remove(pPlayer.getUUID());
-                        }
+            // Entity search - runs every LURE_SEARCH_INTERVAL ticks per serverPlayer using server tick counter
+            boolean shouldSearch = (serverPlayer.tickCount + serverPlayer.getId()) % LURE_SEARCH_INTERVAL == 0;
+            if (shouldSearch || (chance == INITIAL_LURE_CHANCE)) {
+                if (debugMessages) {
+                    UndeadNights.LOGGER.info("Searching for nearby horde mobs to lure for player " + serverPlayer.getUUID());
+                }
+                if (serverPlayer.getRandom().nextDouble() < chance) {
+                    setPlayerAsTargetForNearbyHordeMobs(serverLevel, serverPlayer);
+                    if (debugMessages) {
+                        UndeadNights.LOGGER.info("Player " + serverPlayer.getUUID() + " has successfully lured nearby horde mobs.");
                     }
                 }
-
-                /*
-                final Vec3 entityPosition = pPlayer.position();
-                final AABB entitySearchArea = new AABB(entityPosition, entityPosition).inflate(15d);
-
-                double randomValue = Math.random();
-                if (randomValue < (chance / 20)) {
-                    List<Entity> sortedEntityList = world.getEntitiesOfClass(Entity.class, entitySearchArea, entityUUIDCheck ->
-                            UndeadNights.serverState.spawnedHordeMobs.contains(entityUUIDCheck.getUUID()))
-                            .stream().sorted(Comparator.comparingDouble(entityDistSort -> entityDistSort.distanceToSqr(entityPosition))).toList();
-
-                    for (Entity hordeMobIterator : sortedEntityList) {
-                        if (hordeMobIterator instanceof Mob mob) {
-                            mob.setTarget(pPlayer);
-                        }
-                    }
-                }
-                */
             }
         }
+
         return super.applyEffectTick(pLivingEntity, pAmplifier);
+    }
+
+    private void setPlayerAsTargetForNearbyHordeMobs(@NonNull ServerLevel level, @NonNull ServerPlayer serverPlayer) {
+        if (UndeadNights.serverState.spawnedHordeMobs.isEmpty()) {
+            return;
+        }
+
+        Vec3 pos = serverPlayer.position();
+        AABB searchArea = new AABB(pos, pos).inflate(LURE_SEARCH_AREA);
+        List<Zombie> hordeMobsToLure = level.getEntitiesOfClass(Zombie.class, searchArea, zombie ->
+                UndeadNights.serverState.spawnedHordeMobs.contains(zombie.getUUID()));
+
+        int targetedCount = 0;
+        for (Zombie mob : hordeMobsToLure) {
+            mob.setTarget(serverPlayer);
+            targetedCount++;
+            if (targetedCount >= MAX_TARGETED_MOBS_PER_SEARCH) {
+                break;
+            }
+        }
+        if (MainConfig.getPrintDebugMessages()) {
+            UndeadNights.LOGGER.info("Player " + serverPlayer.getUUID() + " has lured " + targetedCount + " nearby horde mobs.");
+        }
     }
 
     @Override

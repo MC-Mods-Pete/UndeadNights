@@ -2,6 +2,7 @@ package net.petemc.undeadnights.mixin;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
@@ -9,7 +10,10 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.AABB;
+import net.petemc.undeadnights.UndeadNights;
 import net.petemc.undeadnights.casts.UndeadNightsExtendedPlayer;
+import net.petemc.undeadnights.config.MainConfig;
+import net.petemc.undeadnights.effect.ModEffects;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -67,6 +71,17 @@ public class PlayerEntityMixin implements UndeadNightsExtendedPlayer {
         Player player = (Player) (Object) this;
 
         if (!player.level().isClientSide()) {
+            if (player instanceof UndeadNightsExtendedPlayer hordeLurePlayer) {
+                if (hordeLurePlayer.undeadnights_hasHordeLureEffect()) {
+                    if (!player.hasEffect(ModEffects.LURE_HORDE) && !player.hasEffect(ModEffects.STRONG_LURE_HORDE)) {
+                        if (MainConfig.getPrintDebugMessages()) {
+                            UndeadNights.LOGGER.info("Horde lure flag for Player " + player.getName().getString() + " set to false due to missing HORDE_LURE effects.");
+                        }
+                        hordeLurePlayer.undeadnights_setHordeLureEffect(false);
+                    }
+                }
+            }
+
             if (coolDown > 0) {
                 coolDown--;
             } else {

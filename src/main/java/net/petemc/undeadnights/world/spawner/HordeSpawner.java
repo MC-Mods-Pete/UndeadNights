@@ -10,10 +10,12 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.CustomSpawner;
 import net.minecraft.world.level.Level;
 import net.petemc.undeadnights.UndeadNights;
+import net.petemc.undeadnights.casts.UndeadNightsExtendedPlayer;
 import net.petemc.undeadnights.command.SpawnHordeCommand;
 import net.petemc.undeadnights.config.HordeConfig;
 import net.petemc.undeadnights.config.MainConfig;
 import net.petemc.undeadnights.effect.ModEffects;
+import net.petemc.undeadnights.util.CaveSpawnSearchTask;
 import net.petemc.undeadnights.util.RandomExtention;
 import net.petemc.undeadnights.util.SpawnLocationFinder;
 import net.petemc.undeadnights.util.SpawnProcess;
@@ -23,13 +25,17 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 
 public class HordeSpawner implements CustomSpawner {
     public static boolean invalidHordeMobEntry = false;
     public static int hordeIdFromHordesConfig = 1;
 
-    public HashMap<UUID, HordeSpawnTask> hordeSpawningPerPlayer = new HashMap<>();
+    /**
+     * Ongoing tick-based cave spawn searches, one per player UUID.
+     * Each entry runs a few pathfinding attempts per server tick so the main thread
+     * is never blocked for more than a few milliseconds.
+     */
+    public HashMap<UUID, CaveSpawnSearchTask> pendingCaveSearches = new HashMap<>();
 
     public static int bossHordeTime;
 
@@ -39,55 +45,64 @@ public class HordeSpawner implements CustomSpawner {
         FAILED;
     }
 
-    public static class HordeSpawnTask {
-        public CompletableFuture<SpawnHordeResult> futureResult;
-        public int tries = 0;
-
-        public HordeSpawnTask(CompletableFuture<SpawnHordeResult> futureResult, int tries) {
-            this.futureResult = futureResult;
-            this.tries = tries;
-        }
-    }
-
     public SpawnHordeResult spawnHorde(ServerLevel level, ServerPlayer player, RandomExtention randomSource) {
-        if (MainConfig.getEnableAsynchronousHordeSpawning()) {
-            if (!hordeSpawningPerPlayer.containsKey(player.getUUID())) {
-                hordeSpawningPerPlayer.put(player.getUUID(),
-                        new HordeSpawnTask(SpawnProcess.asynchronousHordeSpawner(level, player, randomSource), 10));
+
+        // ── Cave spawn path: tick-based, non-blocking ────────────────────────────
+        // Pathfinding is spread across multiple ticks (8 attempts/tick, up to 80 total)
+        // so the server thread is never blocked for more than a few milliseconds.
+        // Player movement during the search (≤ 10 blocks in ~0.5 s) does not matter:
+        // • The spawn-position ring is centred on the player's position at task creation.
+        // • After spawning, the zombie calls setTarget(player) and navigates dynamically.
+        boolean playerInCave = false;
+        if (MainConfig.getHordeWavesCanSpawnInCaves()) {
+            if (player instanceof UndeadNightsExtendedPlayer ext) {
+                playerInCave = ext.undeadnights_isInCave();
+            }
+        }
+
+        if (playerInCave) {
+            UUID uuid = player.getUUID();
+            if (!pendingCaveSearches.containsKey(uuid)) {
+                pendingCaveSearches.put(uuid, new CaveSpawnSearchTask(
+                        level, player,
+                        MainConfig.getCaveSpawnDistance(),
+                        MainConfig.getHordeWavesCanSpawnInWater()));
                 if (MainConfig.getPrintDebugMessages()) {
-                    player.sendSystemMessage(Component.literal("[DEBUG] Finding horde spawn location (async)...").withStyle(ChatFormatting.DARK_AQUA));
-                }
-                if (MainConfig.getPrintDebugMessages()) {
-                    UndeadNights.LOGGER.info("Async horde spawning location calculation for player {} at {}", player.getName().getString(), player.blockPosition());
+                    UndeadNights.LOGGER.info("Cave horde search started for player {} at {}", player.getName().getString(), player.blockPosition());
+                    player.sendSystemMessage(Component.literal("[DEBUG] Finding cave horde spawn location (tick-based)...").withStyle(ChatFormatting.DARK_AQUA));
                 }
             }
-            HordeSpawnTask existingHordeSpawnTask = hordeSpawningPerPlayer.get(player.getUUID());
-            CompletableFuture<SpawnHordeResult> existingFutureSpawnHorde = existingHordeSpawnTask.futureResult;
-            if (existingFutureSpawnHorde != null && existingFutureSpawnHorde.isDone()) {
-                SpawnHordeResult result = SpawnHordeResult.FAILED;
-                try {
-                    result = existingFutureSpawnHorde.get();
-                } catch (Exception e) {
-                    UndeadNights.LOGGER.warn("Spawning horde for player {} failed!", player.getName().getString());
+
+            CaveSpawnSearchTask task = pendingCaveSearches.get(uuid);
+            CaveSpawnSearchTask.State searchState = task.tick();
+
+            switch (searchState) {
+                case FOUND -> {
+                    pendingCaveSearches.remove(uuid);
+                    BlockPos cavePos = task.getResult();
+                    if (MainConfig.getPrintDebugMessages()) {
+                        UndeadNights.LOGGER.info("Cave horde position found for player {} after {} attempts: {}",
+                                player.getName().getString(), task.getAttemptsDone(), cavePos);
+                    }
+                    return SpawnProcess.spawnHordeWithKnownCavePos(level, player, randomSource, cavePos);
                 }
-                if (result == SpawnHordeResult.DONE) {
-                    hordeSpawningPerPlayer.remove(player.getUUID());
-                    return result;
-                }
-                if (existingHordeSpawnTask.tries > 0) {
-                    // still not done, skip this spawn attempt
-                    existingHordeSpawnTask.tries--;
-                    return SpawnHordeResult.NOT_DONE_YET;
-                } else {
-                    // exceeded max tries, consider this a failed attempt
-                    hordeSpawningPerPlayer.remove(player.getUUID());
+                case FAILED -> {
+                    pendingCaveSearches.remove(uuid);
+                    if (MainConfig.getPrintDebugMessages()) {
+                        UndeadNights.LOGGER.info("Cave horde search failed for player {} after {} attempts.",
+                                player.getName().getString(), task.getAttemptsDone());
+                    }
                     return SpawnHordeResult.FAILED;
                 }
+                default -> { /* SEARCHING – still in progress */ }
             }
-        } else {
-            return SpawnProcess.synchronousHordeSpawner(level, player, randomSource);
+            return SpawnHordeResult.NOT_DONE_YET;
         }
-        return SpawnHordeResult.NOT_DONE_YET;
+
+        // ── Surface spawn path ───────────────────────────────────────────────────
+        // Surface position-finding is cheap (simple trig + heightmap lookup), so
+        // synchronous execution on the server thread is perfectly fine here.
+        return SpawnProcess.synchronousHordeSpawner(level, player, randomSource);
     }
 
 
@@ -274,11 +289,24 @@ public class HordeSpawner implements CustomSpawner {
                         randomValue = randomSource.nextIntBetweenInclusive(1, 100);
                         if ((randomValue > (100 - UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordes().getChanceForRandomHorde()))) {
                             for (ServerPlayer player : level.getPlayers(LivingEntity::isAlive)) {
-                                if (spawnHorde(level, player, randomSource) == SpawnHordeResult.FAILED) {
+                                SpawnHordeResult randomHordeResult = spawnHorde(level, player, randomSource);
+                                if (randomHordeResult == SpawnHordeResult.FAILED) {
                                     break;
                                 }
-                                if (MainConfig.getPrintDebugMessages()) {
-                                    UndeadNights.LOGGER.info("A random horde has spawned!");
+                                if (randomHordeResult == SpawnHordeResult.NOT_DONE_YET) {
+                                    // Cave search started across ticks – register the player in the
+                                    // pending-horde map so the existing processing loop continues
+                                    // the task on every subsequent tick until DONE or FAILED.
+                                    UndeadNights.serverState.entitiesWithPendingHorde.add(player.getUUID());
+                                    UndeadNights.serverState.entitiesWithReceivedHorde.remove(player.getUUID());
+                                    if (MainConfig.getPrintDebugMessages()) {
+                                        UndeadNights.LOGGER.info("Random horde cave search started for player {}, continuing across ticks.", player.getName().getString());
+                                    }
+                                }
+                                if (randomHordeResult == SpawnHordeResult.DONE) {
+                                    if (MainConfig.getPrintDebugMessages()) {
+                                        UndeadNights.LOGGER.info("A random horde has spawned!");
+                                    }
                                 }
                             }
                         }
@@ -379,6 +407,11 @@ public class HordeSpawner implements CustomSpawner {
             //bossHordeSpawned = false;
             UndeadNights.serverState.setSpawnBossHorde(false);
             if (UndeadNights.serverState.getHordeNight()) {
+                // Cancel any in-progress cave searches when the horde night ends.
+                // This must NOT run every daytime tick, otherwise the task created by
+                // the pending-horde processing earlier in the same tick gets wiped,
+                // causing a new task (and a new chat message) to be created next tick.
+                pendingCaveSearches.clear();
                 for (ServerPlayer player : level.getPlayers(LivingEntity::isAlive)) {
                     if (!UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeNights().getAllDayLongHordeNights()) {
                         player.sendSystemMessage(Component.translatable("message.undeadnights.horde_night_over"));

@@ -1,10 +1,6 @@
 package net.petemc.undeadnights.entity;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.syncher.EntityDataAccessor;
-import net.minecraft.network.syncher.EntityDataSerializers;
-import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Difficulty;
@@ -28,7 +24,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.levelgen.Heightmap;
 import net.petemc.undeadnights.UndeadNights;
 import net.petemc.undeadnights.config.HordeConfig;
 import net.petemc.undeadnights.config.MainConfig;
@@ -40,7 +35,6 @@ import java.time.LocalDate;
 import java.util.Objects;
 
 public class HordeZombieEntity extends Zombie {
-    private static final EntityDataAccessor<Byte> DATA_FLAGS_ID = SynchedEntityData.defineId(HordeZombieEntity.class, EntityDataSerializers.BYTE);
 
     public HordeZombieEntity(EntityType<? extends Zombie> entityType, Level level) {
         super(entityType, level);
@@ -94,8 +88,8 @@ public class HordeZombieEntity extends Zombie {
         }
 
         double healthScaleFactor = 0.0;
-        double damageScaleFactor = 0.0;
         double speedScaleFactor = 0.0;
+        double damageScaleFactor = 0.0;
         double armorScaleFactor = 0.0;
 
         if (UndeadNights.difficultyConfig.getDynamicScaling().isDynamicScalingEnabled()) {
@@ -108,7 +102,7 @@ public class HordeZombieEntity extends Zombie {
 
             healthScaleFactor = healthScaleFactor + UndeadNights.serverState.getCurrentHealthScale();
             speedScaleFactor = speedScaleFactor + UndeadNights.serverState.getCurrentSpeedScale();
-            damageScaleFactor = damageScaleFactor + UndeadNights.serverState.getCurrentDayScaleCounter();
+            damageScaleFactor = damageScaleFactor + UndeadNights.serverState.getCurrentDamageScale();
             armorScaleFactor = armorScaleFactor + UndeadNights.serverState.getCurrentArmorScale();
 
             if (healthScaleFactor > UndeadNights.difficultyConfig.getDynamicScaling().getMaxHealthScale()) {
@@ -197,25 +191,6 @@ public class HordeZombieEntity extends Zombie {
         return UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeMobs().isHordeZombiesAreFasterOnWater() ? 0.94F : 0.8F;
     }
 
-    protected void defineSynchedData(SynchedEntityData.@NotNull Builder builder) {
-        super.defineSynchedData(builder);
-        builder.define(DATA_FLAGS_ID, (byte)0);
-    }
-
-    public boolean isBreakingBlock() {
-        return (this.entityData.get(DATA_FLAGS_ID) & 1) != 0;
-    }
-
-    public void setBreakingBlock(boolean isBreaking) {
-        byte b0 = this.entityData.get(DATA_FLAGS_ID);
-        if (isBreaking) {
-            b0 = (byte)(b0 | 1);
-        } else {
-            b0 = (byte)(b0 & -2);
-        }
-
-        this.entityData.set(DATA_FLAGS_ID, b0);
-    }
 
     @Override
     protected void populateDefaultEquipmentSlots(@NotNull RandomSource pRandom, @NotNull DifficultyInstance pDifficulty) {

@@ -13,7 +13,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.alchemy.PotionBrewing;
 import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.level.GameRules;
-import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -38,7 +37,6 @@ import net.petemc.undeadnights.item.ModItems;
 import net.petemc.undeadnights.potion.ModPotions;
 import net.petemc.undeadnights.util.ModTags;
 
-import java.util.Comparator;
 import java.util.List;
 
 @EventBusSubscriber(modid = UndeadNights.MOD_ID, bus = EventBusSubscriber.Bus.GAME)
@@ -131,21 +129,11 @@ public class GameEvents {
 
     @SubscribeEvent
     public static void onEntityTick(EntityTickEvent.Pre event) {
-        LevelAccessor world = event.getEntity().level();
         Entity entity = event.getEntity();
 
-        if (entity.getType().is(ModTags.EntityTypes.HORDE_MOBS)) {
-            if (entity instanceof HordeZombieEntity hordeZombie) {
-                if (hordeZombie.isBreakingBlock()) {
-                    return;
-                }
-            }
-            if (entity instanceof EliteZombieEntity eliteZombieEntity) {
-                if (eliteZombieEntity.isBreakingBlock()) {
-                    return;
-                }
-            }
+        final int HORDE_CLIMB_CHECK_INTERVAL = 2;
 
+        if (entity.getType().is(ModTags.EntityTypes.HORDE_MOBS)) {
             if (entity instanceof BlockBreakingZombie blockBreakingZombie) {
                 if (blockBreakingZombie.isBreakingBlock()) {
                     return;
@@ -153,15 +141,21 @@ public class GameEvents {
             }
 
             if (UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeMobs().isHordeMobsCanClimbEachOther()) {
+                if ((entity.tickCount + entity.getId()) % HORDE_CLIMB_CHECK_INTERVAL != 0) {
+                    return;
+                }
+
                 final Vec3 entityPosition = entity.position();
                 final AABB entitySearchArea = new AABB(entityPosition, entityPosition).inflate(0.45 / 2d);
-                List<Entity> sortedEntityList = world.getEntitiesOfClass(Entity.class, entitySearchArea , entityTagCheck ->
-                                entityTagCheck.getType().is(ModTags.EntityTypes.HORDE_MOBS))
-                        .stream().sorted(Comparator.comparingDouble(entityDistSort -> entityDistSort.distanceToSqr(entityPosition))).toList();
+                List<Entity> nearbyHordeMobs = entity.level().getEntitiesOfClass(Entity.class, entitySearchArea, entityTagCheck ->
+                        entityTagCheck.getType().builtInRegistryHolder().is(ModTags.EntityTypes.HORDE_MOBS));
 
-                for (Entity hordeMobIterator : sortedEntityList) {
-                    if (!(entity.getX() == hordeMobIterator.getX())) {
-                        double randomValue = Math.random();
+                for (Entity hordeMobIterator : nearbyHordeMobs) {
+                    if (hordeMobIterator == entity) {
+                        continue;
+                    }
+                    if (entity.getX() != hordeMobIterator.getX()) {
+                        double randomValue = entity.getRandom().nextDouble();
                         if (randomValue > 0.16D) {
                             randomValue = 0.16D;
                         }
@@ -175,9 +169,12 @@ public class GameEvents {
                             if (livingEntity.isBaby()) {
                                 entity.setDeltaMovement(entityVec3.add(0, randomValue, 0));
                             }
-                            livingEntity.addEffect(new MobEffectInstance(MobEffects.SLOW_FALLING, 5, 0, false, false));
+                            if (!livingEntity.hasEffect(MobEffects.SLOW_FALLING)) {
+                                livingEntity.addEffect(new MobEffectInstance(MobEffects.SLOW_FALLING, 5, 0, false, false));
+                            }
                         }
                         entity.fallDistance = 0;
+                        break;
                     }
                 }
             }
