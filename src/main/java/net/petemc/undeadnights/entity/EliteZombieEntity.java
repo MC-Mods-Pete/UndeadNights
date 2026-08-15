@@ -93,8 +93,8 @@ public class EliteZombieEntity extends Zombie {
         }
 
         double healthScaleFactor = 0.0;
-        double damageScaleFactor = 0.0;
         double speedScaleFactor = 0.0;
+        double damageScaleFactor = 0.0;
         double armorScaleFactor = 0.0;
 
         if (UndeadNights.difficultyConfig.getDynamicScaling().isDynamicScalingEnabled()) {
@@ -107,7 +107,7 @@ public class EliteZombieEntity extends Zombie {
 
             healthScaleFactor = healthScaleFactor + UndeadNights.serverState.getCurrentHealthScale();
             speedScaleFactor = speedScaleFactor + UndeadNights.serverState.getCurrentSpeedScale();
-            damageScaleFactor = damageScaleFactor + UndeadNights.serverState.getCurrentDayScaleCounter();
+            damageScaleFactor = damageScaleFactor + UndeadNights.serverState.getCurrentDamageScale();
             armorScaleFactor = armorScaleFactor + UndeadNights.serverState.getCurrentArmorScale();
 
             if (healthScaleFactor > UndeadNights.difficultyConfig.getDynamicScaling().getMaxHealthScale()) {
