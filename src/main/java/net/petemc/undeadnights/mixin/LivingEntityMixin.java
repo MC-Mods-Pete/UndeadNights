@@ -17,17 +17,20 @@ import net.petemc.undeadnights.effect.ModEffects;
 import net.petemc.undeadnights.util.ModTags;
 import net.petemc.undeadnights.util.RandomExtention;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import java.util.Comparator;
 import java.util.List;
 
 @Mixin(LivingEntity.class)
 public class LivingEntityMixin
 {
+    @Unique
+    private static final int HORDE_CLIMB_CHECK_INTERVAL = 2;
+
     @Inject(method = "getWaterSlowDown", at = @At("HEAD"), cancellable = true)
     protected void getWaterSlowDown(CallbackInfoReturnable<Float> cir) {
         if (((Entity) (Object) this) instanceof Zombie) {
@@ -71,15 +74,21 @@ public class LivingEntityMixin
             }
 
             if (UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeMobs().isHordeMobsCanClimbEachOther()) {
+                if ((entity.tickCount + entity.getId()) % HORDE_CLIMB_CHECK_INTERVAL != 0) {
+                    return;
+                }
+
                 final Vec3 entityPosition = entity.position();
                 final AABB entitySearchArea = new AABB(entityPosition, entityPosition).inflate(0.45 / 2d);
-                List<Entity> sortedEntityList = entity.level().getEntitiesOfClass(Entity.class, entitySearchArea, entityTagCheck ->
-                                entityTagCheck.getType().builtInRegistryHolder().is(ModTags.EntityTypes.HORDE_MOBS))
-                        .stream().sorted(Comparator.comparingDouble(entityDistSort -> entityDistSort.distanceToSqr(entityPosition))).toList();
+                List<Entity> nearbyHordeMobs = entity.level().getEntitiesOfClass(Entity.class, entitySearchArea, entityTagCheck ->
+                        entityTagCheck.getType().builtInRegistryHolder().is(ModTags.EntityTypes.HORDE_MOBS));
 
-                for (Entity hordeMobIterator : sortedEntityList) {
+                for (Entity hordeMobIterator : nearbyHordeMobs) {
+                    if (hordeMobIterator == entity) {
+                        continue;
+                    }
                     if (entity.getX() != hordeMobIterator.getX()) {
-                        double randomValue = Math.random();
+                        double randomValue = entity.getRandom().nextDouble();
                         if (randomValue > 0.16D) {
                             randomValue = 0.16D;
                         }
@@ -93,9 +102,12 @@ public class LivingEntityMixin
                             if (livingEntity.isBaby()) {
                                 entity.setDeltaMovement(entityVec3.add(0, randomValue, 0));
                             }
-                            livingEntity.addEffect(new MobEffectInstance(MobEffects.SLOW_FALLING, 5, 0, false, false));
+                            if (!livingEntity.hasEffect(MobEffects.SLOW_FALLING)) {
+                                livingEntity.addEffect(new MobEffectInstance(MobEffects.SLOW_FALLING, 5, 0, false, false));
+                            }
                         }
                         entity.fallDistance = 0;
+                        break;
                     }
                 }
             }
