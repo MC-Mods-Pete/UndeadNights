@@ -54,6 +54,9 @@ public class HordeSpawner implements CustomSpawner {
         // • The spawn-position ring is centred on the player's position at task creation.
         // • After spawning, the zombie calls setTarget(player) and navigates dynamically.
         boolean playerInCave = false;
+
+        HordeSpawner.invalidHordeMobEntry = false;
+
         if (MainConfig.getHordeWavesCanSpawnInCaves()) {
             if (player instanceof UndeadNightsExtendedPlayer ext) {
                 playerInCave = ext.undeadnights_isInCave();

@@ -223,6 +223,7 @@ public class EliteZombieEntity extends Zombie {
         return MainConfig.getEliteZombiesSpawnNaturally()
                 && UndeadNights.serverState.getIsNaturalSpawningOk()
                 && !(serverLevel.getBiome(pos).is(Biomes.MUSHROOM_FIELDS))
+                && !(serverLevel.getBiome(pos).is(Biomes.DEEP_DARK))
                 && serverLevel.getDifficulty() != Difficulty.PEACEFUL
                 && Monster.isDarkEnoughToSpawn(serverLevel, pos, random)
                 && Mob.checkMobSpawnRules(eliteZombieEntityType, serverLevel, spawnType, pos, random);

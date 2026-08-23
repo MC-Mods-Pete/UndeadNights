@@ -40,8 +40,6 @@ import java.util.Objects;
 import java.util.Optional;
 
 public class SpawnProcess {
-    public static boolean invalidHordeMobEntry = false;
-
     // NOTE: x, z, d were previously static fields – this caused race conditions when multiple
     // players had hordes spawning concurrently. They are now local variables in
     // spawnHordeImplementation() so each call has its own independent state.
@@ -350,13 +348,15 @@ public class SpawnProcess {
     public static int spawnHordeMob(ServerLevel level, RandomExtention randomSource, BlockPos pos, Player player, HordeConfig.MobSpawnData mobSpawnData) {
         // Local flag – must not be the static field (which would corrupt subsequent calls).
         boolean invalidEntry = false;
+        ResourceLocation mobResource = ResourceLocation.parse(mobSpawnData.mobId());
+        EntityType<?> mobType = BuiltInRegistries.ENTITY_TYPE.get(mobResource);
 
-        EntityType<?> mobType = BuiltInRegistries.ENTITY_TYPE.get(ResourceLocation.parse(mobSpawnData.mobId()));
-        if (mobType == null) {
+        if (!mobType.toString().contains(mobResource.getPath()) || !mobType.toString().contains(mobResource.getNamespace())) {
             invalidEntry = true;
-            invalidHordeMobEntry = true;
+            HordeSpawner.invalidHordeMobEntry = true;
             UndeadNights.LOGGER.warn("Spawning entry {} from the config file failed! Spawning default horde zombie instead.", mobSpawnData.mobId());
-            //mobType = ForgeRegistries.ENTITY_TYPES.getValue(new ResourceLocation("undeadnights:horde_zombie"));
+            // replacing the broken mobType now happens below in the nbtCompound
+            //mobType = BuiltInRegistries.ENTITY_TYPE.get(ResourceLocation.parse("undeadnights:horde_zombie"));
         }
 
         CompoundTag nbtCompound = new CompoundTag();
@@ -430,7 +430,7 @@ public class SpawnProcess {
         DifficultyInstance localDifficulty = level.getCurrentDifficultyAt(player.blockPosition());
         try {
             if (entity instanceof Mob mob) {
-                mob.finalizeSpawn(level, localDifficulty, MobSpawnType.NATURAL, null);
+                mob.finalizeSpawn(level, localDifficulty, MobSpawnType.EVENT, null);
                 mob.setTarget(player);
 
                 // make vanilla zombies in hordes float on water and give ability to break blocks
@@ -469,8 +469,8 @@ public class SpawnProcess {
                     }
 
                     double healthScaleFactor = 0.0;
-                    double damageScaleFactor = 0.0;
                     double speedScaleFactor = 0.0;
+                    double damageScaleFactor = 0.0;
                     double armorScaleFactor = 0.0;
 
                     if (UndeadNights.difficultyConfig.getDynamicScaling().isDynamicScalingEnabled()) {
@@ -535,14 +535,14 @@ public class SpawnProcess {
             }
             level.tryAddFreshEntityWithPassengers(entity);
         } catch (Exception e) {
-            invalidHordeMobEntry = true;
+            HordeSpawner.invalidHordeMobEntry = true;
             UndeadNights.LOGGER.warn("Spawning entry {} from the config file failed! Spawning default horde zombie instead.", mobSpawnData.mobId());
             HordeZombieEntity hZombie = new HordeZombieEntity(ModEntities.HORDE_ZOMBIE.get(), level);
             hZombie.setPos(pos.getX(), level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, pos.getX(), pos.getZ()), pos.getZ());
             if (MainConfig.getPersistentMobs()) {
                 hZombie.setPersistenceRequired();
             }
-            hZombie.finalizeSpawn(level, localDifficulty, MobSpawnType.NATURAL, null);
+            hZombie.finalizeSpawn(level, localDifficulty, MobSpawnType.EVENT, null);
             hZombie.setTarget(player);
             UndeadNights.serverState.spawnedHordeMobs.add(hZombie.getUUID());
             level.addFreshEntity(hZombie);
