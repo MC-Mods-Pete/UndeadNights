@@ -1,11 +1,11 @@
 package net.petemc.undeadnights.entity;
 
-import net.minecraft.core.BlockPos;
+import net.fabricmc.fabric.api.biome.v1.BiomeModifications;
+import net.fabricmc.fabric.api.biome.v1.BiomeSelectors;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.Difficulty;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.*;
@@ -48,6 +48,13 @@ public class EliteZombieEntity extends Zombie {
     @Override
     public SpawnGroupData finalizeSpawn(ServerLevelAccessor level, DifficultyInstance difficulty, EntitySpawnReason spawnReason, @Nullable SpawnGroupData spawnGroupData) {
         RandomSource randomsource = level.getRandom();
+        if ((spawnReason == EntitySpawnReason.NATURAL) && (!UndeadNights.serverState.getIsNaturalSpawningOk())) {
+            if (MainConfig.getPrintDebugMessages()) {
+                UndeadNights.LOGGER.info("Natural spawning of Elite Zombies is currently disabled. Discarding this spawn.");
+            }
+            this.discard();
+            return spawnGroupData;
+        }
         spawnGroupData = super.finalizeSpawn(level, difficulty, spawnReason, spawnGroupData);
         float f = difficulty.getSpecialMultiplier();
         this.setCanPickUpLoot(randomsource.nextFloat() < 0.55F * f);
@@ -222,21 +229,17 @@ public class EliteZombieEntity extends Zombie {
     }
 
     public static void initSpawnConditions() {
-        /*
-        SpawnRestriction.register(ModEntities.ELITE_ZOMBIE, SpawnLocationTypes.ON_GROUND, Heightmap.Type.MOTION_BLOCKING_NO_LEAVES,
-                (entityType, world, reason, pos, random) ->
-                        MainConfig.getEliteZombiesSpawnNaturally()
-                                && UndeadNights.serverState.getIsNaturalSpawningOk()
-                                && !(world.getBiome(pos).matchesKey(BiomeKeys.MUSHROOM_FIELDS))
-                                && world.getDifficulty() != Difficulty.PEACEFUL
-                                && HostileEntity.isSpawnDark(world, pos, random)
-                                && HostileEntity.canMobSpawn(entityType, world, reason, pos, random));
-
-        BiomeModifications.addSpawn(BiomeSelectors.foundInOverworld(),
-                SpawnGroup.MONSTER, ModEntities.ELITE_ZOMBIE, 9, 1, 1);
-         */
+        if (MainConfig.getEliteZombiesSpawnNaturally()) {
+            BiomeModifications.addSpawn(
+                    BiomeSelectors.foundInOverworld().and(BiomeSelectors.excludeByKey(Biomes.MUSHROOM_FIELDS, Biomes.DEEP_DARK)),
+                    MobCategory.MONSTER,
+                    ModEntities.ELITE_ZOMBIE,
+                    9, 1, 1
+            );
+        }
     }
 
+    /*
     public static boolean checkEliteZombieSpawnRules(EntityType<EliteZombieEntity> eliteZombieEntityType, ServerLevelAccessor serverLevel, EntitySpawnReason entitySpawnReason, BlockPos pos, RandomSource random) {
         return MainConfig.getEliteZombiesSpawnNaturally()
                 && UndeadNights.serverState.getIsNaturalSpawningOk()
@@ -245,6 +248,7 @@ public class EliteZombieEntity extends Zombie {
                 && Monster.isDarkEnoughToSpawn(serverLevel, pos, random)
                 && Mob.checkMobSpawnRules(eliteZombieEntityType, serverLevel, entitySpawnReason, pos, random);
     }
+     */
 
     @Override
     public void push(@NotNull Entity entity) {

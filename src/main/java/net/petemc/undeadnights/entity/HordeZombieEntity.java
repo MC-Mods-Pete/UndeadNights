@@ -1,6 +1,7 @@
 package net.petemc.undeadnights.entity;
 
-import net.minecraft.core.BlockPos;
+import net.fabricmc.fabric.api.biome.v1.BiomeModifications;
+import net.fabricmc.fabric.api.biome.v1.BiomeSelectors;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
@@ -47,6 +48,13 @@ public class HordeZombieEntity extends Zombie {
     @Override
     public SpawnGroupData finalizeSpawn(ServerLevelAccessor level, DifficultyInstance difficulty, EntitySpawnReason spawnReason, @Nullable SpawnGroupData spawnGroupData) {
         RandomSource randomsource = level.getRandom();
+        if ((spawnReason == EntitySpawnReason.NATURAL) && (!UndeadNights.serverState.getIsNaturalSpawningOk())) {
+            if (MainConfig.getPrintDebugMessages()) {
+                UndeadNights.LOGGER.info("Natural spawning of Horde Zombies is currently disabled. Discarding this spawn.");
+            }
+            this.discard();
+            return spawnGroupData;
+        }
         spawnGroupData = super.finalizeSpawn(level, difficulty, spawnReason, spawnGroupData);
         float f = difficulty.getSpecialMultiplier();
         this.setCanPickUpLoot(randomsource.nextFloat() < 0.55F * f);
@@ -250,22 +258,18 @@ public class HordeZombieEntity extends Zombie {
         Objects.requireNonNull(this.getAttribute(Attributes.SPAWN_REINFORCEMENTS_CHANCE)).setBaseValue((double)0.0F);
     }
 
-    public static void initSpawnCondition() {
-        /*
-        SpawnRestriction.register(ModEntities.HORDE_ZOMBIE, SpawnLocationTypes.ON_GROUND, Heightmap.Type.MOTION_BLOCKING_NO_LEAVES,
-                (entityType, world, reason, pos, random) ->
-                        MainConfig.getDemolitionZombiesSpawnNaturally()
-                                && UndeadNights.serverState.getIsNaturalSpawningOk()
-                                && !(world.getBiome(pos).matchesKey(BiomeKeys.MUSHROOM_FIELDS))
-                                && world.getDifficulty() != Difficulty.PEACEFUL
-                                && HostileEntity.isSpawnDark(world, pos, random)
-                                && HostileEntity.canMobSpawn(entityType, world, reason, pos, random));
-
-        BiomeModifications.addSpawn(BiomeSelectors.foundInOverworld(),
-                SpawnGroup.MONSTER, ModEntities.HORDE_ZOMBIE, 20, 2, 3);
-         */
+    public static void initSpawnConditions() {
+        if (MainConfig.getHordeZombiesSpawnNaturally()) {
+            BiomeModifications.addSpawn(
+                    BiomeSelectors.foundInOverworld().and(BiomeSelectors.excludeByKey(Biomes.MUSHROOM_FIELDS, Biomes.DEEP_DARK)),
+                    MobCategory.MONSTER,
+                    ModEntities.HORDE_ZOMBIE,
+                    20, 1, 3
+            );
+        }
     }
 
+    /*
     public static boolean checkHordeZombieSpawnRules(EntityType<HordeZombieEntity> hordeZombieEntityType, ServerLevelAccessor serverLevel, EntitySpawnReason entitySpawnReason, BlockPos pos, RandomSource random) {
         return MainConfig.getHordeZombiesSpawnNaturally()
                 && UndeadNights.serverState.getIsNaturalSpawningOk()
@@ -274,6 +278,7 @@ public class HordeZombieEntity extends Zombie {
                 && Monster.isDarkEnoughToSpawn(serverLevel, pos, random)
                 && Mob.checkMobSpawnRules(hordeZombieEntityType, serverLevel, entitySpawnReason, pos, random);
     }
+     */
 
     @Override
     public void push(@NotNull Entity entity) {

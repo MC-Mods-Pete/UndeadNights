@@ -51,6 +51,13 @@ public class DemolitionZombieEntity extends Zombie  {
     @Override
     public SpawnGroupData finalizeSpawn(ServerLevelAccessor level, @NotNull DifficultyInstance difficulty, @NotNull EntitySpawnReason spawnReason, @Nullable SpawnGroupData spawnGroupData) {
         RandomSource randomsource = level.getRandom();
+        if ((spawnReason == EntitySpawnReason.NATURAL) && (!UndeadNights.serverState.getIsNaturalSpawningOk())) {
+            if (MainConfig.getPrintDebugMessages()) {
+                UndeadNights.LOGGER.info("Natural spawning of Demolition Zombies is currently disabled. Discarding this spawn.");
+            }
+            this.discard();
+            return spawnGroupData;
+        }
         spawnGroupData = super.finalizeSpawn(level, difficulty, spawnReason, spawnGroupData);
         float f = difficulty.getSpecialMultiplier();
         this.setCanPickUpLoot(randomsource.nextFloat() < 0.55F * f);
@@ -277,21 +284,17 @@ public class DemolitionZombieEntity extends Zombie  {
     }
 
     public static void initSpawnConditions() {
-        /*
-        SpawnRestriction.register(ModEntities.DEMOLITION_ZOMBIE, SpawnLocationTypes.ON_GROUND, Heightmap.Type.MOTION_BLOCKING_NO_LEAVES,
-                (entityType, world, reason, pos, random) ->
-                        MainConfig.getDemolitionZombiesSpawnNaturally()
-                                && UndeadNights.serverState.getIsNaturalSpawningOk()
-                                && !(world.getBiome(pos).matchesKey(BiomeKeys.MUSHROOM_FIELDS))
-                                && world.getDifficulty() != Difficulty.PEACEFUL
-                                && HostileEntity.isSpawnDark(world, pos, random)
-                                && HostileEntity.canMobSpawn(entityType, world, reason, pos, random));
-
-        BiomeModifications.addSpawn(BiomeSelectors.foundInOverworld(),
-                SpawnGroup.MONSTER, ModEntities.DEMOLITION_ZOMBIE, 10, 1, 2);
-         */
+        if (MainConfig.getDemolitionZombiesSpawnNaturally()) {
+            BiomeModifications.addSpawn(
+                    BiomeSelectors.foundInOverworld().and(BiomeSelectors.excludeByKey(Biomes.MUSHROOM_FIELDS, Biomes.DEEP_DARK)),
+                    MobCategory.MONSTER,
+                    ModEntities.DEMOLITION_ZOMBIE,
+                    10, 1, 2
+            );
+        }
     }
 
+    /*
     public static boolean checkDemolitionZombieSpawnRules(EntityType<DemolitionZombieEntity> demolitionZombieEntityType, ServerLevelAccessor serverLevel, EntitySpawnReason entitySpawnReason, BlockPos pos, RandomSource random) {
         return MainConfig.getDemolitionZombiesSpawnNaturally()
                 && UndeadNights.serverState.getIsNaturalSpawningOk()
@@ -300,6 +303,7 @@ public class DemolitionZombieEntity extends Zombie  {
                 && Monster.isDarkEnoughToSpawn(serverLevel, pos, random)
                 && Mob.checkMobSpawnRules(demolitionZombieEntityType, serverLevel, entitySpawnReason, pos, random);
     }
+     */
 
     @Override
     public void push(Entity entity) {
