@@ -4,7 +4,7 @@
   "spawners": {
     "type": "undeadnights:horde_zombie",
     "weight": 20,
-    "minCount": 2,
+    "minCount": 1,
     "maxCount": 3
   }
 }

@@ -94,8 +94,8 @@ public class DemolitionZombieEntity extends Zombie  {
         }
 
         double healthScaleFactor = 0.0;
-        double damageScaleFactor = 0.0;
         double speedScaleFactor = 0.0;
+        double damageScaleFactor = 0.0;
         double armorScaleFactor = 0.0;
 
         if (UndeadNights.difficultyConfig.getDynamicScaling().isDynamicScalingEnabled()) {
@@ -108,7 +108,7 @@ public class DemolitionZombieEntity extends Zombie  {
 
             healthScaleFactor = healthScaleFactor + UndeadNights.serverState.getCurrentHealthScale();
             speedScaleFactor = speedScaleFactor + UndeadNights.serverState.getCurrentSpeedScale();
-            damageScaleFactor = damageScaleFactor + UndeadNights.serverState.getCurrentDayScaleCounter();
+            damageScaleFactor = damageScaleFactor + UndeadNights.serverState.getCurrentDamageScale();
             armorScaleFactor = armorScaleFactor + UndeadNights.serverState.getCurrentArmorScale();
 
             if (healthScaleFactor > UndeadNights.difficultyConfig.getDynamicScaling().getMaxHealthScale()) {
@@ -278,6 +278,7 @@ public class DemolitionZombieEntity extends Zombie  {
         return MainConfig.getDemolitionZombiesSpawnNaturally()
                 && UndeadNights.serverState.getIsNaturalSpawningOk()
                 && !(serverLevel.getBiome(pos).is(Biomes.MUSHROOM_FIELDS))
+                && !(serverLevel.getBiome(pos).is(Biomes.DEEP_DARK))
                 && serverLevel.getDifficulty() != Difficulty.PEACEFUL
                 && Monster.isDarkEnoughToSpawn(serverLevel, pos, random)
                 && Mob.checkMobSpawnRules(demolitionZombieEntityType, serverLevel, entitySpawnReason, pos, random);
