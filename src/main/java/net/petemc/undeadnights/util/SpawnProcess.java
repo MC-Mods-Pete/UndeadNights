@@ -40,8 +40,6 @@ import java.util.Objects;
 import java.util.Optional;
 
 public class SpawnProcess {
-    public static boolean invalidHordeMobEntry = false;
-
     // NOTE: x, z, d were previously static fields – this caused race conditions when multiple
     // players had hordes spawning concurrently. They are now local variables in
     // spawnHordeImplementation() so each call has its own independent state.
@@ -354,7 +352,7 @@ public class SpawnProcess {
         Optional<Holder.Reference<EntityType<?>>> optMobType = BuiltInRegistries.ENTITY_TYPE.get(Identifier.parse(mobSpawnData.mobId()));
         if (optMobType.isEmpty()) {
             invalidEntry = true;
-            invalidHordeMobEntry = true;
+            HordeSpawner.invalidHordeMobEntry = true;
             UndeadNights.LOGGER.warn("Spawning entry {} from the config file failed! Spawning default horde zombie instead.", mobSpawnData.mobId());
             optMobType = BuiltInRegistries.ENTITY_TYPE.get(Identifier.parse("undeadnights:horde_zombie"));
             if (optMobType.isEmpty()) {
@@ -434,7 +432,7 @@ public class SpawnProcess {
         DifficultyInstance localDifficulty = level.getCurrentDifficultyAt(player.blockPosition());
         try {
             if (entity instanceof Mob mob) {
-                mob.finalizeSpawn(level, localDifficulty, EntitySpawnReason.NATURAL, null);
+                mob.finalizeSpawn(level, localDifficulty, EntitySpawnReason.EVENT, null);
                 mob.setTarget(player);
 
                 // make vanilla zombies in hordes float on water and give ability to break blocks
@@ -539,14 +537,14 @@ public class SpawnProcess {
             }
             level.tryAddFreshEntityWithPassengers(entity);
         } catch (Exception e) {
-            invalidHordeMobEntry = true;
+            HordeSpawner.invalidHordeMobEntry = true;
             UndeadNights.LOGGER.warn("Spawning entry {} from the config file failed! Spawning default horde zombie instead.", mobSpawnData.mobId());
             HordeZombieEntity hZombie = new HordeZombieEntity(ModEntities.HORDE_ZOMBIE.get(), level);
             hZombie.setPos(pos.getX(), level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, pos.getX(), pos.getZ()), pos.getZ());
             if (MainConfig.getPersistentMobs()) {
                 hZombie.setPersistenceRequired();
             }
-            hZombie.finalizeSpawn(level, localDifficulty, EntitySpawnReason.NATURAL, null);
+            hZombie.finalizeSpawn(level, localDifficulty, EntitySpawnReason.EVENT, null);
             hZombie.setTarget(player);
             UndeadNights.serverState.spawnedHordeMobs.put(hZombie.getUUID(), hZombie.getUUID().toString());
             level.addFreshEntity(hZombie);
