@@ -3,7 +3,6 @@ package net.petemc.undeadnights.util;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.TagParser;
@@ -182,7 +181,12 @@ public class SpawnProcess {
                 }
                 int waveMobCounter = 0;
 
-                int scaledHordeSize = (int) Math.round(HordeConfig.getMaxWaveSize() * UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordes().getHordeSizeScaleFactor());
+
+                int scaledHordeSize = (int) Math.round(HordeConfig.getMaxWaveSize() * (1.0 + UndeadNights.serverState.getCurrentHordeScale()));
+                scaledHordeSize =     (int) Math.round(scaledHordeSize * UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordes().getHordeSizeScaleFactor());
+                if (scaledHordeSize < 1) {
+                    scaledHordeSize = 1;
+                }
                 if (MainConfig.getPrintDebugMessages()) {
                     UndeadNights.LOGGER.info("Scaled horde size: {}", scaledHordeSize);
                 }
@@ -276,7 +280,11 @@ public class SpawnProcess {
                             UndeadNights.LOGGER.info("Spawning {} {}", mobCount, mobSpawnData.mobId());
                         }
                     }
-                    int scaledMobCount = (int) Math.round(mobCount * UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordes().getHordeSizeScaleFactor());
+                    int scaledMobCount = (int) Math.round(mobCount * (1.0 + UndeadNights.serverState.getCurrentHordeScale()));
+                    scaledMobCount =     (int) Math.round(scaledMobCount * UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordes().getHordeSizeScaleFactor());
+                    if (scaledMobCount < 1) {
+                        scaledMobCount = 1;
+                    }
                     if (MainConfig.getPrintDebugMessages()) {
                         UndeadNights.LOGGER.info("Scaled mob count: {}", scaledMobCount);
                     }
@@ -321,7 +329,7 @@ public class SpawnProcess {
                         }
                     }
                     if (MainConfig.getPrintDebugMessages()) {
-                        UndeadNights.LOGGER.info("Horde was spawned for player {} (removing from horde lists)", player.getName().getString());
+                        UndeadNights.LOGGER.info("Horde with {} mobs was spawned for player {} (removing from horde lists)", spawnCounter, player.getName().getString());
                     }
                     //UndeadNights.serverState.entitiesWithPendingHorde.remove(player.getUUID());
                     //UndeadNights.serverState.entitiesWithReceivedHorde.add(player.getUUID());
@@ -539,9 +547,6 @@ public class SpawnProcess {
             UndeadNights.LOGGER.warn("Spawning entry {} from the config file failed! Spawning default horde zombie instead.", mobSpawnData.mobId());
             HordeZombieEntity hZombie = new HordeZombieEntity(ModEntities.HORDE_ZOMBIE.get(), level);
             hZombie.setPos(pos.getX(), level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, pos.getX(), pos.getZ()), pos.getZ());
-            if (MainConfig.getPersistentMobs()) {
-                hZombie.setPersistenceRequired();
-            }
             hZombie.finalizeSpawn(level, localDifficulty, MobSpawnType.EVENT, null);
             hZombie.setTarget(player);
             UndeadNights.serverState.spawnedHordeMobs.add(hZombie.getUUID());

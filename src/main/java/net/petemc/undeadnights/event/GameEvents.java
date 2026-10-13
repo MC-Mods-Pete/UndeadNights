@@ -185,7 +185,7 @@ public class GameEvents {
     public static void onLevelTick(LevelTickEvent.Post event) {
         if (!event.getLevel().isClientSide() && event.getLevel() instanceof ServerLevel serverLevel) {
             boolean spawnMonsters = serverLevel.getGameRules().getBoolean(GameRules.RULE_DOMOBSPAWNING);
-            UndeadNights.hordeSpawner.tick(serverLevel, spawnMonsters, true);
+            UndeadNights.hordeSpawner.tick(serverLevel, spawnMonsters);
         }
     }
 }

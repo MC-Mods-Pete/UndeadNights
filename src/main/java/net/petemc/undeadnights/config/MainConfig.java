@@ -67,8 +67,6 @@ public class MainConfig
 
     public static boolean getPreventDespawnWhenInsideMaxTrackingRange() { return preventDespawnWhenInsideMaxTrackingRange; }
 
-    public static boolean getPersistentMobs() { return persistentMobs; }
-
     public static boolean getSecurityCraftCompatibility() {
         return securityCraftCompatibility;
     }
@@ -181,10 +179,6 @@ public class MainConfig
             .comment("If true, horde mobs will not despawn when closer than the max tracking range | default: false")
             .define("preventDespawnWhenInsideMaxTrackingRange", false);
 
-    private static final ModConfigSpec.BooleanValue PERSISTENT_MOBS = BUILDER_SERVER
-            .comment("If true, the horde zombies will be persistent and not despawn | default: false")
-            .define("persistentMobs", false);
-
     private static final ModConfigSpec.BooleanValue SECURITY_CRAFT_COMPATIBILITY = BUILDER_SERVER
             .comment("If true, Horde Zombies are not able to break reinforced blocks from the Security Craft mod | default: false")
             .define("securityCraftCompatibility", false);
@@ -251,7 +245,6 @@ public class MainConfig
     private static boolean hordeNightsDisableSleeping = true;
     private static boolean enableAutomaticDifficultyProgression = true;
     private static boolean preventDespawnWhenInsideMaxTrackingRange = false;
-    private static boolean persistentMobs = false;
     private static boolean securityCraftCompatibility = false;
     private static boolean hordeZombiesSpawnNaturally = true;
     private static boolean eliteZombiesSpawnNaturally = true;
@@ -285,7 +278,6 @@ public class MainConfig
             hordeNightsDisableSleeping = HORDE_NIGHTS_DISABLE_SLEEPING.get();
             enableAutomaticDifficultyProgression = ENABLE_AUTOMATIC_DIFFICULTY_PROGRESSION.get();
             preventDespawnWhenInsideMaxTrackingRange = PREVENT_DESPAWN_WHEN_INSIDE_MAX_TRACKING_RANGE.get();
-	        persistentMobs = PERSISTENT_MOBS.get();
             securityCraftCompatibility = SECURITY_CRAFT_COMPATIBILITY.get();
             hordeZombiesSpawnNaturally = HORDE_ZOMBIES_SPAWN_NATURALLY.get();
             eliteZombiesSpawnNaturally = ELITE_ZOMBIES_SPAWN_NATURALLY.get();

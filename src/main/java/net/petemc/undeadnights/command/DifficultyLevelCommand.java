@@ -52,6 +52,7 @@ public class DifficultyLevelCommand {
             + "Current speed scaling: +" + String.format("%.1f", UndeadNights.serverState.getCurrentSpeedScale()*100) + "%\n"
             + "Current damage scaling: +" + String.format("%.1f", UndeadNights.serverState.getCurrentDamageScale()*100) + "%\n"
             + "Current armor scaling: +" + String.format("%.1f", UndeadNights.serverState.getCurrentArmorScale()*100) + "%\n"
+            + "Current horde scaling: +" + String.format("%.1f", UndeadNights.serverState.getCurrentHordeScale()*100) + "%\n"
             ));
         return 1;
     }

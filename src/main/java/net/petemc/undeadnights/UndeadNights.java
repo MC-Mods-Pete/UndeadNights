@@ -95,6 +95,19 @@ public class UndeadNights {
 
 		UndeadNights.serverState = StateSaverAndLoader.getServerState(event.getServer());
 
+		if (!DifficultyConfigLoader.configWasNewlyCreated) {
+			int newDifficultyConfigVersion = DifficultyConfig.getCurrentDifficultyConfigVersion();
+			if (UndeadNights.difficultyConfig.getDifficultyConfigVersion() < newDifficultyConfigVersion) {
+				UndeadNights.LOGGER.info("Difficulty config file version is outdated {}, updating to new version {}", UndeadNights.difficultyConfig.getDifficultyConfigVersion(), newDifficultyConfigVersion);
+				boolean configWasUpdated = DifficultyConfigLoader.checkAndFillDynamicScalingAndFirstLevelInConfigFile();
+				if (configWasUpdated) {
+					UndeadNights.LOGGER.info("Difficulty config file was updated to new version, please check the config file for new settings.");
+				}
+			}
+			DifficultyConfigLoader.updateDifficultyConfigVersionInFile(newDifficultyConfigVersion);
+		}
+
+
 		// TODO remove, only for testing
 		//UndeadNights.serverState.setFirstDifficultyLevelPrinted(false);
 		//UndeadNights.serverState.setCurrentDifficultyLevelIndex(0);
@@ -128,6 +141,8 @@ public class UndeadNights {
 		// check if the Grace Period in the config was changed
 		if (UndeadNights.serverState.getLastMaxGracePeriod() != MainConfig.getGracePeriodBeforeFirstHordeNight()) {
 			UndeadNights.serverState.setGracePeriod(MainConfig.getGracePeriodBeforeFirstHordeNight());
+			UndeadNights.serverState.setDaysCounter(UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeNights().getDaysBetweenHordeNights());
+			UndeadNights.serverState.setIsNaturalSpawningOk(false);
 			UndeadNights.serverState.setLastMaxGracePeriod(MainConfig.getGracePeriodBeforeFirstHordeNight());
 		}
 

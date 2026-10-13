@@ -46,8 +46,6 @@
   "text.autoconfig.undeadnights.option.hordeWavesCanSpawnOnTrees.@Tooltip": "Если включено, волны орды смогут появляться на деревьях | по умолчанию: отключено",
   "text.autoconfig.undeadnights.option.hordeNightsDisableSleeping": "Не позволять игрокам спать во время ночей орды",
   "text.autoconfig.undeadnights.option.hordeNightsDisableSleeping.@Tooltip": "Если включено, игроки не могут спать во время ночей орды | по умолчанию: включено",
-  "text.autoconfig.undeadnights.option.persistentMobs": "Сделать мобов орды постоянными",
-  "text.autoconfig.undeadnights.option.persistentMobs.@Tooltip": "Если включено, мобы орды будут постоянными и не будут исчезать с течением времени | по умолчанию: отключено",
   "text.autoconfig.undeadnights.option.hordeZombiesBurnInDaylight": "Должны ли зомби орды гореть при дневном свете",
   "text.autoconfig.undeadnights.option.hordeZombiesBurnInDaylight.@Tooltip": "Если включено, зомби орды (только те, которые добавлены этим модом) будут гореть при дневном свете | по умолчанию: отключено",
   "text.autoconfig.undeadnights.option.printDebugMessages": "Регистрировать отладочные сообщения",

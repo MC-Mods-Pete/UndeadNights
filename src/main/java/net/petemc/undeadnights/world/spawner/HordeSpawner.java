@@ -7,7 +7,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.level.CustomSpawner;
 import net.minecraft.world.level.Level;
 import net.petemc.undeadnights.UndeadNights;
 import net.petemc.undeadnights.casts.UndeadNightsExtendedPlayer;
@@ -19,14 +18,13 @@ import net.petemc.undeadnights.util.CaveSpawnSearchTask;
 import net.petemc.undeadnights.util.RandomExtention;
 import net.petemc.undeadnights.util.SpawnLocationFinder;
 import net.petemc.undeadnights.util.SpawnProcess;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
-public class HordeSpawner implements CustomSpawner {
+public class HordeSpawner {
     public static boolean invalidHordeMobEntry = false;
     public static int hordeIdFromHordesConfig = 1;
 
@@ -55,7 +53,7 @@ public class HordeSpawner implements CustomSpawner {
         // • After spawning, the zombie calls setTarget(player) and navigates dynamically.
         boolean playerInCave = false;
 
-        HordeSpawner.invalidHordeMobEntry = false;
+        invalidHordeMobEntry = false;
 
         if (MainConfig.getHordeWavesCanSpawnInCaves()) {
             if (player instanceof UndeadNightsExtendedPlayer ext) {
@@ -109,8 +107,7 @@ public class HordeSpawner implements CustomSpawner {
     }
 
 
-    @Override
-    public int tick(@NotNull ServerLevel level, boolean spawnMonsters, boolean spawnAnimals) {
+    public int tick(ServerLevel level, boolean spawnMonsters) {
         // check if Horde Nights is enabled
         if (level.isClientSide()) {
             return 0;
@@ -136,49 +133,13 @@ public class HordeSpawner implements CustomSpawner {
             return 0;
         }
 
-        // calculate normalized time of day and set "Is It Night" flag
-        long normalizedTimeOfDay = level.getDayTime() - ((level.getDayTime() / 24000L) * 24000);
-        if (UndeadNights.serverState.getPrevNormalizedTimeOfDay() == normalizedTimeOfDay) {
-            return 0;
-        }
-        UndeadNights.serverState.setNightIsStarting((UndeadNights.serverState.getPrevNormalizedTimeOfDay() <  12000L) && (normalizedTimeOfDay >= 12000L));
-        UndeadNights.serverState.setPrevNormalizedTimeOfDay(normalizedTimeOfDay);
-
-        boolean itIsNight = normalizedTimeOfDay >= 12000 && normalizedTimeOfDay < 22500;
-        boolean allDayLong = (UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeNights().getAllDayLongHordeNights() && UndeadNights.serverState.getHordeNight() && (normalizedTimeOfDay >= 22500 || normalizedTimeOfDay < 11000));
-
-        // create a random source
+        // create a random source (needed before the time-guard so pending hordes can be processed)
         final RandomExtention randomSource = new RandomExtention();
-        int randomValue = 0;
 
-        boolean withinBossHordeTime = false;
-        if (UndeadNights.serverState.getHordeNight()) {
-            if (UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeNights().getAllDayLongHordeNights()) {
-                withinBossHordeTime = (UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordes().getBossHordeEnabled() &&
-                        (normalizedTimeOfDay >= 9800 && normalizedTimeOfDay < 11000));
-            } else {
-                withinBossHordeTime = (UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordes().getBossHordeEnabled() &&
-                        (normalizedTimeOfDay >= 21300 && normalizedTimeOfDay < 22500));
-            }
-            if ((withinBossHordeTime) && !UndeadNights.serverState.isSpawnBossHorde()) {
-                if (bossHordeTime <= normalizedTimeOfDay) {
-                    UndeadNights.serverState.setSpawnBossHorde(true);
-                    List<ServerPlayer> players = level.getPlayers(LivingEntity::isAlive);
-                    if (!players.isEmpty()) {
-                        Collections.shuffle(players);
-                        randomValue = randomSource.nextInt(players.size());
-                        ServerPlayer player = players.get(randomValue);
-
-                        UndeadNights.serverState.entitiesWithPendingHorde.add(player.getUUID());
-                        UndeadNights.serverState.entitiesWithPendingWave.add(player.getUUID());
-                        UndeadNights.serverState.entitiesWithReceivedHorde.remove(player.getUUID());
-                        if (MainConfig.getPrintDebugMessages()) {
-                            UndeadNights.LOGGER.info("Boss Horde Wave is spawning, NormalizedTimeOfDay: {}, BossHordeTime: {}", normalizedTimeOfDay, bossHordeTime);
-                        }
-                    }
-                }
-            }
-        }
+        // ── Tick-based processing – runs every tick, independent of game time ────────
+        // This block MUST be placed before the normalizedTimeOfDay guard so that
+        // CaveSpawnSearchTask continues advancing (and hordes eventually spawn) even
+        // when doDaylightCycle=false freezes the game clock.
 
         // process pending horde spawns per player
         if (!UndeadNights.serverState.entitiesWithPendingHorde.isEmpty()) {
@@ -224,6 +185,50 @@ public class HordeSpawner implements CustomSpawner {
             }
         }
 
+        // ── Time-based processing – only runs when the game clock actually advances ──
+        // calculate normalized time of day and set "Is It Night" flag
+        long normalizedTimeOfDay = level.getDayTime() - ((level.getDayTime() / 24000L) * 24000);
+        if (UndeadNights.serverState.getPrevNormalizedTimeOfDay() == normalizedTimeOfDay) {
+            return 0;
+        }
+        UndeadNights.serverState.setNightIsStarting((UndeadNights.serverState.getPrevNormalizedTimeOfDay() <  12000L) && (normalizedTimeOfDay >= 12000L));
+        UndeadNights.serverState.setPrevNormalizedTimeOfDay(normalizedTimeOfDay);
+
+        boolean itIsNight = normalizedTimeOfDay >= 12000 && normalizedTimeOfDay < 22500;
+        boolean allDayLong = (UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeNights().getAllDayLongHordeNights() && UndeadNights.serverState.getHordeNight() && (normalizedTimeOfDay >= 22500 || normalizedTimeOfDay < 11000));
+
+        int randomValue = 0;
+
+        boolean withinBossHordeTime = false;
+        if (UndeadNights.serverState.getHordeNight()) {
+            if (UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeNights().getAllDayLongHordeNights()) {
+                withinBossHordeTime = (UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordes().getBossHordeEnabled() &&
+                        (normalizedTimeOfDay >= 9800 && normalizedTimeOfDay < 11000));
+            } else {
+                withinBossHordeTime = (UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordes().getBossHordeEnabled() &&
+                        (normalizedTimeOfDay >= 21300 && normalizedTimeOfDay < 22500));
+            }
+            if ((withinBossHordeTime) && !UndeadNights.serverState.isSpawnBossHorde()) {
+                if (bossHordeTime <= normalizedTimeOfDay) {
+                    UndeadNights.serverState.setSpawnBossHorde(true);
+                    List<ServerPlayer> players = level.getPlayers(LivingEntity::isAlive);
+                    if (!players.isEmpty()) {
+                        Collections.shuffle(players);
+                        randomValue = randomSource.nextInt(players.size());
+                        ServerPlayer player = players.get(randomValue);
+
+                        UndeadNights.serverState.entitiesWithPendingHorde.add(player.getUUID());
+                        UndeadNights.serverState.entitiesWithPendingWave.add(player.getUUID());
+                        UndeadNights.serverState.entitiesWithReceivedHorde.remove(player.getUUID());
+                        if (MainConfig.getPrintDebugMessages()) {
+                            UndeadNights.LOGGER.info("Boss Horde Wave is spawning, NormalizedTimeOfDay: {}, BossHordeTime: {}", normalizedTimeOfDay, bossHordeTime);
+                        }
+                    }
+                }
+            }
+        }
+
+
         // is it night...?
         if (itIsNight || allDayLong) {
             UndeadNights.serverState.setPerformDifficultySwitchCheck(true);
@@ -240,6 +245,12 @@ public class HordeSpawner implements CustomSpawner {
                 if (!UndeadNights.serverState.isSpawnBossHorde() && !withinBossHordeTime) {
                     randomValue = randomSource.nextIntBetweenInclusive(1, 100);
                     if (randomValue > (100 - UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeNights().getChanceForAdditionalWave())) {
+                        if (UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeNights().isRequirePreviousWaveClear() && (UndeadNights.globalSpawnCounter > 0)) {
+                            if (MainConfig.getPrintDebugMessages()) {
+                                UndeadNights.LOGGER.info("New Wave, but previous wave not cleared, randomValue was: {}", randomValue);
+                            }
+                            return 0;
+                        }
                         if (MainConfig.getPrintDebugMessages()) {
                             UndeadNights.LOGGER.info("New Wave, randomValue was: {}", randomValue);
                         }
@@ -318,7 +329,8 @@ public class HordeSpawner implements CustomSpawner {
                 }
 
                 // spawn stray horde zombies
-                if ((MainConfig.getHordeZombiesSpawnNaturally() && (UndeadNights.globalSpawnCounter < MainConfig.getHordeMobsSpawnCap())) && !UndeadNights.serverState.isSpawnBossHorde()) {
+                if ((MainConfig.getHordeZombiesSpawnNaturally() && UndeadNights.serverState.getIsNaturalSpawningOk() && (UndeadNights.globalSpawnCounter < MainConfig.getHordeMobsSpawnCap()))
+                        && !UndeadNights.serverState.isSpawnBossHorde()) {
                     if (UndeadNights.serverState.getTickCounter() > 0) {
                         UndeadNights.serverState.setTickCounter(UndeadNights.serverState.getTickCounter() - 1);
                         return 0;
@@ -331,12 +343,15 @@ public class HordeSpawner implements CustomSpawner {
                     for (ServerPlayer player : level.getPlayers(LivingEntity::isAlive)) {
                         BlockPos pos = SpawnLocationFinder.getBlockPosWithDistance(player.blockPosition(), level, MainConfig.getDistanceMin(), MainConfig.getDistanceMax());
                         if (!SpawnLocationFinder.checkSpawnLocation(level, pos.getX(), pos.getY() - 1, pos.getZ())) {
-                            return 0;
-                        } else {
-                            SpawnProcess.spawnHordeMob(level, randomSource, pos, player, new HordeConfig.MobSpawnData("undeadnights:horde_zombie",100, 0, 0, UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeMobs().getHordeMobsTrackingRange(), "none", ""));
+                            // Bad spawn location for this player – skip them, but still try remaining players.
                             if (MainConfig.getPrintDebugMessages()) {
-                                UndeadNights.LOGGER.info("A stray horde zombie spawned!");
+                                UndeadNights.LOGGER.info("Stray zombie spawn check failed for player {}, skipping.", player.getName().getString());
                             }
+                            continue;
+                        }
+                        SpawnProcess.spawnHordeMob(level, randomSource, pos, player, new HordeConfig.MobSpawnData("undeadnights:horde_zombie", 100, 0, 0, UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeMobs().getHordeMobsTrackingRange(), "none", ""));
+                        if (MainConfig.getPrintDebugMessages()) {
+                            UndeadNights.LOGGER.info("A stray horde zombie spawned for player {}!", player.getName().getString());
                         }
                     }
                 }
