@@ -22,7 +22,6 @@ import net.neoforged.neoforge.event.entity.EntityLeaveLevelEvent;
 import net.neoforged.neoforge.event.entity.player.CanPlayerSleepEvent;
 import net.neoforged.neoforge.event.tick.EntityTickEvent;
 import net.neoforged.neoforge.event.tick.LevelTickEvent;
-import net.neoforged.neoforge.server.command.ConfigCommand;
 import net.petemc.undeadnights.UndeadNights;
 import net.petemc.undeadnights.casts.BlockBreakingZombie;
 import net.petemc.undeadnights.command.*;
@@ -112,8 +111,6 @@ public class GameEvents {
         new StatusCommand(event.getDispatcher());
         new SetDefaultHordeCommand(event.getDispatcher());
         new DifficultyLevelCommand(event.getDispatcher());
-
-            ConfigCommand.register(event.getDispatcher());
     }
 
 

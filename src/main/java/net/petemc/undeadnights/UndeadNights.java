@@ -61,7 +61,8 @@ public class UndeadNights {
 		modEventBus.addListener(this::addCreative);
 
         // Load configs
-		modContainer.registerConfig(ModConfig.Type.SERVER, MainConfig.SPEC_SERVER);
+		// NeoForge 26.3 replaced ModConfig.Type.SERVER with SYNCED; keep the old file name so existing configs keep working
+		modContainer.registerConfig(ModConfig.Type.SYNCED, MainConfig.SPEC_SERVER, MOD_ID + "-server.toml");
 		HordeConfig.loadConfig();
         DifficultyConfigLoader.loadConfig();
 	}
