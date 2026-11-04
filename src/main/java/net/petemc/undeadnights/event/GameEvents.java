@@ -11,16 +11,12 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.goal.FloatGoal;
 import net.minecraft.world.entity.monster.zombie.Zombie;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.alchemy.PotionBrewing;
-import net.minecraft.world.item.alchemy.Potions;
-import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
-import net.neoforged.neoforge.event.brewing.RegisterBrewingRecipesEvent;
 import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 import net.neoforged.neoforge.event.entity.EntityLeaveLevelEvent;
 import net.neoforged.neoforge.event.entity.player.CanPlayerSleepEvent;
@@ -35,11 +31,8 @@ import net.petemc.undeadnights.entity.DemolitionZombieEntity;
 import net.petemc.undeadnights.entity.EliteZombieEntity;
 import net.petemc.undeadnights.entity.HordeZombieEntity;
 import net.petemc.undeadnights.entity.ai.goal.BreakBlockGoal;
-import net.petemc.undeadnights.item.ModItems;
-import net.petemc.undeadnights.potion.ModPotions;
 import net.petemc.undeadnights.util.ModTags;
 
-import java.util.Comparator;
 import java.util.List;
 
 @EventBusSubscriber(modid = UndeadNights.MOD_ID)
@@ -121,14 +114,7 @@ public class GameEvents {
         new DifficultyLevelCommand(event.getDispatcher());
 
             ConfigCommand.register(event.getDispatcher());
-        }
-
-        @SubscribeEvent
-        public static void onRegisterBrewingRecipes(RegisterBrewingRecipesEvent event) {
-            PotionBrewing.Builder builder = event.getBuilder();
-            builder.addMix(Potions.AWKWARD, ModItems.SLIMY_ROTTEN_FLESH.get(), ModPotions.LURE_HORDE_POTION);
-            builder.addMix(ModPotions.LURE_HORDE_POTION, ModItems.SLIMY_ROTTEN_FLESH.get(), ModPotions.STRONG_LURE_HORDE_POTION);
-        }
+    }
 
 
     @SubscribeEvent

@@ -16,12 +16,12 @@ public class ModEvents {
     @SubscribeEvent
     public static void spawnPlacementEvent(RegisterSpawnPlacementsEvent event) {
         event.register(ModEntities.HORDE_ZOMBIE.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
-                HordeZombieEntity::checkHordeZombieSpawnRules, RegisterSpawnPlacementsEvent.Operation.OR);
+                HordeZombieEntity::checkHordeZombieSpawnRules, RegisterSpawnPlacementsEvent.Operation.REPLACE);
 
         event.register(ModEntities.ELITE_ZOMBIE.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
-                EliteZombieEntity::checkEliteZombieSpawnRules, RegisterSpawnPlacementsEvent.Operation.OR);
+                EliteZombieEntity::checkEliteZombieSpawnRules, RegisterSpawnPlacementsEvent.Operation.REPLACE);
 
         event.register(ModEntities.DEMOLITION_ZOMBIE.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
-                DemolitionZombieEntity::checkDemolitionZombieSpawnRules, RegisterSpawnPlacementsEvent.Operation.OR);
+                DemolitionZombieEntity::checkDemolitionZombieSpawnRules, RegisterSpawnPlacementsEvent.Operation.REPLACE);
     }
 }

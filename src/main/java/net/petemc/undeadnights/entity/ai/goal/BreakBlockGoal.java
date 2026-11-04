@@ -8,6 +8,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.monster.zombie.Zombie;
+import net.minecraft.world.item.component.SwingAnimation;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.AirBlock;
 import net.minecraft.world.level.block.Block;
@@ -66,7 +67,7 @@ public class BreakBlockGoal extends Goal {
     @Override
     public void tick() {
         breakProgress += breakProgressPerTick;
-        mob.swing(InteractionHand.MAIN_HAND);
+        mob.swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT);
         if (breakProgress >= scaledTargetDestroyTime) {
             mob.level().destroyBlock(this.targetBlock, true);
             return;
