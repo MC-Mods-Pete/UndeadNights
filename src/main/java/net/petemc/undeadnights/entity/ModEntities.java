@@ -37,15 +37,8 @@ public class ModEntities {
                     .setTrackingRange(64)
                     .setUpdateInterval(1)
                     .sized(0.5F, 0.5F)
+                    .noSummon()
                     .build(ResourceKey.create(Registries.ENTITY_TYPE, ResourceLocation.fromNamespaceAndPath(UndeadNights.MOD_ID,"tnt_projectile"))));
-
-    /*
-    public static void initModEntities() {
-        HordeZombieEntity.init();
-        EliteZombieEntity.init();
-        DemolitionZombieEntity.init();
-    }
-     */
 
     public static void register(IEventBus eventBus) {
         ENTITY_TYPES.register(eventBus);
