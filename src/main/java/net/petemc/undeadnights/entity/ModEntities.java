@@ -55,7 +55,7 @@ public class ModEntities {
                     .build(keyTntProjectile));
 
     public static void initModEntities() {
-        HordeZombieEntity.initSpawnCondition();
+        HordeZombieEntity.initSpawnConditions();
         EliteZombieEntity.initSpawnConditions();
         DemolitionZombieEntity.initSpawnConditions();
     }
