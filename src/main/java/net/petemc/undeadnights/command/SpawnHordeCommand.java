@@ -7,6 +7,7 @@ import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
 import net.petemc.undeadnights.UndeadNights;
 import net.petemc.undeadnights.config.MainConfig;
 
@@ -14,8 +15,7 @@ import java.util.Collection;
 import java.util.Objects;
 
 public class SpawnHordeCommand {
-    public static boolean spawnHorde = false;
-    public static Collection<? extends Entity> entities = null;
+    public static boolean spawnHordeByCommand = false;
 
     public SpawnHordeCommand(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(Commands.literal("undeadnights")
@@ -34,10 +34,19 @@ public class SpawnHordeCommand {
 
     private int spawnHorde(CommandSourceStack source) throws CommandSyntaxException {
         if (UndeadNights.globalSpawnCounter < MainConfig.getHordeMobsSpawnCap()) {
-            spawnHorde = true;
             Objects.requireNonNull(source.getEntity()).sendMessage(Component.nullToEmpty("Trying to spawn hordes for all available players"), source.getEntity().getUUID());
             if (MainConfig.getPrintDebugMessages()) {
                 UndeadNights.LOGGER.info("Command to spawn hordes for all players issued.");
+                if (MainConfig.getHordeWavesCanSpawnInCaves()) {
+                    Objects.requireNonNull(source.getEntity()).sendMessage(Component.nullToEmpty("Note: Cave spawning is ENABLED for hordes. Finding a spawn location may take longer."), source.getEntity().getUUID());
+                }
+            }
+            spawnHordeByCommand = true;
+            for (Entity entity : source.getLevel().players()) {
+                if (entity instanceof Player) {
+                    UndeadNights.serverState.entitiesWithPendingHorde.add(entity.getUUID());
+                    UndeadNights.serverState.entitiesWithReceivedHorde.remove(entity.getUUID());
+                }
             }
         } else {
             Objects.requireNonNull(source.getEntity()).sendMessage(Component.nullToEmpty("Spawning horde mobs not possible, spawncap reached."), source.getEntity().getUUID());
@@ -47,8 +56,15 @@ public class SpawnHordeCommand {
 
     private int spawnHorde(CommandSourceStack source, Collection<? extends Entity> pTargets) throws CommandSyntaxException {
         if (UndeadNights.globalSpawnCounter < MainConfig.getHordeMobsSpawnCap()) {
-            spawnHorde = true;
-            entities = pTargets;
+            spawnHordeByCommand = true;
+            if (!pTargets.isEmpty()) {
+                for (Entity entity : pTargets) {
+                    if (entity instanceof Player) {
+                        UndeadNights.serverState.entitiesWithPendingHorde.add(entity.getUUID());
+                        UndeadNights.serverState.entitiesWithReceivedHorde.remove(entity.getUUID());
+                    }
+                }
+            }
             Objects.requireNonNull(source.getEntity()).sendMessage(Component.nullToEmpty("Trying to spawn hordes for given players"), source.getEntity().getUUID());
             if (MainConfig.getPrintDebugMessages()) {
                 UndeadNights.LOGGER.info("Command to spawn hordes for certain players issued.");

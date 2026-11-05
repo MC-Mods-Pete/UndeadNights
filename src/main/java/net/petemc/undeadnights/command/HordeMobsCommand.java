@@ -11,7 +11,7 @@ import net.minecraft.world.entity.Entity;
 import net.petemc.undeadnights.UndeadNights;
 import net.petemc.undeadnights.config.HordeConfig;
 import net.petemc.undeadnights.config.MainConfig;
-import net.petemc.undeadnights.world.spawner.UndeadSpawner;
+import net.petemc.undeadnights.world.spawner.HordeSpawner;
 
 import java.util.Objects;
 
@@ -113,7 +113,7 @@ public class HordeMobsCommand {
         }
         Objects.requireNonNull(source.getEntity())
                 .sendMessage(Component.nullToEmpty(message.toString()), source.getEntity().getUUID());
-        if (UndeadSpawner.invalidHordeMobEntry) {
+        if (HordeSpawner.invalidHordeMobEntry) {
             Objects.requireNonNull(source.getEntity())
                     .sendMessage(Component.nullToEmpty("A horde mob entry in the horde mob config could not be read!\nA default horde zombie will be spawned instead.\n" +
                             "Please check: https://github.com/MC-Mods-Pete/UndeadNights/wiki").copy().withStyle(ChatFormatting.RED), source.getEntity().getUUID());
