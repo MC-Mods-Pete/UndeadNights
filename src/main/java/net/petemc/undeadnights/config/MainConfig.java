@@ -105,7 +105,7 @@ public class MainConfig
         return printDebugMessages;
     }
 
-    public static boolean getDebugMakeHordeMobsGlow() { return true; }//debugMakeHordeMobsGlow; }
+    public static boolean getDebugMakeHordeMobsGlow() { return debugMakeHordeMobsGlow; }
 
     // Server Config
     private static final ForgeConfigSpec.Builder BUILDER_SERVER = new ForgeConfigSpec.Builder();
