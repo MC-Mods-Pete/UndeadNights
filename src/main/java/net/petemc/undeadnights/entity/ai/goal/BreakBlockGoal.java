@@ -22,7 +22,7 @@ import net.petemc.undeadnights.entity.HordeZombieEntity;
 
 public class BreakBlockGoal extends Goal {
     private final Zombie mob;
-    private final float breakProgressPerTick = 0.04f;
+    private final float breakProgressPerTick = 0.05f;
     private BlockPos targetBlock;
     private float scaledTargetDestroyTime;
     private float breakProgress;
@@ -107,7 +107,7 @@ public class BreakBlockGoal extends Goal {
             return false;
         }
 
-        if (this.mob.getRandom().nextFloat() < 0.5F) {
+        if (this.mob.getRandom().nextFloat() < 0.4F) {
             return false;
         }
 
@@ -142,9 +142,9 @@ public class BreakBlockGoal extends Goal {
 
         targetBlock = blockPos;
         float destroyTime = world.getBlockState(targetBlock).getBlock().defaultDestroyTime();
-        scaledTargetDestroyTime = destroyTime * 2;
+        scaledTargetDestroyTime = destroyTime * 1.5f;
         if (MainConfig.getPrintDebugMessages()) {
-            UndeadNights.LOGGER.info("Block: {} destroyTime: {} Stage: {}", world.getBlockState(targetBlock).getBlock(), world.getBlockState(targetBlock).getBlock().defaultDestroyTime(), MainConfig.getZombiesBlockBreakTier());
+            UndeadNights.LOGGER.info("Block: {} destroyTime: {} Stage: {}", world.getBlockState(targetBlock).getBlock(), world.getBlockState(targetBlock).getBlock().defaultDestroyTime(), UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeMobs().getBlockBreakingTier());
         }
 
         if (block instanceof DoorBlock) {

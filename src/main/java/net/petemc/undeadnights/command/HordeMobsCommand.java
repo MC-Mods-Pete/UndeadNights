@@ -12,7 +12,7 @@ import net.minecraft.world.entity.Entity;
 import net.petemc.undeadnights.UndeadNights;
 import net.petemc.undeadnights.config.HordeConfig;
 import net.petemc.undeadnights.config.MainConfig;
-import net.petemc.undeadnights.world.spawner.UndeadSpawner;
+import net.petemc.undeadnights.world.spawner.HordeSpawner;
 
 public class HordeMobsCommand {
     public static boolean hordeZombiesCanBreakBlocks = false;
@@ -62,9 +62,9 @@ public class HordeMobsCommand {
 
     private int removeMobs(CommandSourceStack source) throws CommandSyntaxException {
         int count = 0;
-        if (source.getEntity() instanceof ServerPlayer serverPlayer) {
-            serverPlayer.sendSystemMessage(Component.translatable("message.undeadnights.command_remove_horde_mobs"));
-        }
+         if (source.getEntity() instanceof ServerPlayer serverPlayer) {
+                serverPlayer.sendSystemMessage(Component.translatable("message.undeadnights.command_remove_horde_mobs"));
+         }
         for (var hordeMobUUID : UndeadNights.serverState.spawnedHordeMobs.keySet().stream().toList()) {
             count++;
             Entity entity = source.getLevel().getEntities().get(hordeMobUUID);
@@ -113,9 +113,9 @@ public class HordeMobsCommand {
                 }
             }
             serverPlayer.sendSystemMessage(Component.literal(message.toString()));
-            if (UndeadSpawner.invalidHordeMobEntry) {
+            if (HordeSpawner.invalidHordeMobEntry) {
                 serverPlayer.sendSystemMessage(Component.literal("A horde mob entry in the horde mob config could not be read!\nA default horde zombie will be spawned instead.\n" +
-                        "Please check: https://github.com/MC-Mods-Pete/UndeadNights/wiki").withStyle(ChatFormatting.YELLOW));
+                                "Please check: https://github.com/MC-Mods-Pete/UndeadNights/wiki").withStyle(ChatFormatting.YELLOW));
             }
         }
         return 0;

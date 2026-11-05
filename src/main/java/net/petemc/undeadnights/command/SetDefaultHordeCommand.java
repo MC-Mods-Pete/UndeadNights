@@ -10,7 +10,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.petemc.undeadnights.UndeadNights;
 import net.petemc.undeadnights.config.HordeConfig;
 import net.petemc.undeadnights.config.MainConfig;
-import net.petemc.undeadnights.world.spawner.UndeadSpawner;
+import net.petemc.undeadnights.world.spawner.HordeSpawner;
 
 public class SetDefaultHordeCommand {
     public SetDefaultHordeCommand(CommandDispatcher<CommandSourceStack> dispatcher) {
@@ -27,14 +27,14 @@ public class SetDefaultHordeCommand {
         String message = null;
         if (HordeConfig.getConfigVariant() == 2) {
             if ((defaultHordeId > HordeConfig.getHordes().size()) || (defaultHordeId < 0)) {
-                UndeadSpawner.hordeToSpawn = 1;
+                HordeSpawner.hordeIdFromHordesConfig = 1;
                 message = "Not a valid hordeId, value set to 1";
             } else {
-                UndeadSpawner.hordeToSpawn = defaultHordeId;
+                HordeSpawner.hordeIdFromHordesConfig = defaultHordeId;
                 message = "Set default horde to " + defaultHordeId + "\nPlease note: after a server restart this will be reverted to the value in the config file.";
             }
         } else {
-            UndeadSpawner.hordeToSpawn = 1;
+            HordeSpawner.hordeIdFromHordesConfig = 1;
             message = "Please note: Horde config variant 1 does not support multiple horde configs, value is always 1";
         }
 
