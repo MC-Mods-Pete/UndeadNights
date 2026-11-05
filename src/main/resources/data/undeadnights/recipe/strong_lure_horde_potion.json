@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:brewing",
+  "input": {
+    "item": "minecraft:potion",
+    "potion_contents": {
+      "potion": "undeadnights:lure_horde_potion"
+    }
+  },
+  "reagent": {
+    "item": "minecraft:redstone"
+  },
+  "output": {
+    "count": 1,
+    "id": "minecraft:potion",
+    "components": {
+      "minecraft:potion_contents": {
+        "potion": "undeadnights:strong_lure_horde_potion"
+      }
+    }
+  }
+}

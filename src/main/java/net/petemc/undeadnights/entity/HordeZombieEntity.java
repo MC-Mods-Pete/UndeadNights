@@ -264,7 +264,7 @@ public class HordeZombieEntity extends Zombie {
                     BiomeSelectors.foundInOverworld().and(BiomeSelectors.excludeByKey(Biomes.MUSHROOM_FIELDS, Biomes.DEEP_DARK)),
                     MobCategory.MONSTER,
                     ModEntities.HORDE_ZOMBIE,
-                    20, 1, 3
+                    12, 1, 3
             );
         }
     }

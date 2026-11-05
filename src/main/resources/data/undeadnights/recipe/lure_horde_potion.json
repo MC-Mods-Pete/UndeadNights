@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:brewing",
+  "input": {
+    "item": "minecraft:potion",
+    "potion_contents": {
+      "potion": "minecraft:awkward"
+    }
+  },
+  "reagent": {
+    "item": "undeadnights:slimy_rotten_flesh"
+  },
+  "output": {
+    "count": 1,
+    "id": "minecraft:potion",
+    "components": {
+      "minecraft:potion_contents": {
+        "potion": "undeadnights:lure_horde_potion"
+      }
+    }
+  }
+}
