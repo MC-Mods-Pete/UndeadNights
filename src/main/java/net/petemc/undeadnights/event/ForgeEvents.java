@@ -11,16 +11,13 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.goal.FloatGoal;
 import net.minecraft.world.entity.monster.zombie.Zombie;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.alchemy.PotionBrewing;
 import net.minecraft.world.item.alchemy.Potions;
-import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.util.Result;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.brewing.BrewingRecipeRegisterEvent;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.event.entity.EntityLeaveLevelEvent;
 import net.minecraftforge.event.entity.living.LivingEvent;
@@ -30,7 +27,6 @@ import net.minecraftforge.eventbus.api.listener.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.server.command.ConfigCommand;
 import net.petemc.undeadnights.UndeadNights;
-import net.petemc.undeadnights.casts.BlockBreakingZombie;
 import net.petemc.undeadnights.command.*;
 import net.petemc.undeadnights.config.MainConfig;
 import net.petemc.undeadnights.entity.DemolitionZombieEntity;
@@ -41,7 +37,6 @@ import net.petemc.undeadnights.item.ModItems;
 import net.petemc.undeadnights.potion.ModPotions;
 import net.petemc.undeadnights.util.ModTags;
 
-import java.util.Comparator;
 import java.util.List;
 
 @Mod.EventBusSubscriber(modid = UndeadNights.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
@@ -134,13 +129,6 @@ public class ForgeEvents {
         new DifficultyLevelCommand(event.getDispatcher());
 
         ConfigCommand.register(event.getDispatcher());
-    }
-
-    @SubscribeEvent
-    public static void onRegisterBrewingRecipes(BrewingRecipeRegisterEvent event) {
-        PotionBrewing.Builder builder = event.getBuilder();
-        builder.addMix(Potions.AWKWARD, ModItems.SLIMY_ROTTEN_FLESH.get(), ModPotions.LURE_HORDE_POTION.getHolder().get());
-        builder.addMix(ModPotions.LURE_HORDE_POTION.getHolder().get(), ModItems.SLIMY_ROTTEN_FLESH.get(), ModPotions.STRONG_LURE_HORDE_POTION.getHolder().get());
     }
 
     @SubscribeEvent
