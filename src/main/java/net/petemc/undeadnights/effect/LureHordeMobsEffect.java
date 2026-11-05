@@ -56,7 +56,9 @@ public class LureHordeMobsEffect extends MobEffect {
             RandomSource randomSource = serverPlayer.getRandom();
             UUID uuid = serverPlayer.getUUID();
 
-            if (UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsLureEffect().isLureHordeEffectSpawnsHorde()) {
+            // Do not let the Lure Horde effect spawn a horde while the grace period is still active.
+            if (UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsLureEffect().isLureHordeEffectSpawnsHorde()
+                    && UndeadNights.serverState.getGracePeriod() <= 0) {
                 if (!UndeadNights.serverState.entitiesWithReceivedHorde.contains(uuid)
                         && spawnHorde) {
 

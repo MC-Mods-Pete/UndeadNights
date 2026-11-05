@@ -160,6 +160,12 @@ public class UndeadNights {
 			UndeadNights.serverState.setIsNaturalSpawningOk(true);
 		}
 
+		// While the grace period is still running, no random hordes may fire.
+		// The flag is re-armed automatically on the first daytime tick after the grace ends.
+		if (UndeadNights.serverState.getGracePeriod() > 0) {
+			UndeadNights.serverState.setTryToSpawnRandomHorde(false);
+		}
+
 		if (MainConfig.getPrintDebugMessages()) {
 			UndeadNights.LOGGER.info("INIT DaysCounter: {} LastMaxDaysCounter: {}", UndeadNights.serverState.getDaysCounter(), UndeadNights.serverState.getLastMaxDaysCounter());
 			UndeadNights.LOGGER.info("INIT HordeNight: {} SpawnZombies: {} RespawnZombies: {}", UndeadNights.serverState.getHordeNight(), UndeadNights.serverState.getSpawnZombies(), UndeadNights.serverState.getRespawnZombies());

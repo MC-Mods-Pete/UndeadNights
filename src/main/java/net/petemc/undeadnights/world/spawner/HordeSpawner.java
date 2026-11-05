@@ -141,12 +141,28 @@ public class HordeSpawner {
         // CaveSpawnSearchTask continues advancing (and hordes eventually spawn) even
         // when doDaylightCycle=false freezes the game clock.
 
+        // While the grace period is still running, automatic pending hordes may not resolve.
+        // Command-spawned hordes are explicitly allowed to bypass the grace period.
+        if (UndeadNights.serverState.getGracePeriod() > 0 && !UndeadNights.serverState.entitiesWithPendingHorde.isEmpty()) {
+            List<UUID> pendingAutomaticHordes = UndeadNights.serverState.entitiesWithPendingHorde.stream()
+                    .filter(playerUuid -> !SpawnHordeCommand.isPendingCommandHorde(playerUuid))
+                    .toList();
+            if (!pendingAutomaticHordes.isEmpty()) {
+                if (MainConfig.getPrintDebugMessages()) {
+                    UndeadNights.LOGGER.info("Clearing {} automatic pending horde spawn(s) because the grace period is still active.",
+                            pendingAutomaticHordes.size());
+                }
+                UndeadNights.serverState.entitiesWithPendingHorde.removeAll(pendingAutomaticHordes);
+            }
+        }
+
         // process pending horde spawns per player
         if (!UndeadNights.serverState.entitiesWithPendingHorde.isEmpty()) {
             for (var playerUUID : UndeadNights.serverState.entitiesWithPendingHorde.stream().toList()) {
                 if (!UndeadNights.serverState.entitiesWithReceivedHorde.contains(playerUUID)) {
                     Entity entity = level.getEntity(playerUUID);
                     if (entity instanceof ServerPlayer serverPlayer) {
+                        boolean spawnTriggeredByCommand = SpawnHordeCommand.isPendingCommandHorde(playerUUID);
                         if (MainConfig.getPrintDebugMessages()) {
                             UndeadNights.LOGGER.info("Processing pending horde spawn for player {}.", serverPlayer.getName().getString());
                         }
@@ -159,11 +175,13 @@ public class HordeSpawner {
                             }
                             UndeadNights.serverState.entitiesWithPendingHorde.remove(playerUUID);
                             UndeadNights.serverState.entitiesWithReceivedHorde.add(playerUUID);
+                            if (spawnTriggeredByCommand) {
+                                SpawnHordeCommand.clearPendingCommandHorde(playerUUID);
+                            }
                             if (result == SpawnHordeResult.FAILED) {
                                 UndeadNights.LOGGER.info("Spawning horde for player {} failed.", serverPlayer.getName().getString());
-                                if (SpawnHordeCommand.spawnHordeByCommand) {
+                                if (spawnTriggeredByCommand) {
                                     serverPlayer.sendSystemMessage(Component.translatable("message.undeadnights.command_spawn_horde_failed"));
-                                    SpawnHordeCommand.spawnHordeByCommand = false;
                                 }
                             }
                         }
@@ -297,7 +315,9 @@ public class HordeSpawner {
 
             // spawn a random horde and/or stray zombies for non-horde nights
             if (UndeadNights.serverState.getDaysCounter() > 0 && !UndeadNights.serverState.getHordeNight() && !UndeadNights.serverState.isSpawnBossHorde()) {
-                if (UndeadNights.serverState.getTryToSpawnRandomHorde()) {
+                // Do not roll random hordes while the grace period is still active,
+                // otherwise hordes can spawn before the grace period has finished.
+                if (UndeadNights.serverState.getTryToSpawnRandomHorde() && UndeadNights.serverState.getGracePeriod() <= 0) {
                     if (UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordes().isEnableRandomHordes() &&
                             (UndeadNights.globalSpawnCounter < MainConfig.getHordeMobsSpawnCap())) {
                         randomValue = randomSource.nextIntBetweenInclusive(1, 100);
@@ -330,7 +350,7 @@ public class HordeSpawner {
 
                 // spawn stray horde zombies
                 if ((MainConfig.getHordeZombiesSpawnNaturally() && UndeadNights.serverState.getIsNaturalSpawningOk() && (UndeadNights.globalSpawnCounter < MainConfig.getHordeMobsSpawnCap()))
-                        && !UndeadNights.serverState.isSpawnBossHorde()) {
+                        && !UndeadNights.serverState.isSpawnBossHorde() && UndeadNights.serverState.getGracePeriod() <= 0) {
                     if (UndeadNights.serverState.getTickCounter() > 0) {
                         UndeadNights.serverState.setTickCounter(UndeadNights.serverState.getTickCounter() - 1);
                         return 0;

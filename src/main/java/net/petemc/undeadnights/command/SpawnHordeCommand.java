@@ -12,10 +12,25 @@ import net.petemc.undeadnights.UndeadNights;
 import net.petemc.undeadnights.config.MainConfig;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
+import java.util.UUID;
 
 public class SpawnHordeCommand {
-    public static boolean spawnHordeByCommand = false;
+    private static final Set<UUID> pendingCommandHordePlayers = new HashSet<>();
+
+    public static void markPendingCommandHorde(UUID playerUuid) {
+        pendingCommandHordePlayers.add(playerUuid);
+    }
+
+    public static boolean isPendingCommandHorde(UUID playerUuid) {
+        return pendingCommandHordePlayers.contains(playerUuid);
+    }
+
+    public static void clearPendingCommandHorde(UUID playerUuid) {
+        pendingCommandHordePlayers.remove(playerUuid);
+    }
 
     public SpawnHordeCommand(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(Commands.literal("undeadnights")
@@ -41,9 +56,9 @@ public class SpawnHordeCommand {
                     Objects.requireNonNull(source.getEntity()).sendSystemMessage(Component.literal("Note: Cave spawning is ENABLED for hordes. Finding a spawn location may take longer."));
                 }
             }
-            spawnHordeByCommand = true;
             for (Entity entity : source.getLevel().players()) {
                 if (entity instanceof Player) {
+                    markPendingCommandHorde(entity.getUUID());
                     UndeadNights.serverState.entitiesWithPendingHorde.add(entity.getUUID());
                     UndeadNights.serverState.entitiesWithReceivedHorde.remove(entity.getUUID());
                 }
@@ -56,10 +71,10 @@ public class SpawnHordeCommand {
 
     private int spawnHorde(CommandSourceStack source, Collection<? extends Entity> pTargets) throws CommandSyntaxException {
         if (UndeadNights.globalSpawnCounter < MainConfig.getHordeMobsSpawnCap()) {
-            spawnHordeByCommand = true;
             if (!pTargets.isEmpty()) {
                 for (Entity entity : pTargets) {
                     if (entity instanceof Player) {
+                        markPendingCommandHorde(entity.getUUID());
                         UndeadNights.serverState.entitiesWithPendingHorde.add(entity.getUUID());
                         UndeadNights.serverState.entitiesWithReceivedHorde.remove(entity.getUUID());
                     }
