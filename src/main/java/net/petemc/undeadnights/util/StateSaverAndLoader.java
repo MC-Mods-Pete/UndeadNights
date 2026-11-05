@@ -39,6 +39,7 @@ public class StateSaverAndLoader extends SavedData {
     private double currentSpeedScale = 0.0;
     private double currentDamageScale = 0.0;
     private double currentArmorScale = 0.0;
+    private double currentHordeScale = 0.0;
     public HashSet<UUID> spawnedHordeMobs = new HashSet<UUID>();
     public HashSet<UUID> hordeMobsToRemove = new HashSet<UUID>();
     public HashSet<UUID> entitiesWithPendingHorde = new HashSet<UUID>();
@@ -47,6 +48,7 @@ public class StateSaverAndLoader extends SavedData {
 
 
     // Setter and Getter functions
+    // ints
     public int getDaysCounter() {
         return this.daysCounter;
     }
@@ -253,6 +255,12 @@ public class StateSaverAndLoader extends SavedData {
         this.setDirty();
     }
 
+    public double getCurrentHordeScale() { return currentHordeScale; }
+    public void setCurrentHordeScale(double currentHordeScale) {
+        this.currentHordeScale = currentHordeScale;
+        this.setDirty();
+    }
+
     public static StateSaverAndLoader getServerState(MinecraftServer server) {
         return server.overworld().getDataStorage().computeIfAbsent(StateSaverAndLoader::load, StateSaverAndLoader::new, UndeadNights.MOD_ID);
     }
@@ -287,6 +295,7 @@ public class StateSaverAndLoader extends SavedData {
         state.currentSpeedScale = tag.getDouble("currentSpeedScale");
         state.currentDamageScale = tag.getDouble("currentDamageScale");
         state.currentArmorScale = tag.getDouble("currentArmorScale");
+        state.currentHordeScale = tag.getDouble("currentHordeScale");
 
         CompoundTag mobUUIDs = tag.getCompound("spawnedHordeMobs");
         mobUUIDs.getAllKeys().forEach(key -> {
@@ -352,6 +361,7 @@ public class StateSaverAndLoader extends SavedData {
         tag.putDouble("currentSpeedScale", currentSpeedScale);
         tag.putDouble("currentDamageScale", currentDamageScale);
         tag.putDouble("currentArmorScale", currentArmorScale);
+        tag.putDouble("currentHordeScale", currentHordeScale);
 
         CompoundTag mobUUIDs = new CompoundTag();
         spawnedHordeMobs.forEach((uuid) -> {

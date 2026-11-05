@@ -38,8 +38,6 @@ import java.util.List;
 import java.util.Objects;
 
 public class SpawnProcess {
-    public static boolean invalidHordeMobEntry = false;
-
     // NOTE: x, z, d were previously static fields – this caused race conditions when multiple
     // players had hordes spawning concurrently. They are now local variables in
     // spawnHordeImplementation() so each call has its own independent state.
@@ -182,7 +180,12 @@ public class SpawnProcess {
                 }
                 int waveMobCounter = 0;
 
-                int scaledHordeSize = (int) Math.round(HordeConfig.getMaxWaveSize() * UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordes().getHordeSizeScaleFactor());
+
+                int scaledHordeSize = (int) Math.round(HordeConfig.getMaxWaveSize() * (1.0 + UndeadNights.serverState.getCurrentHordeScale()));
+                scaledHordeSize =     (int) Math.round(scaledHordeSize * UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordes().getHordeSizeScaleFactor());
+                if (scaledHordeSize < 1) {
+                    scaledHordeSize = 1;
+                }
                 if (MainConfig.getPrintDebugMessages()) {
                     UndeadNights.LOGGER.info("Scaled horde size: {}", scaledHordeSize);
                 }
@@ -276,7 +279,11 @@ public class SpawnProcess {
                             UndeadNights.LOGGER.info("Spawning {} {}", mobCount, mobSpawnData.mobId());
                         }
                     }
-                    int scaledMobCount = (int) Math.round(mobCount * UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordes().getHordeSizeScaleFactor());
+                    int scaledMobCount = (int) Math.round(mobCount * (1.0 + UndeadNights.serverState.getCurrentHordeScale()));
+                    scaledMobCount =     (int) Math.round(scaledMobCount * UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordes().getHordeSizeScaleFactor());
+                    if (scaledMobCount < 1) {
+                        scaledMobCount = 1;
+                    }
                     if (MainConfig.getPrintDebugMessages()) {
                         UndeadNights.LOGGER.info("Scaled mob count: {}", scaledMobCount);
                     }
@@ -321,7 +328,7 @@ public class SpawnProcess {
                         }
                     }
                     if (MainConfig.getPrintDebugMessages()) {
-                        UndeadNights.LOGGER.info("Horde was spawned for player {} (removing from horde lists)", player.getName().getString());
+                        UndeadNights.LOGGER.info("Horde with {} mobs was spawned for player {} (removing from horde lists)", spawnCounter, player.getName().getString());
                     }
                     //UndeadNights.serverState.entitiesWithPendingHorde.remove(player.getUUID());
                     //UndeadNights.serverState.entitiesWithReceivedHorde.add(player.getUUID());
@@ -352,7 +359,7 @@ public class SpawnProcess {
         EntityType<?> mobType = ForgeRegistries.ENTITY_TYPES.getValue(ResourceLocation.parse(mobSpawnData.mobId()));
         if (mobType == null) {
             invalidEntry = true;
-            invalidHordeMobEntry = true;
+            HordeSpawner.invalidHordeMobEntry = true;
             UndeadNights.LOGGER.warn("Spawning entry {} from the config file failed! Spawning default horde zombie instead.", mobSpawnData.mobId());
             //mobType = ForgeRegistries.ENTITY_TYPES.getValue(new ResourceLocation("undeadnights:horde_zombie"));
         }
@@ -428,7 +435,7 @@ public class SpawnProcess {
         DifficultyInstance localDifficulty = level.getCurrentDifficultyAt(player.blockPosition());
         try {
             if (entity instanceof Mob mob) {
-                mob.finalizeSpawn(level, localDifficulty, MobSpawnType.NATURAL, null, null);
+                mob.finalizeSpawn(level, localDifficulty, MobSpawnType.EVENT, null, null);
                 mob.setTarget(player);
 
                 // make vanilla zombies in hordes float on water and give ability to break blocks
@@ -467,8 +474,8 @@ public class SpawnProcess {
                     }
 
                     double healthScaleFactor = 0.0;
-                    double damageScaleFactor = 0.0;
                     double speedScaleFactor = 0.0;
+                    double damageScaleFactor = 0.0;
                     double armorScaleFactor = 0.0;
 
                     if (UndeadNights.difficultyConfig.getDynamicScaling().isDynamicScalingEnabled()) {
@@ -533,14 +540,11 @@ public class SpawnProcess {
             }
             level.tryAddFreshEntityWithPassengers(entity);
         } catch (Exception e) {
-            invalidHordeMobEntry = true;
+            HordeSpawner.invalidHordeMobEntry = true;
             UndeadNights.LOGGER.warn("Spawning entry {} from the config file failed! Spawning default horde zombie instead.", mobSpawnData.mobId());
             HordeZombieEntity hZombie = new HordeZombieEntity(ModEntities.HORDE_ZOMBIE.get(), level);
             hZombie.setPos(pos.getX(), level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, pos.getX(), pos.getZ()), pos.getZ());
-            if (MainConfig.getPersistentMobs()) {
-                hZombie.setPersistenceRequired();
-            }
-            hZombie.finalizeSpawn(level, localDifficulty, MobSpawnType.NATURAL, null, null);
+            hZombie.finalizeSpawn(level, localDifficulty, MobSpawnType.EVENT, null, null);
             hZombie.setTarget(player);
             UndeadNights.serverState.spawnedHordeMobs.add(hZombie.getUUID());
             level.addFreshEntity(hZombie);

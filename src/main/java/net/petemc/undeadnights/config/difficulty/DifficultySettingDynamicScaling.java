@@ -6,33 +6,38 @@ public class DifficultySettingDynamicScaling {
     private Double damageScalePerPlayer = null;
     private Double speedScalePerPlayer = null;
     private Double armorScalePerPlayer = null;
+    private Double hordeScalePerPlayer = null;
     private Double daysBetweenScaleIncreases = null;
     private Double daysHealthScaleIncrease = null;
     private Double daysDamageScaleIncrease = null;
     private Double daysSpeedScaleIncrease = null;
     private Double daysArmorScaleIncrease = null;
+    private Double daysHordeScaleIncrease = null;
     private Double maxHealthScale = null;
     private Double maxDamageScale = null;
     private Double maxSpeedScale = null;
     private Double maxArmorScale = null;
-    
+    private Double maxHordeScale = null;
     public DifficultySettingDynamicScaling(){}
-    
-    public DifficultySettingDynamicScaling(Boolean dynamicScalingEnabled, Double healthScalePerPlayer, Double damageScalePerPlayer, Double speedScalePerPlayer, Double armorScalePerPlayer, Double daysBetweenScaleIncreases, Double daysHealthScaleIncrease, Double daysDamageScaleIncrease, Double daysSpeedScaleIncrease, Double daysArmorScaleIncrease, Double maxHealthScale, Double maxDamageScale, Double maxSpeedScale, Double maxArmorScale) {
+
+    public DifficultySettingDynamicScaling(Boolean dynamicScalingEnabled, Double healthScalePerPlayer, Double damageScalePerPlayer, Double speedScalePerPlayer, Double armorScalePerPlayer, Double hordeScalePerPlayer, Double daysBetweenScaleIncreases, Double daysHealthScaleIncrease, Double daysDamageScaleIncrease, Double daysSpeedScaleIncrease, Double daysArmorScaleIncrease, Double daysHordeScaleIncrease, Double maxHealthScale, Double maxDamageScale, Double maxSpeedScale, Double maxArmorScale, Double maxHordeScale) {
         this.dynamicScalingEnabled = dynamicScalingEnabled;
         this.healthScalePerPlayer = healthScalePerPlayer;
         this.damageScalePerPlayer = damageScalePerPlayer;
         this.speedScalePerPlayer = speedScalePerPlayer;
         this.armorScalePerPlayer = armorScalePerPlayer;
+        this.hordeScalePerPlayer = hordeScalePerPlayer;
         this.daysBetweenScaleIncreases = daysBetweenScaleIncreases;
         this.daysHealthScaleIncrease = daysHealthScaleIncrease;
         this.daysDamageScaleIncrease = daysDamageScaleIncrease;
         this.daysSpeedScaleIncrease = daysSpeedScaleIncrease;
         this.daysArmorScaleIncrease = daysArmorScaleIncrease;
+        this.daysHordeScaleIncrease = daysHordeScaleIncrease;
         this.maxHealthScale = maxHealthScale;
         this.maxDamageScale = maxDamageScale;
         this.maxSpeedScale = maxSpeedScale;
         this.maxArmorScale = maxArmorScale;
+        this.maxHordeScale = maxHordeScale;
     }
 
     public Boolean isDynamicScalingEnabled() { return dynamicScalingEnabled; }
@@ -50,6 +55,9 @@ public class DifficultySettingDynamicScaling {
     public Double getArmorScalePerPlayer() { return armorScalePerPlayer; }
     public void setArmorScalePerPlayer(Double armorScalePerPlayer) { this.armorScalePerPlayer = armorScalePerPlayer; }
 
+    public Double getHordeScalePerPlayer() { return hordeScalePerPlayer; }
+    public void setHordeScalePerPlayer(Double hordeScalePerPlayer) { this.hordeScalePerPlayer = hordeScalePerPlayer; }
+
     public Double getDaysBetweenScaleIncreases() { return daysBetweenScaleIncreases; }
     public void setDaysBetweenScaleIncreases(Double daysBetweenScaleIncreases) { this.daysBetweenScaleIncreases = daysBetweenScaleIncreases; }
 
@@ -58,6 +66,9 @@ public class DifficultySettingDynamicScaling {
 
     public Double getDaysDamageScaleIncrease() { return daysDamageScaleIncrease; }
     public void setDaysDamageScaleIncrease(Double daysDamageScaleIncrease) { this.daysDamageScaleIncrease = daysDamageScaleIncrease; }
+
+    public Double getDaysHordeScaleIncrease() { return daysHordeScaleIncrease; }
+    public void setDaysHordeScaleIncrease(Double daysHordeScaleIncrease) { this.daysHordeScaleIncrease = daysHordeScaleIncrease; }
 
     public Double getDaysSpeedScaleIncrease() { return daysSpeedScaleIncrease; }
     public void setDaysSpeedScaleIncrease(Double daysSpeedScaleIncrease) { this.daysSpeedScaleIncrease = daysSpeedScaleIncrease; }
@@ -76,4 +87,7 @@ public class DifficultySettingDynamicScaling {
 
     public Double getMaxArmorScale() { return maxArmorScale; }
     public void setMaxArmorScale(Double maxArmorScale) { this.maxArmorScale = maxArmorScale; }
+
+    public Double getMaxHordeScale() { return maxHordeScale; }
+    public void setMaxHordeScale(Double maxHordeScale) { this.maxHordeScale = maxHordeScale; }
 }

@@ -4,6 +4,7 @@ public class DifficultySettingsHordeNights {
     private Integer daysBetweenHordeNights = null;
     private Integer chanceForHordeNight = null;
     private Boolean spawnAdditionalWaves = null;
+    private Boolean requirePreviousWaveClear = null;
     private Integer cooldownBetweenWaves = null;
     private Integer chanceForAdditionalWave = null;
     private Boolean allDayLongHordeNights = null;
@@ -18,6 +19,9 @@ public class DifficultySettingsHordeNights {
 
     public Boolean isSpawnAdditionalWaves() { return spawnAdditionalWaves; }
     public void setSpawnAdditionalWaves(Boolean spawnAdditionalWaves) { this.spawnAdditionalWaves = spawnAdditionalWaves; }
+
+    public Boolean isRequirePreviousWaveClear() { return requirePreviousWaveClear; }
+    public void setRequirePreviousWaveClear(Boolean requirePreviousWaveClear) { this.requirePreviousWaveClear = requirePreviousWaveClear; }
 
     public Integer getCooldownBetweenWaves() { return cooldownBetweenWaves; }
     public void setCooldownBetweenWaves(Integer cooldownBetweenWaves) { this.cooldownBetweenWaves = cooldownBetweenWaves; }
@@ -38,10 +42,11 @@ public class DifficultySettingsHordeNights {
         // Empty constructor
     }
 
-    public DifficultySettingsHordeNights(Integer daysBetweenHordeNights, Integer chanceForHordeNight, Boolean spawnAdditionalWaves, Integer cooldownBetweenWaves, Integer chanceForAdditionalWave, Boolean allDayLongHordeNights, Integer maxHordesPerHordeNight, Integer numberOfPlayersToGetHordePerHordeEvent) {
+    public DifficultySettingsHordeNights(Integer daysBetweenHordeNights, Integer chanceForHordeNight, Boolean spawnAdditionalWaves, Boolean requirePreviousWaveClear, Integer cooldownBetweenWaves, Integer chanceForAdditionalWave, Boolean allDayLongHordeNights, Integer maxHordesPerHordeNight, Integer numberOfPlayersToGetHordePerHordeEvent) {
         this.daysBetweenHordeNights = daysBetweenHordeNights;
         this.chanceForHordeNight = chanceForHordeNight;
         this.spawnAdditionalWaves = spawnAdditionalWaves;
+        this.requirePreviousWaveClear = requirePreviousWaveClear;
         this.cooldownBetweenWaves = cooldownBetweenWaves;
         this.chanceForAdditionalWave = chanceForAdditionalWave;
         this.allDayLongHordeNights = allDayLongHordeNights;

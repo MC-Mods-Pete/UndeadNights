@@ -10,20 +10,26 @@ import org.jetbrains.annotations.NotNull;
 import java.util.List;
 
 public class DifficultyConfig {
+    // the version of the difficulty config file. This is used to determine if the file needs to be updated to a new version.
+    private static final int CURRENT_DIFFICULTY_CONFIG_VERSION = 2;
+    public static int getCurrentDifficultyConfigVersion() {
+        return CURRENT_DIFFICULTY_CONFIG_VERSION; }
 
+    // The parts a difficulty consists of
     private DifficultySettingDynamicScaling dynamicScaling = new DifficultySettingDynamicScaling();
     private List<DifficultyLevel> difficultyLevels;
     private DifficultyLevel currentDifficultyLevel;
+    private int difficultyConfigVersion;
 
     public DifficultyConfig() {
         // Empty constructor
     }
 
-    public DifficultyConfig(DifficultySettingDynamicScaling dynamicScaling, List<DifficultyLevel> difficultyLevels, DifficultyLevel currentDifficultyLevel, int internalConfigVersion) {
+    public DifficultyConfig(DifficultySettingDynamicScaling dynamicScaling, List<DifficultyLevel> difficultyLevels, DifficultyLevel currentDifficultyLevel, int difficultyConfigVersion) {
         this.dynamicScaling = dynamicScaling;
         this.difficultyLevels = difficultyLevels;
         this.currentDifficultyLevel = currentDifficultyLevel;
-        this.internalConfigVersion = internalConfigVersion;
+        this.difficultyConfigVersion = difficultyConfigVersion;
     }
 
     public static final DifficultySettingDynamicScaling defaultDynamicScalingValues =
@@ -33,11 +39,14 @@ public class DifficultyConfig {
                     0.05,
                     0.0,
                     0.0,
+                    0.0,
                     10.0,
                     0.05,
                     0.05,
                     0.0,
                     0.0,
+                    0.0,
+                    2.0,
                     2.0,
                     2.0,
                     2.0,
@@ -67,6 +76,7 @@ public class DifficultyConfig {
                             5,
                             100,
                             true,
+                            false,
                             45,
                             7,
                             false,
@@ -89,8 +99,6 @@ public class DifficultyConfig {
                             0.2,
                             true));
 
-    private int internalConfigVersion;
-
     // Getter and setter functions
     public List<DifficultyLevel> getDifficultyLevels() { return difficultyLevels; }
     public void setDifficultyLevels(List<DifficultyLevel> difficultyLevels) { this.difficultyLevels = difficultyLevels; }
@@ -103,6 +111,8 @@ public class DifficultyConfig {
     public DifficultySettingDynamicScaling getDynamicScaling() { return dynamicScaling; }
     public void setDynamicScaling(DifficultySettingDynamicScaling dynamicScaling) { this.dynamicScaling = dynamicScaling; }
 
+    public int getDifficultyConfigVersion() { return difficultyConfigVersion; }
+    public void setDifficultyConfigVersion(int difficultyConfigVersion) { this.difficultyConfigVersion = difficultyConfigVersion; }
 
     public boolean checkForDifficultyLevelSwitch(int currentDay, RandomExtention randomSource) {
         UndeadNights.serverState.setCurrentDayScaleCounter(UndeadNights.serverState.getCurrentDayScaleCounter()+1);
@@ -112,6 +122,7 @@ public class DifficultyConfig {
             UndeadNights.serverState.setCurrentDamageScale(UndeadNights.serverState.getCurrentDamageScale() + UndeadNights.difficultyConfig.getDynamicScaling().getDaysDamageScaleIncrease());
             UndeadNights.serverState.setCurrentSpeedScale(UndeadNights.serverState.getCurrentSpeedScale() + UndeadNights.difficultyConfig.getDynamicScaling().getDaysSpeedScaleIncrease());
             UndeadNights.serverState.setCurrentArmorScale(UndeadNights.serverState.getCurrentArmorScale() + UndeadNights.difficultyConfig.getDynamicScaling().getDaysArmorScaleIncrease());
+            UndeadNights.serverState.setCurrentHordeScale(UndeadNights.serverState.getCurrentHordeScale() + UndeadNights.difficultyConfig.getDynamicScaling().getDaysHordeScaleIncrease());
             if (UndeadNights.serverState.getCurrentHealthScale() > UndeadNights.difficultyConfig.getDynamicScaling().getMaxHealthScale()) {
                 UndeadNights.serverState.setCurrentHealthScale(UndeadNights.difficultyConfig.getDynamicScaling().getMaxHealthScale());
             }
@@ -123,6 +134,9 @@ public class DifficultyConfig {
             }
             if (UndeadNights.serverState.getCurrentArmorScale() > UndeadNights.difficultyConfig.getDynamicScaling().getMaxArmorScale()) {
                 UndeadNights.serverState.setCurrentArmorScale(UndeadNights.difficultyConfig.getDynamicScaling().getMaxArmorScale());
+            }
+            if (UndeadNights.serverState.getCurrentHordeScale() > UndeadNights.difficultyConfig.getDynamicScaling().getMaxHordeScale()) {
+                UndeadNights.serverState.setCurrentHordeScale(UndeadNights.difficultyConfig.getDynamicScaling().getMaxHordeScale());
             }
         }
 
@@ -168,6 +182,7 @@ public class DifficultyConfig {
         difficultySettingsHordeNights.addProperty("daysBetweenHordeNights", hordeNightsValues.getDaysBetweenHordeNights());
         difficultySettingsHordeNights.addProperty("chanceForHordeNight", hordeNightsValues.getChanceForHordeNight());
         difficultySettingsHordeNights.addProperty("spawnAdditionalWaves", hordeNightsValues.isSpawnAdditionalWaves());
+        difficultySettingsHordeNights.addProperty("requirePreviousWaveClear", hordeNightsValues.isRequirePreviousWaveClear());
         difficultySettingsHordeNights.addProperty("cooldownBetweenWaves", hordeNightsValues.getCooldownBetweenWaves());
         difficultySettingsHordeNights.addProperty("chanceForAdditionalWave", hordeNightsValues.getChanceForAdditionalWave());
         difficultySettingsHordeNights.addProperty("allDayLongHordeNights", hordeNightsValues.getAllDayLongHordeNights());
@@ -227,20 +242,23 @@ public class DifficultyConfig {
         difficultySettingsDynamicScaling.addProperty("damageScalePerPlayer", defaultDynamicScalingValues.getDamageScalePerPlayer());
         difficultySettingsDynamicScaling.addProperty("speedScalePerPlayer", defaultDynamicScalingValues.getSpeedScalePerPlayer());
         difficultySettingsDynamicScaling.addProperty("armorScalePerPlayer", defaultDynamicScalingValues.getArmorScalePerPlayer());
+        difficultySettingsDynamicScaling.addProperty("hordeScalePerPlayer", defaultDynamicScalingValues.getHordeScalePerPlayer());
         difficultySettingsDynamicScaling.addProperty("daysBetweenScaleIncreases", defaultDynamicScalingValues.getDaysBetweenScaleIncreases());
         difficultySettingsDynamicScaling.addProperty("daysHealthScaleIncrease", defaultDynamicScalingValues.getDaysHealthScaleIncrease());
         difficultySettingsDynamicScaling.addProperty("daysDamageScaleIncrease", defaultDynamicScalingValues.getDaysDamageScaleIncrease());
         difficultySettingsDynamicScaling.addProperty("daysSpeedScaleIncrease", defaultDynamicScalingValues.getDaysSpeedScaleIncrease());
         difficultySettingsDynamicScaling.addProperty("daysArmorScaleIncrease", defaultDynamicScalingValues.getDaysArmorScaleIncrease());
+        difficultySettingsDynamicScaling.addProperty("daysHordeScaleIncrease", defaultDynamicScalingValues.getDaysHordeScaleIncrease());
         difficultySettingsDynamicScaling.addProperty("maxHealthScale", defaultDynamicScalingValues.getMaxHealthScale());
         difficultySettingsDynamicScaling.addProperty("maxDamageScale", defaultDynamicScalingValues.getMaxDamageScale());
         difficultySettingsDynamicScaling.addProperty("maxSpeedScale", defaultDynamicScalingValues.getMaxSpeedScale());
         difficultySettingsDynamicScaling.addProperty("maxArmorScale", defaultDynamicScalingValues.getMaxArmorScale());
+        difficultySettingsDynamicScaling.addProperty("maxHordeScale", defaultDynamicScalingValues.getMaxHordeScale());
 
         var defaultConfObject = new JsonObject();
         defaultConfObject.add("dynamicScaling", difficultySettingsDynamicScaling);
         defaultConfObject.add("difficultyLevels", difficultyLevelArray);
-        defaultConfObject.addProperty("internalConfigVersion", 1);
+        defaultConfObject.addProperty("difficultyConfigVersion", CURRENT_DIFFICULTY_CONFIG_VERSION);
         return defaultConfObject;
     }
 }

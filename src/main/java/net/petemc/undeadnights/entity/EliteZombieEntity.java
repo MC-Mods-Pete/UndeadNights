@@ -1,9 +1,6 @@
 package net.petemc.undeadnights.entity;
 
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.syncher.EntityDataAccessor;
-import net.minecraft.network.syncher.EntityDataSerializers;
-import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.DifficultyInstance;
@@ -92,8 +89,8 @@ public class EliteZombieEntity extends Zombie {
         }
 
         double healthScaleFactor = 0.0;
-        double damageScaleFactor = 0.0;
         double speedScaleFactor = 0.0;
+        double damageScaleFactor = 0.0;
         double armorScaleFactor = 0.0;
 
         if (UndeadNights.difficultyConfig.getDynamicScaling().isDynamicScalingEnabled()) {
@@ -106,7 +103,7 @@ public class EliteZombieEntity extends Zombie {
 
             healthScaleFactor = healthScaleFactor + UndeadNights.serverState.getCurrentHealthScale();
             speedScaleFactor = speedScaleFactor + UndeadNights.serverState.getCurrentSpeedScale();
-            damageScaleFactor = damageScaleFactor + UndeadNights.serverState.getCurrentDayScaleCounter();
+            damageScaleFactor = damageScaleFactor + UndeadNights.serverState.getCurrentDamageScale();
             armorScaleFactor = armorScaleFactor + UndeadNights.serverState.getCurrentArmorScale();
 
             if (healthScaleFactor > UndeadNights.difficultyConfig.getDynamicScaling().getMaxHealthScale()) {
@@ -227,6 +224,7 @@ public class EliteZombieEntity extends Zombie {
                         MainConfig.getEliteZombiesSpawnNaturally()
                                 && UndeadNights.serverState.getIsNaturalSpawningOk()
                                 && !(serverLevel.getBiome(pos).is(Biomes.MUSHROOM_FIELDS))
+                                && !(serverLevel.getBiome(pos).is(Biomes.DEEP_DARK))
                                 && serverLevel.getDifficulty() != Difficulty.PEACEFUL
                                 && Monster.isDarkEnoughToSpawn(serverLevel, pos, random)
                                 && Mob.checkMobSpawnRules(entityType, serverLevel, reason, pos, random));

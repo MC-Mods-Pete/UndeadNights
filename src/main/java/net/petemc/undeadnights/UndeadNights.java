@@ -6,11 +6,13 @@ import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.alchemy.PotionBrewing;
 import net.minecraft.world.item.alchemy.Potions;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.client.ConfigScreenHandler;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
 import net.minecraftforge.event.server.ServerStartingEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
@@ -95,6 +97,19 @@ public class UndeadNights {
 		LOGGER.info("Initializing the {} Mod (server starting)", MOD_NAME);
 
 		UndeadNights.serverState = StateSaverAndLoader.getServerState(event.getServer());
+
+		if (!DifficultyConfigLoader.configWasNewlyCreated) {
+			int newDifficultyConfigVersion = DifficultyConfig.getCurrentDifficultyConfigVersion();
+			if (UndeadNights.difficultyConfig.getDifficultyConfigVersion() < newDifficultyConfigVersion) {
+				UndeadNights.LOGGER.info("Difficulty config file version is outdated {}, updating to new version {}", UndeadNights.difficultyConfig.getDifficultyConfigVersion(), newDifficultyConfigVersion);
+				boolean configWasUpdated = DifficultyConfigLoader.checkAndFillDynamicScalingAndFirstLevelInConfigFile();
+				if (configWasUpdated) {
+					UndeadNights.LOGGER.info("Difficulty config file was updated to new version, please check the config file for new settings.");
+				}
+			}
+			//UndeadNights.serverState.setCurrentDifficultyConfigVersion(newDifficultyConfigVersion);
+			DifficultyConfigLoader.updateDifficultyConfigVersionInFile(newDifficultyConfigVersion);
+		}
 
 		// TODO remove, only for testing
 		//UndeadNights.serverState.setFirstDifficultyLevelPrinted(false);
