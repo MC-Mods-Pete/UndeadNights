@@ -375,6 +375,7 @@ public class UndeadSpawner implements SpecialSpawner {
                     if (MainConfig.getPrintDebugMessages()) {
                         UndeadNights.LOGGER.info("A Horde has spanned!");
                     }
+                    d = 0;
                     return 0;
                 } else {
                     d = 0;
