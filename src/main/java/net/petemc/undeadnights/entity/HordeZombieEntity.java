@@ -44,7 +44,7 @@ public class HordeZombieEntity extends Zombie {
 
     @Nullable
     @Override
-    public SpawnGroupData finalizeSpawn(ServerLevelAccessor level, DifficultyInstance difficulty, EntitySpawnReason spawnReason, @Nullable SpawnGroupData spawnGroupData) {
+    public SpawnGroupData finalizeSpawn(ServerLevelAccessor level, @NotNull DifficultyInstance difficulty, @NotNull EntitySpawnReason spawnReason, @Nullable SpawnGroupData spawnGroupData) {
         RandomSource randomsource = level.getRandom();
         spawnGroupData = super.finalizeSpawn(level, difficulty, spawnReason, spawnGroupData);
         float f = difficulty.getSpecialMultiplier();
@@ -91,8 +91,8 @@ public class HordeZombieEntity extends Zombie {
         }
 
         double healthScaleFactor = 0.0;
-        double damageScaleFactor = 0.0;
         double speedScaleFactor = 0.0;
+        double damageScaleFactor = 0.0;
         double armorScaleFactor = 0.0;
 
         if (UndeadNights.difficultyConfig.getDynamicScaling().isDynamicScalingEnabled()) {
@@ -105,7 +105,7 @@ public class HordeZombieEntity extends Zombie {
 
             healthScaleFactor = healthScaleFactor + UndeadNights.serverState.getCurrentHealthScale();
             speedScaleFactor = speedScaleFactor + UndeadNights.serverState.getCurrentSpeedScale();
-            damageScaleFactor = damageScaleFactor + UndeadNights.serverState.getCurrentDayScaleCounter();
+            damageScaleFactor = damageScaleFactor + UndeadNights.serverState.getCurrentDamageScale();
             armorScaleFactor = armorScaleFactor + UndeadNights.serverState.getCurrentArmorScale();
 
             if (healthScaleFactor > UndeadNights.difficultyConfig.getDynamicScaling().getMaxHealthScale()) {
@@ -250,6 +250,7 @@ public class HordeZombieEntity extends Zombie {
         return MainConfig.getHordeZombiesSpawnNaturally()
                 && UndeadNights.serverState.getIsNaturalSpawningOk()
                 && !(serverLevel.getBiome(pos).is(Biomes.MUSHROOM_FIELDS))
+                && !(serverLevel.getBiome(pos).is(Biomes.DEEP_DARK))
                 && serverLevel.getDifficulty() != Difficulty.PEACEFUL
                 && Monster.isDarkEnoughToSpawn(serverLevel, pos, random)
                 && Mob.checkMobSpawnRules(hordeZombieEntityType, serverLevel, entitySpawnReason, pos, random);

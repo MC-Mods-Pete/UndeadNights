@@ -46,7 +46,7 @@ public class EliteZombieEntity extends Zombie {
 
     @Nullable
     @Override
-    public SpawnGroupData finalizeSpawn(ServerLevelAccessor level, DifficultyInstance difficulty, EntitySpawnReason spawnReason, @Nullable SpawnGroupData spawnGroupData) {
+    public SpawnGroupData finalizeSpawn(ServerLevelAccessor level, @NotNull DifficultyInstance difficulty, @NotNull EntitySpawnReason spawnReason, @Nullable SpawnGroupData spawnGroupData) {
         RandomSource randomsource = level.getRandom();
         spawnGroupData = super.finalizeSpawn(level, difficulty, spawnReason, spawnGroupData);
         float f = difficulty.getSpecialMultiplier();
@@ -93,8 +93,8 @@ public class EliteZombieEntity extends Zombie {
         }
 
         double healthScaleFactor = 0.0;
-        double damageScaleFactor = 0.0;
         double speedScaleFactor = 0.0;
+        double damageScaleFactor = 0.0;
         double armorScaleFactor = 0.0;
 
         if (UndeadNights.difficultyConfig.getDynamicScaling().isDynamicScalingEnabled()) {
@@ -107,7 +107,7 @@ public class EliteZombieEntity extends Zombie {
 
             healthScaleFactor = healthScaleFactor + UndeadNights.serverState.getCurrentHealthScale();
             speedScaleFactor = speedScaleFactor + UndeadNights.serverState.getCurrentSpeedScale();
-            damageScaleFactor = damageScaleFactor + UndeadNights.serverState.getCurrentDayScaleCounter();
+            damageScaleFactor = damageScaleFactor + UndeadNights.serverState.getCurrentDamageScale();
             armorScaleFactor = armorScaleFactor + UndeadNights.serverState.getCurrentArmorScale();
 
             if (healthScaleFactor > UndeadNights.difficultyConfig.getDynamicScaling().getMaxHealthScale()) {
@@ -150,7 +150,7 @@ public class EliteZombieEntity extends Zombie {
     public static AttributeSupplier.@NotNull Builder createAttributes() {
         return Monster.createMonsterAttributes()
                 .add(Attributes.FOLLOW_RANGE, UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeMobs().getHordeMobsTrackingRange())       // default 35.0D
-                .add(Attributes.MOVEMENT_SPEED, 0.32D)      // default 0.23F
+                .add(Attributes.MOVEMENT_SPEED, 0.27D)      // default 0.23F
                 .add(Attributes.ATTACK_DAMAGE, 6.0D)        // default 3.0
                 .add(Attributes.ARMOR, 5.0D)                // default 2.0
                 .add(Attributes.SPAWN_REINFORCEMENTS_CHANCE, 0.0D);
@@ -225,6 +225,7 @@ public class EliteZombieEntity extends Zombie {
         return MainConfig.getEliteZombiesSpawnNaturally()
                 && UndeadNights.serverState.getIsNaturalSpawningOk()
                 && !(serverLevel.getBiome(pos).is(Biomes.MUSHROOM_FIELDS))
+                && !(serverLevel.getBiome(pos).is(Biomes.DEEP_DARK))
                 && serverLevel.getDifficulty() != Difficulty.PEACEFUL
                 && Monster.isDarkEnoughToSpawn(serverLevel, pos, random)
                 && Mob.checkMobSpawnRules(eliteZombieEntityType, serverLevel, entitySpawnReason, pos, random);
