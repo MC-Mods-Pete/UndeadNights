@@ -1,0 +1,13 @@
+{
+  "replace": false,
+  "values": [
+    "zombie",
+    "zombie_villager",
+    "husk",
+    "drowned",
+    "zombified_piglin",
+    "undeadnights:horde_zombie",
+    "undeadnights:elite_zombie",
+    "undeadnights:demolition_zombie"
+  ]
+}
