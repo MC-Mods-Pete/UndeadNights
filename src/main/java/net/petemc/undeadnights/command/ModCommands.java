@@ -9,5 +9,6 @@ public class ModCommands {
         CommandRegistrationCallback.EVENT.register(HordeMobsCommand::register);
         CommandRegistrationCallback.EVENT.register(StatusCommand::register);
         CommandRegistrationCallback.EVENT.register(SetDefaultHordeCommand::register);
+        CommandRegistrationCallback.EVENT.register(DifficultyLevelCommand::register);
     }
 }

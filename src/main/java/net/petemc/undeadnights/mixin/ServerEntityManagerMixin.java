@@ -13,8 +13,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class ServerEntityManagerMixin
 {
     @Inject(method = "unload(Lnet/minecraft/world/entity/EntityLike;)V", at = @At("HEAD"))
-    public void unload(EntityLike entityLike, CallbackInfo ci)
-    {
+    public void unload(EntityLike entityLike, CallbackInfo ci) {
         if (UndeadNights.serverState.spawnedHordeMobs.containsKey(entityLike.getUuid())) {
             UndeadNights.globalSpawnCounter--;
             if (MainConfig.getPrintDebugMessages()) {

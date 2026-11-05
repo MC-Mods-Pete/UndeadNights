@@ -10,12 +10,14 @@ import net.petemc.undeadnights.UndeadNights;
 
 public class ModEffects {
     public static RegistryEntry<StatusEffect> LURE_HORDE;
+    public static RegistryEntry<StatusEffect> STRONG_LURE_HORDE;
 
-    public static void registerEffects() {
-        LURE_HORDE = registerEffect("lure_horde", new LureHordeMobsEffect(StatusEffectCategory.HARMFUL, 0x10ff10));
+    private static RegistryEntry<StatusEffect> registerStatusEffect(String name, StatusEffect statusEffect) {
+        return Registry.registerReference(Registries.STATUS_EFFECT, Identifier.of(UndeadNights.MOD_ID, name), statusEffect);
     }
 
-    private static RegistryEntry<StatusEffect> registerEffect(String name, StatusEffect statusEffect) {
-        return Registry.registerReference(Registries.STATUS_EFFECT, Identifier.of(UndeadNights.MOD_ID, name), statusEffect);
+    public static void registerEffects() {
+        LURE_HORDE = registerStatusEffect("lure_horde", new LureHordeMobsEffect(StatusEffectCategory.HARMFUL, 0x10ff10));
+        STRONG_LURE_HORDE = registerStatusEffect("strong_lure_horde", new StrongLureHordeMobsEffect(StatusEffectCategory.HARMFUL, 0x10ff10));
     }
 }

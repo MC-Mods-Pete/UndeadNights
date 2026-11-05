@@ -13,7 +13,7 @@
 		"issues": "https://github.com/MC-Mods-Pete/UndeadNights/issues"
 	},
 	"license": "All rights reserved",
-	"icon": "assets/undeadnights/icon.png",
+	"icon": "undeadnights.png",
 	"environment": "*",
 	"entrypoints": {
 		"main": [
