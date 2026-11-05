@@ -34,6 +34,7 @@ public class StateSaverAndLoader extends PersistentState {
     private boolean isNaturalSpawningOk = false;
     private boolean firstEliteZombieHasSpawned = false;
     private boolean firstDemolitionZombieHasSpawned = false;
+    private boolean spawnBossHorde = false;
     private long prevNormalizedTimeOfDay = 0;
     private double currentHealthScale = 0.0;
     private double currentSpeedScale = 0.0;
@@ -218,6 +219,12 @@ public class StateSaverAndLoader extends PersistentState {
         this.setDirty();
     }
 
+    public boolean isSpawnBossHorde() { return spawnBossHorde; }
+    public void setSpawnBossHorde(boolean spawnBossHorde) {
+        this.spawnBossHorde = spawnBossHorde;
+        this.setDirty();
+    }
+
     public long getPrevNormalizedTimeOfDay() {
         return this.prevNormalizedTimeOfDay;
     }
@@ -274,6 +281,7 @@ public class StateSaverAndLoader extends PersistentState {
         state.isNaturalSpawningOk = tag.getBoolean("isNaturalSpawningOk");
         state.firstEliteZombieHasSpawned = tag.getBoolean("firstEliteZombieHasSpawned");
         state.firstDemolitionZombieHasSpawned = tag.getBoolean("firstDemolitionZombieHasSpawned");
+        state.spawnBossHorde = tag.getBoolean("spawnBossHorde");
         state.prevNormalizedTimeOfDay = tag.getLong("prevNormalizedTimeOfDay");
         state.currentHealthScale = tag.getDouble("currentHealthScale");
         state.currentSpeedScale = tag.getDouble("currentSpeedScale");
@@ -338,6 +346,7 @@ public class StateSaverAndLoader extends PersistentState {
         tag.putBoolean("isNaturalSpawningOk", isNaturalSpawningOk);
         tag.putBoolean("firstEliteZombieHasSpawned", firstEliteZombieHasSpawned);
         tag.putBoolean("firstDemolitionZombieHasSpawned", firstDemolitionZombieHasSpawned);
+        tag.putBoolean("spawnBossHorde", spawnBossHorde);
         tag.putLong("prevNormalizedTimeOfDay", prevNormalizedTimeOfDay);
         tag.putDouble("currentHealthScale", currentHealthScale);
         tag.putDouble("currentSpeedScale", currentSpeedScale);

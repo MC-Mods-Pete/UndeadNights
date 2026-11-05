@@ -77,7 +77,9 @@ public class DifficultyConfig {
                             15,
                             List.of(1),
                             1.0,
-                            "sequential"),
+                            "sequential",
+                            false,
+                            1),
                     new DifficultySettingsLureEffect(
                             true,
                             true,
@@ -203,6 +205,8 @@ public class DifficultyConfig {
             }
         }
         difficultySettingsHordes.add("listOfPossibleHordes", listOfPossibleHordes);
+        difficultySettingsHordes.addProperty("bossHordeEnabled", hordesValues.getBossHordeEnabled());
+        difficultySettingsHordes.addProperty("bossHordeId", hordesValues.getBossHordeId());
         difficultyLevel.add("difficultySettingsHordes", difficultySettingsHordes);
 
         DifficultySettingsLureEffect lureEffectValues = defaultDifficultyLevelValues.getDifficultySettingsLureEffect();

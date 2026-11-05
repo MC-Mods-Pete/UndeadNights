@@ -25,6 +25,7 @@
   "message.undeadnights.last_nights": "Die letzte Nacht bricht an, ehe die nächste Nacht der Untoten über uns hereinbricht!",
   "message.undeadnights.horde_night": "Die Sonne versinkt am Horizont - ein ungutes Gefühl beschleicht dich vor der kommenden Nacht...",
   "message.undeadnights.horde_spawned": "Eine Horde ist gespawnt!",
+  "message.undeadnights.boss_horde_spawned": "Eine Boss-Horde ist gespawnt!",
   "message.undeadnights.horde_night_over": "Du fühlst dich wieder sicher, die Nacht der Untoten ist vorbei...",
   "message.undeadnights.horde_time_over": "Du fühlst dich wieder sicher, die Horden der Untoten sind vorerst verschwunden...",
   "message.undeadnights.spawn_cap_reached": "Horden-Mobs können nicht gespawnt werden, Spawncap erreicht.",

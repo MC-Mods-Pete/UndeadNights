@@ -27,6 +27,7 @@ import net.petemc.undeadnights.UndeadNights;
 import net.petemc.undeadnights.config.HordeConfig;
 import net.petemc.undeadnights.config.MainConfig;
 import net.petemc.undeadnights.entity.ai.goal.TntIgniteAndThrowGoal;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.time.LocalDate;
@@ -66,7 +67,23 @@ public class DemolitionZombieEntity extends ZombieEntity {
                 this.armorDropChances[EquipmentSlot.HEAD.getEntitySlotId()] = 0.0F;
             }
         }
-        Objects.requireNonNull(this.getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH)).addPersistentModifier(new EntityAttributeModifier("Demolition zombie health bonus", MainConfig.getMaxHealthDemolitionZombies() - 20.0F, EntityAttributeModifier.Operation.ADDITION));
+
+        Objects.requireNonNull(this.getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH))
+                .addPersistentModifier(new EntityAttributeModifier("Demolition zombie health boost", MainConfig.getMaxHealthDemolitionZombies() - 20.0F, EntityAttributeModifier.Operation.ADDITION));
+
+        if (UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeMobs().isUpdateHordeMobAttributes()) {
+            Objects.requireNonNull(this.getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH))
+                    .addPersistentModifier(new EntityAttributeModifier("Demolition zombie health bonus", UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeMobs().getHealthAttributeScaleFactor() - 1.0, EntityAttributeModifier.Operation.MULTIPLY_TOTAL));
+
+            Objects.requireNonNull(this.getAttributeInstance(EntityAttributes.GENERIC_MOVEMENT_SPEED))
+                    .addPersistentModifier(new EntityAttributeModifier("Demolition zombie speed bonus", UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeMobs().getSpeedAttributeScaleFactor() - 1.0, EntityAttributeModifier.Operation.MULTIPLY_TOTAL));
+
+            Objects.requireNonNull(this.getAttributeInstance(EntityAttributes.GENERIC_ATTACK_DAMAGE))
+                    .addPersistentModifier(new EntityAttributeModifier("Demolition zombie attack damage bonus", UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeMobs().getDamageAttributeScaleFactor() - 1.0, EntityAttributeModifier.Operation.MULTIPLY_TOTAL));
+
+            Objects.requireNonNull(this.getAttributeInstance(EntityAttributes.GENERIC_ARMOR))
+                    .addPersistentModifier(new EntityAttributeModifier("Demolition zombie armor bonus", UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeMobs().getArmorAttributeScaleFactor() - 1.0, EntityAttributeModifier.Operation.MULTIPLY_TOTAL));
+        }
 
         int playerCount = 1;
         if (!this.getWorld().isClient()) {
@@ -105,27 +122,20 @@ public class DemolitionZombieEntity extends ZombieEntity {
             }
         }
 
-        if (UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeMobs().isUpdateHordeMobAttributes()) {
-            healthScaleFactor = healthScaleFactor + UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeMobs().getHealthAttributeScaleFactor() - 1.0;
-            speedScaleFactor = speedScaleFactor + UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeMobs().getSpeedAttributeScaleFactor() - 1.0;
-            damageScaleFactor = damageScaleFactor + UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeMobs().getDamageAttributeScaleFactor() - 1.0;
-            armorScaleFactor = armorScaleFactor + UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeMobs().getArmorAttributeScaleFactor() - 1.0;
-        }
-
         boolean flag = (healthScaleFactor > 0.0) || (speedScaleFactor > 0.0) || (damageScaleFactor > 0.0) || (armorScaleFactor > 0.0);
 
         if (flag) {
             Objects.requireNonNull(this.getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH))
-                    .addPersistentModifier(new EntityAttributeModifier("Demolition zombie difficulty health bonus", healthScaleFactor, EntityAttributeModifier.Operation.MULTIPLY_BASE));
+                    .addPersistentModifier(new EntityAttributeModifier("Demolition zombie difficulty health bonus", healthScaleFactor, EntityAttributeModifier.Operation.MULTIPLY_TOTAL));
 
             Objects.requireNonNull(this.getAttributeInstance(EntityAttributes.GENERIC_MOVEMENT_SPEED))
-                    .addPersistentModifier(new EntityAttributeModifier("Demolition zombie difficulty speed bonus", speedScaleFactor, EntityAttributeModifier.Operation.MULTIPLY_BASE));
+                    .addPersistentModifier(new EntityAttributeModifier("Demolition zombie difficulty speed bonus", speedScaleFactor, EntityAttributeModifier.Operation.MULTIPLY_TOTAL));
 
             Objects.requireNonNull(this.getAttributeInstance(EntityAttributes.GENERIC_ATTACK_DAMAGE))
-                    .addPersistentModifier(new EntityAttributeModifier("Demolition zombie difficulty attack damage bonus", damageScaleFactor, EntityAttributeModifier.Operation.MULTIPLY_BASE));
+                    .addPersistentModifier(new EntityAttributeModifier("Demolition zombie difficulty attack damage bonus", damageScaleFactor, EntityAttributeModifier.Operation.MULTIPLY_TOTAL));
 
             Objects.requireNonNull(this.getAttributeInstance(EntityAttributes.GENERIC_ARMOR))
-                    .addPersistentModifier(new EntityAttributeModifier("Demolition zombie difficulty armor bonus", armorScaleFactor, EntityAttributeModifier.Operation.MULTIPLY_BASE));
+                    .addPersistentModifier(new EntityAttributeModifier("Demolition zombie difficulty armor bonus", armorScaleFactor, EntityAttributeModifier.Operation.MULTIPLY_TOTAL));
         }
 
         this.applyAttributeModifiers(f);
