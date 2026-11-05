@@ -145,46 +145,49 @@ public class ForgeEvents {
 
     @SubscribeEvent
     public static void onEntityTick(LivingEvent.LivingTickEvent event) {
-        LevelAccessor world = event.getEntity().level();
         Entity entity = event.getEntity();
+
+        final int HORDE_CLIMB_CHECK_INTERVAL = 2;
+
         if (entity == null) {
             return;
         }
 
         if (BuiltInRegistries.ENTITY_TYPE.wrapAsHolder(entity.getType()).is(ModTags.EntityTypes.HORDE_MOBS)) {
-            if (entity instanceof BlockBreakingZombie blockBreakingZombie) {
-                if (blockBreakingZombie.isBreakingBlock()) {
-                    return;
-                }
+            if ((entity.tickCount + entity.getId()) % HORDE_CLIMB_CHECK_INTERVAL != 0) {
+                return;
             }
 
-            if (UndeadNights.difficultyConfig.getCurrentDifficultyLevel().getDifficultySettingsHordeMobs().isHordeMobsCanClimbEachOther()) {
-                final Vec3 entityPosition = entity.position();
-                final AABB entitySearchArea = new AABB(entityPosition, entityPosition).inflate(0.45 / 2d);
-                List<Entity> sortedEntityList = world.getEntitiesOfClass(Entity.class, entitySearchArea , entityTagCheck ->
-                                BuiltInRegistries.ENTITY_TYPE.wrapAsHolder(entityTagCheck.getType()).is(ModTags.EntityTypes.HORDE_MOBS))
-                        .stream().sorted(Comparator.comparingDouble(entityDistSort -> entityDistSort.distanceToSqr(entityPosition))).toList();
+            final Vec3 entityPosition = entity.position();
+            final AABB entitySearchArea = new AABB(entityPosition, entityPosition).inflate(0.45 / 2d);
+            List<Entity> nearbyHordeMobs = entity.level().getEntitiesOfClass(Entity.class, entitySearchArea, entityTagCheck ->
+                    entityTagCheck.getType().builtInRegistryHolder().is(ModTags.EntityTypes.HORDE_MOBS));
 
-                for (Entity hordeMobIterator : sortedEntityList) {
-                    if (!(entity.getX() == hordeMobIterator.getX())) {
-                        double randomValue = Math.random();
-                        if (randomValue > 0.16D) {
-                            randomValue = 0.16D;
+            for (Entity hordeMobIterator : nearbyHordeMobs) {
+                if (hordeMobIterator == entity) {
+                    continue;
+                }
+                if (entity.getX() != hordeMobIterator.getX()) {
+                    double randomValue = entity.getRandom().nextDouble();
+                    if (randomValue > 0.16D) {
+                        randomValue = 0.16D;
+                    }
+                    Vec3 entityVec3 = new Vec3(
+                            (entity.getDeltaMovement().x() + (randomValue / 20.0D) * Mth.nextInt(RandomSource.create(), -1, 1)),
+                            randomValue,
+                            (entity.getDeltaMovement().z() + (randomValue / 20.0D) * Mth.nextInt(RandomSource.create(), -1, 1)));
+
+                    entity.setDeltaMovement(entityVec3);
+                    if (entity instanceof LivingEntity livingEntity) {
+                        if (livingEntity.isBaby()) {
+                            entity.setDeltaMovement(entityVec3.add(0, randomValue, 0));
                         }
-                        Vec3 entityVec3 = new Vec3(
-                                (entity.getDeltaMovement().x() + (randomValue / 20.0D) * Mth.nextInt(RandomSource.create(), -1, 1)),
-                                randomValue,
-                                (entity.getDeltaMovement().z() + (randomValue / 20.0D) * Mth.nextInt(RandomSource.create(), -1, 1)));
-
-                        entity.setDeltaMovement(entityVec3);
-                        if (entity instanceof LivingEntity livingEntity) {
-                            if (livingEntity.isBaby()) {
-                                entity.setDeltaMovement(entityVec3.add(0, randomValue, 0));
-                            }
+                        if (!livingEntity.hasEffect(MobEffects.SLOW_FALLING)) {
                             livingEntity.addEffect(new MobEffectInstance(MobEffects.SLOW_FALLING, 5, 0, false, false));
                         }
-                        entity.fallDistance = 0;
                     }
+                    entity.fallDistance = 0;
+                    break;
                 }
             }
         }
